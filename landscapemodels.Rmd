@@ -1,0 +1,105 @@
+---
+title: "Landscape models"
+output: html_notebook
+---
+
+```{r setup, echo = FALSE}
+library(tidyverse)
+library(performance)
+library(psych)
+
+wfs <- readRDS("data/maxwfsresults_20241209.rds")
+lsm <- read.csv("data/lsm_reduced.csv") %>% 
+  mutate(hu = gsub("hu", "", hu))
+
+wfs_lsm <- wfs %>% left_join(lsm, by = "hu") %>%
+  select(c(hu, huc2, name, margin.ha, lu_ta,
+           pollinators_base:sed_export_base, 
+           delta_pollinators:delta_sed, 
+           fields_max, field.ha, margin.ha, 
+           lu_shdi:ntr_frac_mn)) %>%
+  mutate(prn_ann_ratio = log(prn_agr_pland/ann_agr_pland),
+         prn_pagr = 100*(prn_agr_pland/(ann_agr_pland+prn_agr_pland)),
+         field_pland = field.ha/lu_ta,
+         margin_dens = margin.ha/lu_ta)
+
+scaled.data <- wfs_lsm %>% mutate(across(lu_shdi:field_pland, ~scale(.x)[,1]))
+
+```
+
+## Correlation between independent variables.
+
+I selected a subset of variables that aren't strongly correlated and that represent potential drivers of ecosystem service patterns.
+
+```{r correlation, echo = FALSE}
+
+pairs.panels(wfs_lsm %>% 
+               select(ntr_pland, prn_agr_pland, aglu_iji,
+                      lu_shdi, aglu_frac_mn, margin_dens), 
+             cex.cor = 1, cex.labels=1, cex=0.5)
+
+```
+
+## Pollinator models
+
+### Pollinator delta
+
+```{r pollinator_delta}
+
+pol.dmod0 <- lm(delta_pollinators ~ ntr_pland + margin_dens + prn_agr_pland, data = scaled.data)
+pol.dmod1 <- lm(delta_pollinators ~ ntr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+pol.dmod2 <- lm(delta_pollinators ~ ntr_pland + I(ntr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+
+performance::compare_performance(pol.dmod0, pol.dmod1, pol.dmod2)
+
+summary(pol.dmod2)
+
+```
+
+## Seasonal water yield
+
+### Seasonal water yield delta
+
+```{r swy_delta}
+
+swy.dmod0 <- lm(delta_qb ~ ntr_pland + margin_dens + prn_agr_pland, data = scaled.data)
+swy.dmod1 <- lm(delta_qb ~ ntr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+swy.dmod2 <- lm(delta_qb ~ ntr_pland + I(ntr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+
+performance::compare_performance(swy.dmod0, swy.dmod1, swy.dmod2)
+
+summary(swy.dmod2)
+
+```
+
+## Nutrient delivery ratio
+
+### Nutrient delivery ratio delta
+
+```{r ndr_delta}
+
+ndr.dmod0 <- lm(delta_n_export ~ ntr_pland + margin_dens + prn_agr_pland, data = scaled.data)
+ndr.dmod1 <- lm(delta_n_export ~ ntr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+ndr.dmod2 <- lm(delta_n_export ~ ntr_pland + I(ntr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+
+performance::compare_performance(ndr.dmod0, ndr.dmod1, ndr.dmod2)
+
+summary(ndr.dmod2)
+
+```
+
+## Sediment delivery ratio
+
+### Sediment delivery ratio delta
+
+```{r sdr_delta}
+
+sdr.dmod0 <- lm(delta_sed ~ ntr_pland + margin_dens + prn_agr_pland, data = scaled.data)
+sdr.dmod1 <- lm(delta_sed ~ ntr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+sdr.dmod2 <- lm(delta_sed ~ ntr_pland + I(ntr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+
+performance::compare_performance(sdr.dmod0, sdr.dmod1, sdr.dmod2)
+
+summary(sdr.dmod2)
+
+```
