@@ -1,0 +1,64 @@
+column_num,column,explanation
+1,hu,huc12 identity
+2,cost_base,margin cost at baseline (always 0)
+3,fields_base,field number at baseline (always 0)
+4,pollinators_base,pollinator abundance at baseline
+5,n_export_base,N export at baseline
+6,qb_base,baseflow at baseline
+7,sed_export_base,sediment export at baseline
+8,cost_max,margin cost at maximum wfs
+9,fields_max,field number at maximum wfs
+10,pollinators_max,pollinator abundance at maximum wfs
+11,n_export_max,N export at madimum wfs
+12,qb_max,baseflow at maximum wfs
+13,sed_export_max,sediment export at maximum wfs
+14,field.ha,total area of fields in hectares (based on cell count)
+15,margin.ha,total area of margins in hectares (based on cell count)
+16,ws_sed_exp_base,watershed sediment export at baseline
+17,ws_sed_exp_max,watershed sediment export at maximum wfs
+18,ws_avoid_exp,watershed avoided export
+19,ws_pol_abun_base,watershed pollinator abundance at baselin
+20,ws_pol_abun_max,watershed pollinator abundance at maximum wfs
+21,watershed.ha,watershed area in hectares
+22,name,name of watershed
+23,states,state(s) containing watershed
+24,areasqkm,reported area of watershed in sq km
+25,Agriculture,"watershed percent agriculture (Corn, Cotton, Rice, Sorghum, Soybeans, Sunflower, Peanuts, Tobacco, Sweet Corn, Pop or Orn Corn, Mint, Barley, Durum Wheat, Spring Wheat, Winter Wheat, Other Small Grains, Dbl Crop WinWht/Soybeans, Rye, Oats, Millet, Speltz, Canola, Flaxseed, Safflower, Rape Seed, Mustard, Alfalfa, Other Hay/Non Alfalfa, Camelina, Buckwheat, Sugarbeets, Dry Beans, Potatoes, Other Crops, Sugarcane, Sweet Potatoes, Misc Vegs & Fruits, Watermelons, Onions, Cucumbers, Chick Peas, Lentils, Peas, Tomatoes, Caneberries, Hops, Herbs, Clover/Wildflowers, Sod/Grass Seed, Switchgrass, Fallow/Idle Cropland, Cherries, Peaches, Apples, Grapes, Christmas Trees, Other Tree Crops, Citrus, Pecans, Almonds, Walnuts, Pears , Grassland/Pasture, Pistachios, Triticale, Carrots, Asparagus, Garlic, Cantaloupes, Prunes, Olives, Oranges, Honeydew Melons, Broccoli, Avocados, Peppers, Pomegranates, Nectarines, Greens, Plums, Strawberries, Squash, Apricots, Vetch, Dbl Crop WinWht/Corn, Dbl Crop Oats/Corn, Lettuce, Dbl Crop Triticale/Corn, Pumpkins, Dbl Crop Lettuce/Durum Wht, Dbl Crop Lettuce/Cantaloupe, Dbl Crop Lettuce/Cotton, Dbl Crop Lettuce/Barley, Dbl Crop Durum Wht/Sorghum, Dbl Crop Barley/Sorghum, Dbl Crop WinWht/Sorghum, Dbl Crop Barley/Corn, Dbl Crop WinWht/Cotton, Dbl Crop Soybeans/Cotton, Dbl Crop Soybeans/Oats, Dbl Crop Corn/Soybeans, Blueberries, Cabbage, Cauliflower, Celery, Radishes, Turnips, Eggplants, Gourds, Cranberries, Dbl Crop Barley/Soybeans)"
+26,Barren,"watershed percent barren (Barren, Perennial Ice/Snow, Barren)"
+27,Developed,"watershed percent developed (Developed, Developed/Open Space, Developed/Low Intensity, Developed/Med Intensity, Developed/High Intensity)"
+28,Natural,"watershed percent natural (Forest, Shrubland, Water, Wetlands, Deciduous Forest, Evergreen Forest, Mixed Forest, Shrubland, Woody Wetlands, Herbaceous Wetlands)"
+29,Water,watershed percent water (Open Water)
+30,Unknown,"watershed percent unknown (Background, Clouds/No Data , Nonag/Undefined)"
+31,huc2,huc 2 identity
+32,Wetland,"watershed percent wetland (Wetlands, Woody Wetlands, Herbaceous Wetlands)"
+33,Corn,"watershed percent corn (Corn, Sorghum, Sweet Corn, Pop or Orn Corn)"
+34,Soybeans,watershed percent soybeans
+35,Pasture,watershed percent pasture (Grassland/Pasture)
+36,Alfalfa,"watershed percent alfalfa (Alfalfa, Clover/Wildflowers, Vetch)"
+37,Grass_hay,"watershed percent grass/hay (Other Hay/Non Alfalfa, Sod/Grass Seed, Switchgrass)"
+38,Rowcrop,"watershed percent rowcrop (Cotton, Rice, Peanuts, Tobacco, Mint, Barley, Durum Wheat, Spring Wheat, Winter Wheat, Other Small Grains, Dbl Crop WinWht/Soybeans, Rye, Oats, Millet, Speltz, Sugarbeets, Potatoes, Other Crops, Sugarcane, Sweet Potatoes, Onions, Herbs, Triticale, Carrots, Asparagus, Garlic, Broccoli, Greens, Dbl Crop WinWht/Corn, Dbl Crop Oats/Corn, Lettuce, Dbl Crop Triticale/Corn, Dbl Crop Lettuce/Durum Wht, Dbl Crop Lettuce/Cantaloupe, Dbl Crop Lettuce/Cotton, Dbl Crop Lettuce/Barley, Dbl Crop Durum Wht/Sorghum, Dbl Crop Barley/Sorghum, Dbl Crop WinWht/Sorghum, Dbl Crop Barley/Corn, Dbl Crop WinWht/Cotton, Dbl Crop Soybeans/Cotton, Dbl Crop Soybeans/Oats, Dbl Crop Corn/Soybeans, Cabbage, Cauliflower, Celery, Radishes, Turnips, Dbl Crop Barley/Soybeans)"
+39,Vegetable,"watershed percent vegetable (Sunflower, Canola, Flaxseed, Safflower, Rape Seed, Mustard, Camelina, Buckwheat, Dry Beans, Misc Vegs & Fruits, Watermelons, Cucumbers, Chick Peas, Lentils, Peas, Tomatoes, Cantaloupes, Honeydew Melons, Peppers, Strawberries, Squash, Pumpkins, Eggplants, Gourds)"
+40,Perennial,"watershed percent perennial (Caneberries, Hops, Cherries, Peaches, Apples, Grapes, Christmas Trees, Other Tree Crops, Citrus, Pecans, Almonds, Walnuts, Pears , Pistachios, Prunes, Olives, Oranges, Avocados, Pomegranates, Nectarines, Plums, Apricots, Blueberries, Cranberries)"
+41,pcAg.pasture,pasture as a percentage of total agriculture
+42,pcAg.cornsoy,corn/soy as a percentage of total agriculture
+43,pcAg.perennial,perennial as a percentage of total agriculture
+44,pcAg.other,other ag as a percentage of total agriculture
+45,B,watershed percent type B soil
+46,C,watershed percent type C soil
+47,C.D,watershed percent type C/D soil
+48,B.D,watershed percent type B/D soil
+49,D,watershed percent type D soil
+50,A,watershed percent type A soil
+51,A.D,watershed percent type A/D soil
+52,NA.,watershed percent NA soil (no info)
+53,annual_ag,watershed percentage annual agriculture (Corn+Soybeans+Alfalfa+Rowcrop+Vegetable)
+54,perennial_ag,watershed percentage perennial agriculture (Pasture+Grass_hay+Perennial)
+55,delta_pollinators,pollinators_max-pollinators_base
+56,delta_n_export,n_export_base - n_export_max
+57,delta_qb,qb_max - qb_base
+58,delta_sed,sed_export_base - sed_export_max
+59,pc_chng_pollinators,100*delta_pollinators/pollinators_base
+60,pc_chng_n_export,100*delta_n_export/n_export_base
+61,pc_chng_qb,100*delta_qb/qb_base
+62,pc_chng_sed,100*delta_sed/sed_export_base
+63,name.huc2,name of huc2 region

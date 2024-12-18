@@ -1,0 +1,7 @@
+name: "my-website"
+output_dir: docs
+navbar:
+  title: "Landscape Complexity Results"
+  left:
+    - text: "Home"
+      href: landscapemodels.html
