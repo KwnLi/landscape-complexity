@@ -8,13 +8,14 @@ library(tidyverse)
 library(performance)
 library(psych)
 
-wfs <- readRDS("data/maxwfsresults_20241209.rds")
+wfs <- readRDS("data/maxwfsresults_20241217_fix.rds")
 lsm <- read.csv("data/lsm_reduced.csv") %>% 
   mutate(hu = gsub("hu", "", hu))
 
 wfs_lsm <- wfs %>% left_join(lsm, by = "hu") %>%
   select(c(hu, huc2, name, margin.ha, lu_ta,
            pollinators_base:sed_export_base, 
+           pollinators_max:sed_export_max, 
            delta_pollinators:delta_sed, 
            fields_max, field.ha, margin.ha, 
            lu_shdi:ntr_frac_mn)) %>%
@@ -46,7 +47,7 @@ pairs.panels(wfs_lsm %>%
 
 ```{r pollinator_delta}
 
-pol.dmod0 <- lm(delta_pollinators ~ ntr_pland + margin_dens + prn_agr_pland, data = scaled.data)
+pol.dmod0 <- lm(delta_pollinators ~ margin_dens, data = scaled.data)
 pol.dmod1 <- lm(delta_pollinators ~ ntr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
 pol.dmod2 <- lm(delta_pollinators ~ ntr_pland + I(ntr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
 
@@ -62,7 +63,7 @@ summary(pol.dmod2)
 
 ```{r swy_delta}
 
-swy.dmod0 <- lm(delta_qb ~ ntr_pland + margin_dens + prn_agr_pland, data = scaled.data)
+swy.dmod0 <- lm(delta_qb ~ margin_dens, data = scaled.data)
 swy.dmod1 <- lm(delta_qb ~ ntr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
 swy.dmod2 <- lm(delta_qb ~ ntr_pland + I(ntr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
 
@@ -78,7 +79,7 @@ summary(swy.dmod2)
 
 ```{r ndr_delta}
 
-ndr.dmod0 <- lm(delta_n_export ~ ntr_pland + margin_dens + prn_agr_pland, data = scaled.data)
+ndr.dmod0 <- lm(delta_n_export ~ margin_dens, data = scaled.data)
 ndr.dmod1 <- lm(delta_n_export ~ ntr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
 ndr.dmod2 <- lm(delta_n_export ~ ntr_pland + I(ntr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
 
@@ -94,12 +95,143 @@ summary(ndr.dmod2)
 
 ```{r sdr_delta}
 
-sdr.dmod0 <- lm(delta_sed ~ ntr_pland + margin_dens + prn_agr_pland, data = scaled.data)
+sdr.dmod0 <- lm(delta_sed ~ margin_dens, data = scaled.data)
 sdr.dmod1 <- lm(delta_sed ~ ntr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
 sdr.dmod2 <- lm(delta_sed ~ ntr_pland + I(ntr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
 
 performance::compare_performance(sdr.dmod0, sdr.dmod1, sdr.dmod2)
 
 summary(sdr.dmod2)
+
+```
+
+## Plotting
+
+```{r plot_function}
+
+plot_fun <- function(mod, pred.vars, mod.data, color_by = "margin_dens"){
+  predict.list <- lapply(pred.vars,\(x){ggeffects::ggpredict(pol.dmod2, x)})
+  names(predict.list) <- pred.vars
+  
+  pred.trends <- dplyr::bind_rows(predict.list, .id = "pred.var") %>%
+    dplyr::rename_with(~as.character(mod$terms[[2]]), predicted)
+  
+  pred.data <- mod.data %>%
+    select(all_of(c(as.character(mod$terms[[2]]), pred.vars))) %>%
+    mutate(color_by = get(color_by)) %>%
+    pivot_longer(all_of(pred.vars), names_to = "pred.var", values_to = "x") %>%
+    rename(!!color_by := color_by)
+  
+  list(pred.trends, pred.data)
+}
+
+
+```
+
+### Pollinators
+
+```{r pollinator_plots}
+library(egg)
+
+pol.vars <- c("margin_dens", "ntr_pland", "aglu_frac_mn")
+
+pol.preds <- plot_fun(pol.dmod2, pol.vars, scaled.data)
+
+ggplot(pol.preds[[1]], aes(x, delta_pollinators)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = pol.preds[[2]], 
+             mapping = aes(color = margin_dens), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  xlab("z-score") +
+  theme_article()
+
+```
+
+### Seasonal water yield
+
+```{r swy_plots}
+
+swy.vars <- c("margin_dens", "ntr_pland", "prn_agr_pland")
+
+swy.preds <- plot_fun(swy.dmod2, swy.vars, scaled.data)
+
+ggplot(swy.preds[[1]], aes(x, delta_qb)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = swy.preds[[2]], 
+             mapping = aes(color = margin_dens), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  xlab("z-score") +
+  theme_article()
+
+```
+
+### Nutrient delivery ratio
+
+```{r ndr_plots}
+
+ndr.vars <- c("margin_dens", "ntr_pland", "prn_agr_pland", 
+              "aglu_iji", "aglu_frac_mn", "lu_shdi")
+
+ndr.preds <- plot_fun(ndr.dmod2, ndr.vars, scaled.data)
+
+ggplot(ndr.preds[[1]], aes(x, delta_n_export)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = ndr.preds[[2]], 
+             mapping = aes(color = margin_dens), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  xlab("z-score") +
+  theme_article()
+
+```
+
+### Sediment delivery ratio
+
+```{r sdr_plots}
+
+sdr.vars <- c("margin_dens", "ntr_pland", "prn_agr_pland", "lu_shdi")
+
+sdr.preds <- plot_fun(sdr.dmod2, sdr.vars, scaled.data)
+
+ggplot(sdr.preds[[1]], aes(x, delta_sed)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = sdr.preds[[2]], 
+             mapping = aes(color = margin_dens), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  xlab("z-score") +
+  theme_article()
+
+```
+
+## Residuals-based models
+
+Since margin density is a major effect, I regress the other predictors against the residuals of univariate models with only margin density
+
+```{r pollinators_resid}
+
+pol.resid <- data.frame(pol_resid = pol.dmod0$residuals, 
+                        scaled.data %>% 
+                          select(ntr_pland, prn_agr_pland, aglu_iji, 
+                                 aglu_frac_mn, lu_shdi))
+
+pol.resid.mod <- lm(pol_resid ~ ntr_pland + I(ntr_pland^2) + prn_agr_pland + aglu_iji + aglu_frac_mn + lu_shdi, data = pol.resid)
+
+summary(pol.resid.mod)
+
+pol.resid.vars <- c("ntr_pland", "prn_agr_pland", "aglu_frac_mn")
+
+pol.resid.preds <- plot_fun(pol.resid.mod, pol.resid.vars, pol.resid, "ntr_pland")
+
+ggplot(pol.resid.preds[[1]], aes(x, pol_resid)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = pol.resid.preds[[2]], 
+             mapping = aes(color = ntr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  xlab("z-score") +
+  theme_article()
 
 ```

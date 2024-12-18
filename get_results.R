@@ -9,8 +9,8 @@ regions <- st_read("/Users/kevinli/Box Sync/InVEST/GIS_data/NEMWregion/focalhuc2
 hu.names <- hu$huc12
 
 # previously calculted data
-baseline <- readRDS("data-raw/baseline.rds")
-maxwfs <- readRDS("data-raw/maxwfs.rds")
+baseline <- readRDS("data-raw/baseline_20241217_fix.rds")
+maxwfs <- readRDS("data-raw/maxwfs_20241217_fix.rds")
 
 # combine results 
 baselinedf <- bind_rows(baseline) %>% mutate(hu = hu.names)
@@ -50,4 +50,4 @@ huresults <- allresults %>%
   left_join(regions %>% select(huc2,name) %>% st_drop_geometry(), by="huc2", 
             suffix = c("",".huc2"))
 
-saveRDS(huresults, "data/maxwfsresults_20241209.rds")
+# saveRDS(huresults, "data/maxwfsresults_20241217_fix.rds")

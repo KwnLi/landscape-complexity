@@ -7,7 +7,7 @@ library(piecewiseSEM)
 library(psych)
 source("R/utils-cor.R")
 
-wfs <- readRDS("data/maxwfsresults_20241209.rds")
+wfs <- readRDS("data/maxwfsresults_20241217_fix.rds")
 lsm <- read.csv("data/lsm_reduced.csv") %>% 
   mutate(hu = gsub("hu", "", hu))
 
@@ -26,19 +26,37 @@ scaled.data <- wfs_lsm %>% mutate(across(lu_shdi:field_pland, ~scale(.x)[,1]))
 
 # % land area relationships
 lsm.area <- wfs_lsm %>% 
-  select(ntr_ed,
-         ann_agr_ed,
-         prn_agr_ed,
-         margin_dens,
+  select(
          ntr_pland,
          ann_agr_pland,
          prn_agr_pland,
-         field_pland)
+         prn_pagr,
+         field_pland,
+         margin_dens)
 
-pairs.panels(lsm.area, cex.cor = 1.2, cex.labels=0.7, cex=0.5)
+pairs.panels(lsm.area, cex.cor = 1, cex.labels=1, cex=0.5)
 
 pairs.panels( wfs_lsm %>% 
-                select(pollinators_base, delta_pollinators, field_frac_mn, field.ha, ntr_pland, field_ed), cex.cor = 1.2, cex.labels=0.7, cex=0.5)
+                select(ntr_pland,
+                       ann_agr_pland,
+                       prn_agr_pland,
+                       field_pland,
+                       ntr_ed,
+                       ann_agr_ed,
+                       prn_agr_ed,
+                       margin_dens), 
+              cex.cor = 1.2, cex.labels=1, cex=0.5)
+
+# field relationships
+pairs.panels(wfs_lsm %>% 
+               select(ntr_pland, ann_agr_pland,
+                      field_pland,
+                      field_para_mn,
+                      field_frac_mn,
+                      field_area_mn,
+                      field_ed, field_pd,
+                      margin_dens), 
+             cex.cor = 1, cex.labels=1, cex=0.5)
 
 # shape relationships
 lsm.shape <- wfs_lsm %>% 
@@ -59,14 +77,6 @@ lsm.agg <- wfs_lsm %>%
 pairs.panels(lsm.agg, cex.cor = 1, cex.labels=1)
 
 speardist.heatmap(lsm.agg)
-
-# field relationships
-pairs.panels(wfs_lsm %>% 
-               select(ntr_pland, ann_agr_pland, prn_agr_pland,
-                      field_para_mn,
-                      field_frac_mn,
-                      field_area_mn,
-                      margin_dens), cex.cor = 1, cex.labels=1)
 
 # independent variable relationships
 pairs.panels(wfs_lsm %>% 
