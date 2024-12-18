@@ -106,7 +106,7 @@ summary(sdr.dmod2)
 
 ## Plotting
 
-```{r plot_function}
+```{r plot_function, echo = FALSE}
 
 plot_fun <- function(mod, pred.vars, mod.data, color_by = "margin_dens"){
   predict.list <- lapply(pred.vars,\(x){ggeffects::ggpredict(pol.dmod2, x)})
@@ -129,7 +129,7 @@ plot_fun <- function(mod, pred.vars, mod.data, color_by = "margin_dens"){
 
 ### Pollinators
 
-```{r pollinator_plots}
+```{r pollinator_plots, echo = FALSE}
 library(egg)
 
 pol.vars <- c("margin_dens", "ntr_pland", "aglu_frac_mn")
@@ -149,7 +149,7 @@ ggplot(pol.preds[[1]], aes(x, delta_pollinators)) +
 
 ### Seasonal water yield
 
-```{r swy_plots}
+```{r swy_plots, echo = FALSE}
 
 swy.vars <- c("margin_dens", "ntr_pland", "prn_agr_pland")
 
@@ -168,7 +168,7 @@ ggplot(swy.preds[[1]], aes(x, delta_qb)) +
 
 ### Nutrient delivery ratio
 
-```{r ndr_plots}
+```{r ndr_plots, echo = FALSE}
 
 ndr.vars <- c("margin_dens", "ntr_pland", "prn_agr_pland", 
               "aglu_iji", "aglu_frac_mn", "lu_shdi")
@@ -188,7 +188,7 @@ ggplot(ndr.preds[[1]], aes(x, delta_n_export)) +
 
 ### Sediment delivery ratio
 
-```{r sdr_plots}
+```{r sdr_plots, echo = FALSE}
 
 sdr.vars <- c("margin_dens", "ntr_pland", "prn_agr_pland", "lu_shdi")
 
@@ -209,7 +209,7 @@ ggplot(sdr.preds[[1]], aes(x, delta_sed)) +
 
 Since margin density is a major effect, I regress the other predictors against the residuals of univariate models with only margin density
 
-```{r pollinators_resid}
+```{r pollinators_resid, echo = FALSE}
 
 pol.resid <- data.frame(pol_resid = pol.dmod0$residuals, 
                         scaled.data %>% 

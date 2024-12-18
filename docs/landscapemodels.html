@@ -472,86 +472,20 @@ performance::compare_performance(sdr.dmod0, sdr.dmod1, sdr.dmod2)</code></pre>
 </div>
 <div id="plotting" class="section level2">
 <h2>Plotting</h2>
-<pre class="r"><code>plot_fun &lt;- function(mod, pred.vars, mod.data, color_by = &quot;margin_dens&quot;){
-  predict.list &lt;- lapply(pred.vars,\(x){ggeffects::ggpredict(pol.dmod2, x)})
-  names(predict.list) &lt;- pred.vars
-  
-  pred.trends &lt;- dplyr::bind_rows(predict.list, .id = &quot;pred.var&quot;) %&gt;%
-    dplyr::rename_with(~as.character(mod$terms[[2]]), predicted)
-  
-  pred.data &lt;- mod.data %&gt;%
-    select(all_of(c(as.character(mod$terms[[2]]), pred.vars))) %&gt;%
-    mutate(color_by = get(color_by)) %&gt;%
-    pivot_longer(all_of(pred.vars), names_to = &quot;pred.var&quot;, values_to = &quot;x&quot;) %&gt;%
-    rename(!!color_by := color_by)
-  
-  list(pred.trends, pred.data)
-}</code></pre>
 <div id="pollinators" class="section level3">
 <h3>Pollinators</h3>
-<pre class="r"><code>library(egg)
-
-pol.vars &lt;- c(&quot;margin_dens&quot;, &quot;ntr_pland&quot;, &quot;aglu_frac_mn&quot;)
-
-pol.preds &lt;- plot_fun(pol.dmod2, pol.vars, scaled.data)
-
-ggplot(pol.preds[[1]], aes(x, delta_pollinators)) +  
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
-  geom_point(data = pol.preds[[2]], 
-             mapping = aes(color = margin_dens), 
-             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
-  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
-  xlab(&quot;z-score&quot;) +
-  theme_article()</code></pre>
 <p><img src="landscapemodels_files/figure-html/pollinator_plots-1.png" width="672" /></p>
 </div>
 <div id="seasonal-water-yield-1" class="section level3">
 <h3>Seasonal water yield</h3>
-<pre class="r"><code>swy.vars &lt;- c(&quot;margin_dens&quot;, &quot;ntr_pland&quot;, &quot;prn_agr_pland&quot;)
-
-swy.preds &lt;- plot_fun(swy.dmod2, swy.vars, scaled.data)
-
-ggplot(swy.preds[[1]], aes(x, delta_qb)) +  
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
-  geom_point(data = swy.preds[[2]], 
-             mapping = aes(color = margin_dens), 
-             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
-  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
-  xlab(&quot;z-score&quot;) +
-  theme_article()</code></pre>
 <p><img src="landscapemodels_files/figure-html/swy_plots-1.png" width="672" /></p>
 </div>
 <div id="nutrient-delivery-ratio-1" class="section level3">
 <h3>Nutrient delivery ratio</h3>
-<pre class="r"><code>ndr.vars &lt;- c(&quot;margin_dens&quot;, &quot;ntr_pland&quot;, &quot;prn_agr_pland&quot;, 
-              &quot;aglu_iji&quot;, &quot;aglu_frac_mn&quot;, &quot;lu_shdi&quot;)
-
-ndr.preds &lt;- plot_fun(ndr.dmod2, ndr.vars, scaled.data)
-
-ggplot(ndr.preds[[1]], aes(x, delta_n_export)) +  
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
-  geom_point(data = ndr.preds[[2]], 
-             mapping = aes(color = margin_dens), 
-             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
-  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
-  xlab(&quot;z-score&quot;) +
-  theme_article()</code></pre>
 <p><img src="landscapemodels_files/figure-html/ndr_plots-1.png" width="672" /></p>
 </div>
 <div id="sediment-delivery-ratio-1" class="section level3">
 <h3>Sediment delivery ratio</h3>
-<pre class="r"><code>sdr.vars &lt;- c(&quot;margin_dens&quot;, &quot;ntr_pland&quot;, &quot;prn_agr_pland&quot;, &quot;lu_shdi&quot;)
-
-sdr.preds &lt;- plot_fun(sdr.dmod2, sdr.vars, scaled.data)
-
-ggplot(sdr.preds[[1]], aes(x, delta_sed)) +  
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
-  geom_point(data = sdr.preds[[2]], 
-             mapping = aes(color = margin_dens), 
-             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
-  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
-  xlab(&quot;z-score&quot;) +
-  theme_article()</code></pre>
 <p><img src="landscapemodels_files/figure-html/sdr_plots-1.png" width="672" /></p>
 </div>
 </div>
@@ -560,14 +494,6 @@ ggplot(sdr.preds[[1]], aes(x, delta_sed)) +
 <p>Since margin density is a major effect, I regress the other
 predictors against the residuals of univariate models with only margin
 density</p>
-<pre class="r"><code>pol.resid &lt;- data.frame(pol_resid = pol.dmod0$residuals, 
-                        scaled.data %&gt;% 
-                          select(ntr_pland, prn_agr_pland, aglu_iji, 
-                                 aglu_frac_mn, lu_shdi))
-
-pol.resid.mod &lt;- lm(pol_resid ~ ntr_pland + I(ntr_pland^2) + prn_agr_pland + aglu_iji + aglu_frac_mn + lu_shdi, data = pol.resid)
-
-summary(pol.resid.mod)</code></pre>
 <pre><code>## 
 ## Call:
 ## lm(formula = pol_resid ~ ntr_pland + I(ntr_pland^2) + prn_agr_pland + 
@@ -592,18 +518,6 @@ summary(pol.resid.mod)</code></pre>
 ## Residual standard error: 0.0194 on 430 degrees of freedom
 ## Multiple R-squared:  0.6472, Adjusted R-squared:  0.6422 
 ## F-statistic: 131.5 on 6 and 430 DF,  p-value: &lt; 2.2e-16</code></pre>
-<pre class="r"><code>pol.resid.vars &lt;- c(&quot;ntr_pland&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;)
-
-pol.resid.preds &lt;- plot_fun(pol.resid.mod, pol.resid.vars, pol.resid, &quot;ntr_pland&quot;)
-
-ggplot(pol.resid.preds[[1]], aes(x, pol_resid)) +  
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
-  geom_point(data = pol.resid.preds[[2]], 
-             mapping = aes(color = ntr_pland), 
-             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
-  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
-  xlab(&quot;z-score&quot;) +
-  theme_article()</code></pre>
 <p><img src="landscapemodels_files/figure-html/pollinators_resid-1.png" width="672" /></p>
 </div>
 
