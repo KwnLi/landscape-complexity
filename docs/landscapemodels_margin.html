@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>R Notebook</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Landscape Complexity Results</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="landscapemodels.html">Linear models</a>
+</li>
+<li>
+  <a href="landscapemodels_gam.html">GAM models</a>
+</li>
+<li>
+  <a href="landscapemodels_logtrans.html">GAM models with log-tranformed DV (pollinator results only)</a>
+</li>
+<li>
+  <a href="landscapemodels_margin.html">GAM models with DV normalized by margin area</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">R Notebook</h1>
+
+</div>
+
+
+<div id="correlation-between-independent-variables."
+class="section level2">
+<h2>Correlation between independent variables.</h2>
+<p>I selected a subset of variables that aren’t strongly correlated and
+that represent potential drivers of ecosystem service patterns.</p>
+<p><img src="landscapemodels_margin_files/figure-html/correlation-1.png" width="672" /></p>
+</div>
+<div id="pollinator-models" class="section level2">
+<h2>Pollinator models</h2>
+<div id="pollinator-delta" class="section level3">
+<h3>Pollinator delta</h3>
+<pre class="r"><code>pol.lm0 &lt;- gam(delta_pollinators.margin ~ margin_dens, data = wfs_lsm)
+
+summary(pol.lm0)</code></pre>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## delta_pollinators.margin ~ margin_dens
+## 
+## Parametric coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  2.711e-04  6.585e-06  41.159  &lt; 2e-16 ***
+## margin_dens -1.485e-04  4.368e-05  -3.399 0.000737 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## 
+## R-sq.(adj) =  0.0236   Deviance explained = 2.59%
+## GCV = 1.7126e-09  Scale est. = 1.7047e-09  n = 437</code></pre>
+<pre class="r"><code>pol.gam1 &lt;- gam(delta_pollinators.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+                data = wfs_lsm)
+
+performance::compare_performance(pol.lm0,pol.gam1)</code></pre>
+<pre><code>## # Comparison of Model Performance Indices
+## 
+## Name     | Model |   AIC (weights) |  AICc (weights) |   BIC (weights) |    R2
+## ------------------------------------------------------------------------------
+## pol.lm0  |   gam | -7578.8 (&lt;.001) | -7578.8 (&lt;.001) | -7566.6 (&lt;.001) | 0.024
+## pol.gam1 |   gam | -7818.3 (&gt;.999) | -7817.7 (&gt;.999) | -7772.8 (&gt;.999) | 0.446
+## 
+## Name     |      RMSE |     Sigma
+## --------------------------------
+## pol.lm0  | 4.119e-05 | 4.129e-05
+## pol.gam1 | 3.074e-05 | 3.111e-05</code></pre>
+<pre class="r"><code>summary(pol.gam1)</code></pre>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## delta_pollinators.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + 
+##     s(aglu_frac_mn) + s(lu_shdi)
+## 
+## Parametric coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 2.497e-04  1.488e-06   167.8   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Approximate significance of smooth terms:
+##                    edf Ref.df     F  p-value    
+## s(ann_agr_pland) 5.147  6.288 45.89  &lt; 2e-16 ***
+## s(aglu_iji)      1.000  1.000 18.35 2.34e-05 ***
+## s(prn_agr_pland) 1.000  1.000 68.39  &lt; 2e-16 ***
+## s(aglu_frac_mn)  1.000  1.000 11.46 0.000776 ***
+## s(lu_shdi)       1.000  1.000  0.00 0.998306    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## R-sq.(adj) =  0.446   Deviance explained = 45.7%
+## GCV = 9.9057e-10  Scale est. = 9.6756e-10  n = 437</code></pre>
+<pre class="r"><code>concurvity(pol.gam1)</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## worst    5.223854e-25        0.7896108   0.6818488        0.7524929       0.6555056
+## observed 5.223854e-25        0.7243392   0.6428496        0.6386965       0.5896571
+## estimate 5.223854e-25        0.7235572   0.5471598        0.4679625       0.4491356
+##          s(lu_shdi)
+## worst     0.6444388
+## observed  0.5920047
+## estimate  0.4488346</code></pre>
+<pre class="r"><code>polplot.df &lt;- plot_fun(pol.gam1, 
+                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;lu_shdi&quot;),
+                       wfs_lsm, &quot;ann_agr_pland&quot;)
+
+ggplot(polplot.df[[1]], aes(x, delta_pollinators.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = polplot.df[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
+  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
+  egg::theme_article()</code></pre>
+<p><img src="landscapemodels_margin_files/figure-html/plot_pol-1.png" width="672" /></p>
+</div>
+<div id="seasonal-water-yield-delta" class="section level3">
+<h3>Seasonal water yield delta</h3>
+<pre class="r"><code>swy.lm0 &lt;- gam(delta_qb.margin ~ margin_dens, data = wfs_lsm)
+
+summary(swy.lm0)</code></pre>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## delta_qb.margin ~ margin_dens
+## 
+## Parametric coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 1.692e-04  3.534e-05   4.787 2.32e-06 ***
+## margin_dens 1.138e-03  2.344e-04   4.854 1.69e-06 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## 
+## R-sq.(adj) =  0.0492   Deviance explained = 5.14%
+## GCV = 4.9326e-08  Scale est. = 4.91e-08  n = 437</code></pre>
+<pre class="r"><code>swy.gam1 &lt;- gam(delta_qb.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+                data = wfs_lsm)
+
+performance::compare_performance(swy.lm0,swy.gam1)</code></pre>
+<pre><code>## # Comparison of Model Performance Indices
+## 
+## Name     | Model |   AIC (weights) |  AICc (weights) |   BIC (weights) |    R2
+## ------------------------------------------------------------------------------
+## swy.lm0  |   gam | -6110.3 (&lt;.001) | -6110.2 (&lt;.001) | -6098.1 (&gt;.999) | 0.049
+## swy.gam1 |   gam | -6140.1 (&gt;.999) | -6137.5 (&gt;.999) | -6047.8 (&lt;.001) | 0.150
+## 
+## Name     |      RMSE |     Sigma
+## --------------------------------
+## swy.lm0  | 2.211e-04 | 2.216e-04
+## swy.gam1 | 2.043e-04 | 2.095e-04</code></pre>
+<pre class="r"><code>summary(swy.gam1)</code></pre>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## delta_qb.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + 
+##     s(aglu_frac_mn) + s(lu_shdi)
+## 
+## Parametric coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 3.328e-04  1.002e-05   33.21   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Approximate significance of smooth terms:
+##                    edf Ref.df     F  p-value    
+## s(ann_agr_pland) 4.986  6.110 3.862 0.000866 ***
+## s(aglu_iji)      1.000  1.000 0.717 0.397779    
+## s(prn_agr_pland) 4.065  5.083 4.537 0.000474 ***
+## s(aglu_frac_mn)  2.724  3.528 2.844 0.027027 *  
+## s(lu_shdi)       7.847  8.660 2.796 0.003129 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## R-sq.(adj) =   0.15   Deviance explained =   19%
+## GCV = 4.6189e-08  Scale est. = 4.3903e-08  n = 437</code></pre>
+<pre class="r"><code>concurvity(swy.gam1)</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## worst    5.223854e-25        0.7896108   0.6818488        0.7524929       0.6555056
+## observed 5.223854e-25        0.4673122   0.6428485        0.7118677       0.6213016
+## estimate 5.223854e-25        0.7235572   0.5471598        0.4679625       0.4491356
+##          s(lu_shdi)
+## worst     0.6444388
+## observed  0.4480394
+## estimate  0.4488346</code></pre>
+<pre class="r"><code>swyplot.df &lt;- plot_fun(swy.gam1, 
+                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;lu_shdi&quot;),
+                       wfs_lsm, &quot;ann_agr_pland&quot;)
+
+ggplot(swyplot.df[[1]], aes(x, delta_qb.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = swyplot.df[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
+  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
+  egg::theme_article()</code></pre>
+<p><img src="landscapemodels_margin_files/figure-html/plot_swy-1.png" width="672" /></p>
+</div>
+<div id="nutrient-delivery-delta" class="section level3">
+<h3>Nutrient delivery delta</h3>
+<pre class="r"><code>ndr.lm0 &lt;- gam(delta_n_export.margin ~ margin_dens, data = wfs_lsm)
+
+summary(ndr.lm0)</code></pre>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## delta_n_export.margin ~ margin_dens
+## 
+## Parametric coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 1.514e-04  2.293e-05   6.604 1.17e-10 ***
+## margin_dens 7.591e-04  1.521e-04   4.990 8.73e-07 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## 
+## R-sq.(adj) =  0.052   Deviance explained = 5.42%
+## GCV = 2.0762e-08  Scale est. = 2.0667e-08  n = 437</code></pre>
+<pre class="r"><code>ndr.gam1 &lt;- gam(delta_n_export.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+                data = wfs_lsm)
+
+performance::compare_performance(ndr.lm0,ndr.gam1)</code></pre>
+<pre><code>## # Comparison of Model Performance Indices
+## 
+## Name     | Model |   AIC (weights) |  AICc (weights) |   BIC (weights) |    R2
+## ------------------------------------------------------------------------------
+## ndr.lm0  |   gam | -6488.4 (&lt;.001) | -6488.4 (&lt;.001) | -6476.2 (&lt;.001) | 0.052
+## ndr.gam1 |   gam | -6953.5 (&gt;.999) | -6951.4 (&gt;.999) | -6871.0 (&gt;.999) | 0.685
+## 
+## Name     |      RMSE |     Sigma
+## --------------------------------
+## ndr.lm0  | 1.434e-04 | 1.438e-04
+## ndr.gam1 | 8.100e-05 | 8.284e-05</code></pre>
+<pre class="r"><code>summary(ndr.gam1)</code></pre>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## delta_n_export.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + 
+##     s(aglu_frac_mn) + s(lu_shdi)
+## 
+## Parametric coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 2.606e-04  3.963e-06   65.76   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Approximate significance of smooth terms:
+##                    edf Ref.df      F  p-value    
+## s(ann_agr_pland) 7.355  8.357 47.976  &lt; 2e-16 ***
+## s(aglu_iji)      1.000  1.000  2.850 0.092115 .  
+## s(prn_agr_pland) 7.574  8.506  4.516 2.51e-05 ***
+## s(aglu_frac_mn)  1.278  1.516 14.675 0.000181 ***
+## s(lu_shdi)       1.000  1.001 33.823  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## R-sq.(adj) =  0.685   Deviance explained = 69.8%
+## GCV = 7.1776e-09  Scale est. = 6.8621e-09  n = 437</code></pre>
+<pre class="r"><code>concurvity(ndr.gam1)</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## worst    5.223854e-25        0.7896108   0.6818488        0.7524929       0.6555056
+## observed 5.223854e-25        0.7639033   0.6428614        0.7311795       0.5796479
+## estimate 5.223854e-25        0.7235572   0.5471598        0.4679625       0.4491356
+##          s(lu_shdi)
+## worst     0.6444388
+## observed  0.5918996
+## estimate  0.4488346</code></pre>
+<pre class="r"><code>ndrplot.df &lt;- plot_fun(ndr.gam1, 
+                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;lu_shdi&quot;),
+                       wfs_lsm, &quot;ann_agr_pland&quot;)
+
+ggplot(ndrplot.df[[1]], aes(x, delta_n_export.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = ndrplot.df[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
+  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
+  egg::theme_article()</code></pre>
+<p><img src="landscapemodels_margin_files/figure-html/plot_ndr-1.png" width="672" /></p>
+</div>
+<div id="sediment-delivery-ratio-delta" class="section level3">
+<h3>Sediment delivery ratio delta</h3>
+<pre class="r"><code>sdr.lm0 &lt;- gam(delta_sed.margin ~ margin_dens, data = wfs_lsm)
+
+summary(sdr.lm0)</code></pre>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## delta_sed.margin ~ margin_dens
+## 
+## Parametric coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 3.515e-05  8.257e-05   0.426    0.671    
+## margin_dens 2.640e-03  5.477e-04   4.820 1.98e-06 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## 
+## R-sq.(adj) =  0.0485   Deviance explained = 5.07%
+## GCV = 2.6925e-07  Scale est. = 2.6802e-07  n = 437</code></pre>
+<pre class="r"><code>sdr.gam1 &lt;- gam(delta_sed.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+                data = wfs_lsm)
+
+performance::compare_performance(sdr.lm0,sdr.gam1)</code></pre>
+<pre><code>## # Comparison of Model Performance Indices
+## 
+## Name     | Model |   AIC (weights) |  AICc (weights) |   BIC (weights) |    R2
+## ------------------------------------------------------------------------------
+## sdr.lm0  |   gam | -5368.6 (&lt;.001) | -5368.6 (&lt;.001) | -5356.4 (&lt;.001) | 0.049
+## sdr.gam1 |   gam | -5487.4 (&gt;.999) | -5484.9 (&gt;.999) | -5396.9 (&gt;.999) | 0.305
+## 
+## Name     |      RMSE |     Sigma
+## --------------------------------
+## sdr.lm0  | 5.165e-04 | 5.177e-04
+## sdr.gam1 | 4.315e-04 | 4.424e-04</code></pre>
+<pre class="r"><code>summary(sdr.gam1)</code></pre>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## delta_sed.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + 
+##     s(aglu_frac_mn) + s(lu_shdi)
+## 
+## Parametric coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 4.149e-04  2.116e-05    19.6   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Approximate significance of smooth terms:
+##                    edf Ref.df      F  p-value    
+## s(ann_agr_pland) 8.427  8.902 10.581  &lt; 2e-16 ***
+## s(aglu_iji)      3.473  4.419  1.870 0.108578    
+## s(prn_agr_pland) 2.534  3.242  5.218 0.001096 ** 
+## s(aglu_frac_mn)  3.290  4.216  1.219 0.278937    
+## s(lu_shdi)       2.473  3.200  6.131 0.000309 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## R-sq.(adj) =  0.305   Deviance explained = 33.7%
+## GCV = 2.0566e-07  Scale est. = 1.9568e-07  n = 437</code></pre>
+<pre class="r"><code>concurvity(sdr.gam1)</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## worst    5.223854e-25        0.7896108   0.6818488        0.7524929       0.6555056
+## observed 5.223854e-25        0.5466171   0.5757734        0.1636711       0.2371923
+## estimate 5.223854e-25        0.7235572   0.5471598        0.4679625       0.4491356
+##          s(lu_shdi)
+## worst     0.6444388
+## observed  0.4812602
+## estimate  0.4488346</code></pre>
+<pre class="r"><code>sdrplot.df &lt;- plot_fun(sdr.gam1, 
+                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;lu_shdi&quot;),
+                       wfs_lsm, &quot;ann_agr_pland&quot;)
+
+ggplot(sdrplot.df[[1]], aes(x, delta_sed.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = sdrplot.df[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
+  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
+  egg::theme_article()</code></pre>
+<p><img src="landscapemodels_margin_files/figure-html/plot_sdr-1.png" width="672" /></p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

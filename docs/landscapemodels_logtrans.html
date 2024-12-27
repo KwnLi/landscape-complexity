@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Landscape models using log transform</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Landscape Complexity Results</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="landscapemodels.html">Linear models</a>
+</li>
+<li>
+  <a href="landscapemodels_gam.html">GAM models</a>
+</li>
+<li>
+  <a href="landscapemodels_logtrans.html">GAM models with log-tranformed DV (pollinator results only)</a>
+</li>
+<li>
+  <a href="landscapemodels_margin.html">GAM models with DV normalized by margin area</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Landscape models using log transform</h1>
+
+</div>
+
+
+<div id="pollinator-models" class="section level2">
+<h2>Pollinator models</h2>
+<div id="pollinator-delta" class="section level3">
+<h3>Pollinator delta</h3>
+<pre class="r"><code>pol.lm0 &lt;- gam(log.delta_pollinators ~ margin_dens, data = wfs_lsm)
+pol.gam0 &lt;- gam(log.delta_pollinators ~ s(margin_dens), data = wfs_lsm)
+
+anova(pol.lm0, pol.gam0)</code></pre>
+<pre><code>## Analysis of Deviance Table
+## 
+## Model 1: log.delta_pollinators ~ margin_dens
+## Model 2: log.delta_pollinators ~ s(margin_dens)
+##   Resid. Df Resid. Dev     Df Deviance      F    Pr(&gt;F)    
+## 1    435.00    10.0676                                     
+## 2    427.29     5.4886 7.7117   4.5791 46.309 &lt; 2.2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>pol.gam1 &lt;- gam(log.delta_pollinators ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(margin_dens) + s(lu_shdi), 
+                data = wfs_lsm)
+
+performance::compare_performance(pol.lm0, pol.gam0, pol.gam1)</code></pre>
+<pre><code>## Some of the nested models seem to be identical</code></pre>
+<pre><code>## # Comparison of Model Performance Indices
+## 
+## Name     | Model |   AIC (weights) |  AICc (weights) |   BIC (weights) |    R2 |  RMSE | Sigma
+## ----------------------------------------------------------------------------------------------
+## pol.lm0  |   gam |  -401.6 (&lt;.001) |  -401.5 (&lt;.001) |  -389.4 (&lt;.001) | 0.843 | 0.152 | 0.152
+## pol.gam0 |   gam |  -652.8 (&lt;.001) |  -652.3 (&lt;.001) |  -612.2 (&lt;.001) | 0.913 | 0.112 | 0.113
+## pol.gam1 |   gam | -1250.9 (&gt;.999) | -1246.6 (&gt;.999) | -1131.7 (&gt;.999) | 0.979 | 0.054 | 0.056</code></pre>
+<pre class="r"><code>summary(pol.gam1)</code></pre>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## log.delta_pollinators ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + 
+##     s(aglu_frac_mn) + s(margin_dens) + s(lu_shdi)
+## 
+## Parametric coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -1.344047   0.002675  -502.4   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Approximate significance of smooth terms:
+##                    edf Ref.df       F p-value    
+## s(ann_agr_pland) 5.368  6.553  92.632  &lt;2e-16 ***
+## s(aglu_iji)      1.000  1.000  57.832  &lt;2e-16 ***
+## s(prn_agr_pland) 6.066  7.268  40.012  &lt;2e-16 ***
+## s(aglu_frac_mn)  3.469  4.439  12.762  &lt;2e-16 ***
+## s(margin_dens)   8.480  8.917 574.438  &lt;2e-16 ***
+## s(lu_shdi)       2.827  3.656   2.206  0.0763 .  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## R-sq.(adj) =  0.979   Deviance explained =   98%
+## GCV = 0.003344  Scale est. = 0.0031281  n = 437</code></pre>
+<pre class="r"><code>concurvity(pol.gam1)</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## worst    5.890479e-25        0.8912197   0.6995208        0.7829295       0.6886298
+## observed 5.890479e-25        0.7709157   0.6662133        0.6142880       0.5881407
+## estimate 5.890479e-25        0.8110309   0.5771170        0.5064119       0.4851594
+##          s(margin_dens) s(lu_shdi)
+## worst         0.8374435  0.7308447
+## observed      0.7928102  0.6736699
+## estimate      0.5937077  0.5673864</code></pre>
+<pre class="r"><code>polplot.df &lt;- plot_fun(pol.gam1, 
+                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;margin_dens&quot;),
+                       wfs_lsm)
+
+ggplot(polplot.df[[1]], aes(x, log.delta_pollinators)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = polplot.df[[2]], 
+             mapping = aes(color = margin_dens), 
+             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
+  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
+  egg::theme_article()</code></pre>
+<p><img src="landscapemodels_logtrans_files/figure-html/plot_pol-1.png" width="672" /></p>
+<pre class="r"><code>polplot0.df &lt;- plot_fun(pol.gam0, 
+                       &quot;margin_dens&quot;,
+                       wfs_lsm)
+
+ggplot(polplot0.df[[1]], aes(x, log.delta_pollinators)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = polplot0.df[[2]], 
+             mapping = aes(color = margin_dens), 
+             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
+  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
+  egg::theme_article()</code></pre>
+<p><img src="landscapemodels_logtrans_files/figure-html/plot_pol0-1.png" width="672" /></p>
+</div>
+<div id="residual-model-from-gam0" class="section level3">
+<h3>Residual model from gam0</h3>
+<p>Trying to account for the effect of margins first</p>
+<pre class="r"><code>wfs_lsm_resids &lt;- wfs_lsm %&gt;% cbind(pol.resid = residuals(pol.gam0))
+
+polresid.gam1 &lt;- gam(pol.resid ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+                data = wfs_lsm_resids)
+
+summary(polresid.gam1)</code></pre>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## pol.resid ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + 
+##     s(aglu_frac_mn) + s(lu_shdi)
+## 
+## Parametric coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) -1.428e-16  2.869e-03       0        1
+## 
+## Approximate significance of smooth terms:
+##                    edf Ref.df     F p-value    
+## s(ann_agr_pland) 5.959  7.139 76.34 &lt; 2e-16 ***
+## s(aglu_iji)      1.000  1.000 53.88 &lt; 2e-16 ***
+## s(prn_agr_pland) 5.426  6.615 35.17 &lt; 2e-16 ***
+## s(aglu_frac_mn)  1.000  1.000 63.31 &lt; 2e-16 ***
+## s(lu_shdi)       2.359  3.051  4.06 0.00652 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## R-sq.(adj) =  0.714   Deviance explained = 72.4%
+## GCV = 0.0037414  Scale est. = 0.0035981  n = 437</code></pre>
+<pre class="r"><code>concurvity(polresid.gam1)</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## worst    5.223854e-25        0.7896108   0.6818488        0.7524929       0.6555056
+## observed 5.223854e-25        0.6910831   0.6428548        0.5375167       0.5896608
+## estimate 5.223854e-25        0.7235572   0.5471598        0.4679625       0.4491356
+##          s(lu_shdi)
+## worst     0.6444388
+## observed  0.5716857
+## estimate  0.4488346</code></pre>
+<pre class="r"><code>residpolplot.df &lt;- plot_fun(polresid.gam1, 
+                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;),
+                       wfs_lsm_resids,
+                       &quot;ann_agr_pland&quot;)
+
+ggplot(residpolplot.df[[1]], aes(x, pol.resid)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = residpolplot.df[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
+  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
+  egg::theme_article()</code></pre>
+<p><img src="landscapemodels_logtrans_files/figure-html/plot_pol_resid-1.png" width="672" /></p>
+</div>
+</div>
+<div id="seasonal-water-yield" class="section level2">
+<h2>Seasonal water yield</h2>
+<div id="seasonal-water-yield-delta" class="section level3">
+<h3>Seasonal water yield delta</h3>
+<pre class="r"><code>swy.lm0 &lt;- gam(log.delta_qb ~ margin_dens, data = wfs_lsm)
+swy.gam0 &lt;- gam(log.delta_qb ~ s(margin_dens), data = wfs_lsm)
+
+anova(swy.lm0, swy.gam0)</code></pre>
+<pre><code>## Analysis of Deviance Table
+## 
+## Model 1: log.delta_qb ~ margin_dens
+## Model 2: log.delta_qb ~ s(margin_dens)
+##   Resid. Df Resid. Dev     Df Deviance      F   Pr(&gt;F)   
+## 1    435.00     1101.4                                   
+## 2    430.66     1064.6 4.3436   36.799 3.4357 0.007098 **
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>swy.gam1 &lt;- gam(log.delta_qb ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(margin_dens) + s(lu_shdi), 
+                data = wfs_lsm)
+
+performance::compare_performance(swy.lm0, swy.gam0, swy.gam1)</code></pre>
+<pre><code>## Some of the nested models seem to be identical</code></pre>
+<pre><code>## # Comparison of Model Performance Indices
+## 
+## Name     | Model |  AIC (weights) | AICc (weights) |  BIC (weights) |    R2 |  RMSE | Sigma
+## -------------------------------------------------------------------------------------------
+## swy.lm0  |   gam | 1650.1 (&lt;.001) | 1650.2 (&lt;.001) | 1662.4 (0.802) | 0.128 | 1.588 | 1.591
+## swy.gam0 |   gam | 1641.8 (&lt;.001) | 1642.0 (&lt;.001) | 1667.4 (0.063) | 0.151 | 1.561 | 1.570
+## swy.gam1 |   gam | 1577.4 (&gt;.999) | 1579.8 (&gt;.999) | 1665.9 (0.135) | 0.292 | 1.400 | 1.434</code></pre>
+<pre class="r"><code>summary(swy.gam1)</code></pre>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## log.delta_qb ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + 
+##     s(aglu_frac_mn) + s(margin_dens) + s(lu_shdi)
+## 
+## Parametric coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  -1.5064     0.0686  -21.96   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Approximate significance of smooth terms:
+##                    edf Ref.df     F  p-value    
+## s(ann_agr_pland) 4.524  5.604 7.054 1.62e-06 ***
+## s(aglu_iji)      1.000  1.000 5.547    0.019 *  
+## s(prn_agr_pland) 1.746  2.222 0.556    0.629    
+## s(aglu_frac_mn)  1.000  1.000 0.329    0.567    
+## s(margin_dens)   3.211  4.112 9.988  &lt; 2e-16 ***
+## s(lu_shdi)       8.214  8.823 4.097 3.74e-05 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## R-sq.(adj) =  0.292   Deviance explained = 32.4%
+## GCV = 2.1587  Scale est. = 2.0564    n = 437</code></pre>
+<pre class="r"><code>concurvity(swy.gam1)</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## worst    5.890479e-25        0.8912197   0.6995208        0.7829295       0.6886298
+## observed 5.890479e-25        0.6045982   0.6662133        0.4745638       0.6116032
+## estimate 5.890479e-25        0.8110309   0.5771170        0.5064119       0.4851594
+##          s(margin_dens) s(lu_shdi)
+## worst         0.8374435  0.7308447
+## observed      0.7158746  0.2483719
+## estimate      0.5937077  0.5673864</code></pre>
+<pre class="r"><code>swyplot.df &lt;- plot_fun(swy.gam1, 
+                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;margin_dens&quot;),
+                       wfs_lsm)
+
+ggplot(swyplot.df[[1]], aes(x, log.delta_qb)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = swyplot.df[[2]], 
+             mapping = aes(color = margin_dens), 
+             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
+  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
+  egg::theme_article()</code></pre>
+<p><img src="landscapemodels_logtrans_files/figure-html/plot_swy-1.png" width="672" /></p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

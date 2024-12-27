@@ -1,7 +1,13 @@
-name: "my-website"
+name: "landscape-complexity-results"
 output_dir: docs
 navbar:
   title: "Landscape Complexity Results"
   left:
-    - text: "Home"
+    - text: "Linear models"
       href: landscapemodels.html
+    - text: "GAM models"
+      href: landscapemodels_gam.html
+    - text: "GAM models with log-tranformed DV (pollinator results only)"
+      href: landscapemodels_logtrans.html
+    - text: "GAM models with DV normalized by margin area"
+      href: landscapemodels_margin.html
