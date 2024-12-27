@@ -6,6 +6,7 @@ title: "Landscape models"
 library(tidyverse)
 library(performance)
 library(psych)
+source("R/utils-plot.r")
 
 wfs <- readRDS("data/maxwfsresults_20241217_fix.rds")
 lsm <- read.csv("data/lsm_reduced.csv") %>% 
@@ -34,7 +35,7 @@ I selected a subset of variables that aren't strongly correlated and that repres
 ```{r correlation, echo = FALSE}
 
 pairs.panels(wfs_lsm %>% 
-               select(ntr_pland, prn_agr_pland, aglu_iji,
+               select(ann_agr_pland, prn_agr_pland, aglu_iji,
                       lu_shdi, aglu_frac_mn, margin_dens), 
              cex.cor = 1, cex.labels=1, cex=0.5)
 
@@ -47,8 +48,8 @@ pairs.panels(wfs_lsm %>%
 ```{r pollinator_delta}
 
 pol.dmod0 <- lm(delta_pollinators ~ margin_dens, data = scaled.data)
-pol.dmod1 <- lm(delta_pollinators ~ ntr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
-pol.dmod2 <- lm(delta_pollinators ~ ntr_pland + I(ntr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+pol.dmod1 <- lm(delta_pollinators ~ ann_agr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+pol.dmod2 <- lm(delta_pollinators ~ ann_agr_pland + I(ann_agr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
 
 performance::compare_performance(pol.dmod0, pol.dmod1, pol.dmod2)
 
@@ -56,83 +57,9 @@ summary(pol.dmod2)
 
 ```
 
-## Seasonal water yield
-
-### Seasonal water yield delta
-
-```{r swy_delta}
-
-swy.dmod0 <- lm(delta_qb ~ margin_dens, data = scaled.data)
-swy.dmod1 <- lm(delta_qb ~ ntr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
-swy.dmod2 <- lm(delta_qb ~ ntr_pland + I(ntr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
-
-performance::compare_performance(swy.dmod0, swy.dmod1, swy.dmod2)
-
-summary(swy.dmod2)
-
-```
-
-## Nutrient delivery ratio
-
-### Nutrient delivery ratio delta
-
-```{r ndr_delta}
-
-ndr.dmod0 <- lm(delta_n_export ~ margin_dens, data = scaled.data)
-ndr.dmod1 <- lm(delta_n_export ~ ntr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
-ndr.dmod2 <- lm(delta_n_export ~ ntr_pland + I(ntr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
-
-performance::compare_performance(ndr.dmod0, ndr.dmod1, ndr.dmod2)
-
-summary(ndr.dmod2)
-
-```
-
-## Sediment delivery ratio
-
-### Sediment delivery ratio delta
-
-```{r sdr_delta}
-
-sdr.dmod0 <- lm(delta_sed ~ margin_dens, data = scaled.data)
-sdr.dmod1 <- lm(delta_sed ~ ntr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
-sdr.dmod2 <- lm(delta_sed ~ ntr_pland + I(ntr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
-
-performance::compare_performance(sdr.dmod0, sdr.dmod1, sdr.dmod2)
-
-summary(sdr.dmod2)
-
-```
-
-## Plotting
-
-```{r plot_function, echo = FALSE}
-
-plot_fun <- function(mod, pred.vars, mod.data, color_by = "margin_dens"){
-  predict.list <- lapply(pred.vars,\(x){ggeffects::ggpredict(pol.dmod2, x)})
-  names(predict.list) <- pred.vars
-  
-  pred.trends <- dplyr::bind_rows(predict.list, .id = "pred.var") %>%
-    dplyr::rename_with(~as.character(mod$terms[[2]]), predicted)
-  
-  pred.data <- mod.data %>%
-    select(all_of(c(as.character(mod$terms[[2]]), pred.vars))) %>%
-    mutate(color_by = get(color_by)) %>%
-    pivot_longer(all_of(pred.vars), names_to = "pred.var", values_to = "x") %>%
-    rename(!!color_by := color_by)
-  
-  list(pred.trends, pred.data)
-}
-
-
-```
-
-### Pollinators
-
 ```{r pollinator_plots, echo = FALSE}
-library(egg)
 
-pol.vars <- c("margin_dens", "ntr_pland", "aglu_frac_mn")
+pol.vars <- c("margin_dens", "ann_agr_pland", "aglu_frac_mn", "aglu_iji","prn_agr_pland")
 
 pol.preds <- plot_fun(pol.dmod2, pol.vars, scaled.data)
 
@@ -143,15 +70,29 @@ ggplot(pol.preds[[1]], aes(x, delta_pollinators)) +
              size = 0.6) + scale_color_continuous(type = "viridis") +
   facet_wrap(~pred.var, scales = "free_x") +
   xlab("z-score") +
-  theme_article()
+  egg::theme_article()
 
 ```
 
-### Seasonal water yield
+## Seasonal water yield
+
+### Seasonal water yield delta
+
+```{r swy_delta}
+
+swy.dmod0 <- lm(delta_qb ~ margin_dens, data = scaled.data)
+swy.dmod1 <- lm(delta_qb ~ ann_agr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+swy.dmod2 <- lm(delta_qb ~ ann_agr_pland + I(ann_agr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+
+performance::compare_performance(swy.dmod0, swy.dmod1, swy.dmod2)
+
+summary(swy.dmod2)
+
+```
 
 ```{r swy_plots, echo = FALSE}
 
-swy.vars <- c("margin_dens", "ntr_pland", "prn_agr_pland")
+swy.vars <- c("margin_dens", "ann_agr_pland", "prn_agr_pland", "aglu_iji", "aglu_frac_mn")
 
 swy.preds <- plot_fun(swy.dmod2, swy.vars, scaled.data)
 
@@ -162,15 +103,29 @@ ggplot(swy.preds[[1]], aes(x, delta_qb)) +
              size = 0.6) + scale_color_continuous(type = "viridis") +
   facet_wrap(~pred.var, scales = "free_x") +
   xlab("z-score") +
-  theme_article()
+  egg::theme_article()
 
 ```
 
-### Nutrient delivery ratio
+## Nutrient delivery ratio
+
+### Nutrient delivery ratio delta
+
+```{r ndr_delta}
+
+ndr.dmod0 <- lm(delta_n_export ~ margin_dens, data = scaled.data)
+ndr.dmod1 <- lm(delta_n_export ~ ann_agr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+ndr.dmod2 <- lm(delta_n_export ~ ann_agr_pland + I(ann_agr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+
+performance::compare_performance(ndr.dmod0, ndr.dmod1, ndr.dmod2)
+
+summary(ndr.dmod2)
+
+```
 
 ```{r ndr_plots, echo = FALSE}
 
-ndr.vars <- c("margin_dens", "ntr_pland", "prn_agr_pland", 
+ndr.vars <- c("margin_dens", "ann_agr_pland", "prn_agr_pland", 
               "aglu_iji", "aglu_frac_mn", "lu_shdi")
 
 ndr.preds <- plot_fun(ndr.dmod2, ndr.vars, scaled.data)
@@ -182,15 +137,30 @@ ggplot(ndr.preds[[1]], aes(x, delta_n_export)) +
              size = 0.6) + scale_color_continuous(type = "viridis") +
   facet_wrap(~pred.var, scales = "free_x") +
   xlab("z-score") +
-  theme_article()
+  egg::theme_article()
 
 ```
 
-### Sediment delivery ratio
+
+## Sediment delivery ratio
+
+### Sediment delivery ratio delta
+
+```{r sdr_delta}
+
+sdr.dmod0 <- lm(delta_sed ~ margin_dens, data = scaled.data)
+sdr.dmod1 <- lm(delta_sed ~ ann_agr_pland + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+sdr.dmod2 <- lm(delta_sed ~ ann_agr_pland + I(ann_agr_pland^2) + aglu_iji + prn_agr_pland + aglu_frac_mn + margin_dens + lu_shdi, data = scaled.data)
+
+performance::compare_performance(sdr.dmod0, sdr.dmod1, sdr.dmod2)
+
+summary(sdr.dmod2)
+
+```
 
 ```{r sdr_plots, echo = FALSE}
 
-sdr.vars <- c("margin_dens", "ntr_pland", "prn_agr_pland", "lu_shdi")
+sdr.vars <- c("margin_dens", "ann_agr_pland", "prn_agr_pland", "lu_shdi")
 
 sdr.preds <- plot_fun(sdr.dmod2, sdr.vars, scaled.data)
 
@@ -201,7 +171,7 @@ ggplot(sdr.preds[[1]], aes(x, delta_sed)) +
              size = 0.6) + scale_color_continuous(type = "viridis") +
   facet_wrap(~pred.var, scales = "free_x") +
   xlab("z-score") +
-  theme_article()
+  egg::theme_article()
 
 ```
 
@@ -209,28 +179,114 @@ ggplot(sdr.preds[[1]], aes(x, delta_sed)) +
 
 Since margin density is a major effect, I regress the other predictors against the residuals of univariate models with only margin density
 
+### Pollinator model residuals
+
 ```{r pollinators_resid, echo = FALSE}
 
 pol.resid <- data.frame(pol_resid = pol.dmod0$residuals, 
                         scaled.data %>% 
-                          select(ntr_pland, prn_agr_pland, aglu_iji, 
+                          select(ann_agr_pland, prn_agr_pland, aglu_iji, 
                                  aglu_frac_mn, lu_shdi))
 
-pol.resid.mod <- lm(pol_resid ~ ntr_pland + I(ntr_pland^2) + prn_agr_pland + aglu_iji + aglu_frac_mn + lu_shdi, data = pol.resid)
+pol.resid.mod <- lm(pol_resid ~ ann_agr_pland + I(ann_agr_pland^2) + prn_agr_pland + aglu_iji + aglu_frac_mn + lu_shdi, data = pol.resid)
 
 summary(pol.resid.mod)
 
-pol.resid.vars <- c("ntr_pland", "prn_agr_pland", "aglu_frac_mn")
+pol.resid.vars <- c("ann_agr_pland", "prn_agr_pland", "aglu_frac_mn", "aglu_iji", "lu_shdi")
 
-pol.resid.preds <- plot_fun(pol.resid.mod, pol.resid.vars, pol.resid, "ntr_pland")
+pol.resid.preds <- plot_fun(pol.resid.mod, pol.resid.vars, pol.resid, "ann_agr_pland")
 
 ggplot(pol.resid.preds[[1]], aes(x, pol_resid)) +  
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
   geom_point(data = pol.resid.preds[[2]], 
-             mapping = aes(color = ntr_pland), 
+             mapping = aes(color = ann_agr_pland), 
              size = 0.6) + scale_color_continuous(type = "viridis") +
   facet_wrap(~pred.var, scales = "free_x") +
   xlab("z-score") +
-  theme_article()
+  egg::theme_article()
+
+```
+
+### Seasonal water yield residuals model
+
+```{r swy_resid, echo = FALSE}
+
+swy.resid <- data.frame(swy_resid = swy.dmod0$residuals, 
+                        scaled.data %>% 
+                          select(ann_agr_pland, prn_agr_pland, aglu_iji, 
+                                 aglu_frac_mn, lu_shdi))
+
+swy.resid.mod <- lm(swy_resid ~ ann_agr_pland + I(ann_agr_pland^2) + prn_agr_pland + aglu_iji + aglu_frac_mn + lu_shdi, data = swy.resid)
+
+summary(swy.resid.mod)
+
+swy.resid.vars <- c("ann_agr_pland", "prn_agr_pland", "aglu_frac_mn", "aglu_iji", "lu_shdi")
+
+swy.resid.preds <- plot_fun(swy.resid.mod, swy.resid.vars, swy.resid, "ann_agr_pland")
+
+ggplot(swy.resid.preds[[1]], aes(x, swy_resid)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = swy.resid.preds[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  xlab("z-score") +
+  egg::theme_article()
+
+```
+
+### Nutrient delivery residuals model
+
+```{r ndr_resid, echo = FALSE}
+
+ndr.resid <- data.frame(ndr_resid = ndr.dmod0$residuals, 
+                        scaled.data %>% 
+                          select(ann_agr_pland, prn_agr_pland, aglu_iji, 
+                                 aglu_frac_mn, lu_shdi))
+
+ndr.resid.mod <- lm(ndr_resid ~ ann_agr_pland + I(ann_agr_pland^2) + prn_agr_pland + aglu_iji + aglu_frac_mn + lu_shdi, data = ndr.resid)
+
+summary(ndr.resid.mod)
+
+ndr.resid.vars <- c("ann_agr_pland", "prn_agr_pland", "aglu_frac_mn", "aglu_iji", "lu_shdi")
+
+ndr.resid.preds <- plot_fun(ndr.resid.mod, ndr.resid.vars, ndr.resid, "ann_agr_pland")
+
+ggplot(ndr.resid.preds[[1]], aes(x, ndr_resid)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = ndr.resid.preds[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  xlab("z-score") +
+  egg::theme_article()
+
+```
+
+### Sediment delivery residuals model
+
+```{r sdr_resid, echo = FALSE}
+
+sdr.resid <- data.frame(sdr_resid = sdr.dmod0$residuals, 
+                        scaled.data %>% 
+                          select(ann_agr_pland, prn_agr_pland, aglu_iji, 
+                                 aglu_frac_mn, lu_shdi))
+
+sdr.resid.mod <- lm(sdr_resid ~ ann_agr_pland + I(ann_agr_pland^2) + prn_agr_pland + aglu_iji + aglu_frac_mn + lu_shdi, data = sdr.resid)
+
+summary(sdr.resid.mod)
+
+sdr.resid.vars <- c("ann_agr_pland", "prn_agr_pland", "aglu_frac_mn", "aglu_iji", "lu_shdi")
+
+sdr.resid.preds <- plot_fun(sdr.resid.mod, sdr.resid.vars, sdr.resid, "ann_agr_pland")
+
+ggplot(sdr.resid.preds[[1]], aes(x, sdr_resid)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = sdr.resid.preds[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  xlab("z-score") +
+  egg::theme_article()
 
 ```

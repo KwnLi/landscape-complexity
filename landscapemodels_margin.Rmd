@@ -1,0 +1,192 @@
+---
+title: "R Notebook"
+---
+
+
+```{r setup, echo = FALSE}
+library(tidyverse)
+library(performance)
+library(psych)
+library(mgcv)
+library(ggeffects)
+library(piecewiseSEM)
+source("R/utils-plot.r")
+
+wfs <- readRDS("data/maxwfsresults_20241217_fix.rds")
+lsm <- read.csv("data/lsm_reduced.csv") %>% 
+  mutate(hu = gsub("hu", "", hu))
+
+wfs_lsm <- wfs %>% left_join(lsm, by = "hu") %>%
+  select(c(hu, huc2, name, margin.ha, lu_ta,
+           pollinators_base:sed_export_base, 
+           pollinators_max:sed_export_max, 
+           delta_pollinators:delta_sed, 
+           fields_max, field.ha, margin.ha, 
+           lu_shdi:ntr_frac_mn)) %>%
+  mutate(prn_ann_ratio = log(prn_agr_pland/ann_agr_pland),
+         prn_pagr = 100*(prn_agr_pland/(ann_agr_pland+prn_agr_pland)),
+         field_pland = field.ha/lu_ta,
+         margin_dens = margin.ha/lu_ta,
+         delta_pollinators.margin = delta_pollinators/margin.ha,
+         delta_qb.margin = delta_qb/margin.ha,
+         delta_n_export.margin = delta_n_export/margin.ha,
+         delta_sed.margin = delta_sed/margin.ha)
+
+scaled.data <- wfs_lsm %>% mutate(across(lu_shdi:field_pland, ~scale(.x)[,1]))
+
+```
+
+## Correlation between independent variables.
+
+I selected a subset of variables that aren't strongly correlated and that represent potential drivers of ecosystem service patterns.
+
+```{r correlation, echo = FALSE}
+
+pairs.panels(wfs_lsm %>% 
+               select(ann_agr_pland, prn_agr_pland, aglu_iji,
+                      lu_shdi, aglu_frac_mn, margin_dens), 
+             cex.cor = 1, cex.labels=1, cex=0.5, method = "pearson")
+
+```
+
+## Pollinator models
+
+### Pollinator delta
+
+```{r pollinator_delta}
+
+pol.lm0 <- gam(delta_pollinators.margin ~ margin_dens, data = wfs_lsm)
+
+summary(pol.lm0)
+
+pol.gam1 <- gam(delta_pollinators.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+                data = wfs_lsm)
+
+performance::compare_performance(pol.lm0,pol.gam1)
+
+summary(pol.gam1)
+
+concurvity(pol.gam1)
+
+```
+
+```{r plot_pol}
+
+polplot.df <- plot_fun(pol.gam1, 
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi"),
+                       wfs_lsm, "ann_agr_pland")
+
+ggplot(polplot.df[[1]], aes(x, delta_pollinators.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = polplot.df[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+### Seasonal water yield delta
+
+```{r swy_delta}
+
+swy.lm0 <- gam(delta_qb.margin ~ margin_dens, data = wfs_lsm)
+
+summary(swy.lm0)
+
+swy.gam1 <- gam(delta_qb.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+                data = wfs_lsm)
+
+performance::compare_performance(swy.lm0,swy.gam1)
+
+summary(swy.gam1)
+
+concurvity(swy.gam1)
+
+```
+
+```{r plot_swy}
+
+swyplot.df <- plot_fun(swy.gam1, 
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi"),
+                       wfs_lsm, "ann_agr_pland")
+
+ggplot(swyplot.df[[1]], aes(x, delta_qb.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = swyplot.df[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+### Nutrient delivery delta
+
+```{r ndr_delta}
+
+ndr.lm0 <- gam(delta_n_export.margin ~ margin_dens, data = wfs_lsm)
+
+summary(ndr.lm0)
+
+ndr.gam1 <- gam(delta_n_export.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+                data = wfs_lsm)
+
+performance::compare_performance(ndr.lm0,ndr.gam1)
+
+summary(ndr.gam1)
+
+concurvity(ndr.gam1)
+
+```
+
+```{r plot_ndr}
+
+ndrplot.df <- plot_fun(ndr.gam1, 
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi"),
+                       wfs_lsm, "ann_agr_pland")
+
+ggplot(ndrplot.df[[1]], aes(x, delta_n_export.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = ndrplot.df[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+### Sediment delivery ratio delta
+
+```{r sdr_delta}
+
+sdr.lm0 <- gam(delta_sed.margin ~ margin_dens, data = wfs_lsm)
+
+summary(sdr.lm0)
+
+sdr.gam1 <- gam(delta_sed.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+                data = wfs_lsm)
+
+performance::compare_performance(sdr.lm0,sdr.gam1)
+
+summary(sdr.gam1)
+
+concurvity(sdr.gam1)
+
+```
+
+```{r plot_sdr}
+
+sdrplot.df <- plot_fun(sdr.gam1, 
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi"),
+                       wfs_lsm, "ann_agr_pland")
+
+ggplot(sdrplot.df[[1]], aes(x, delta_sed.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = sdrplot.df[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
