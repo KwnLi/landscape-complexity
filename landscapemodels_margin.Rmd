@@ -37,7 +37,16 @@ scaled.data <- wfs_lsm %>% mutate(across(lu_shdi:field_pland, ~scale(.x)[,1]))
 
 ## Normalize ecosystem service results by margin
 
-Change in ecosystem service is normalized by hectares of margin added so that the dependent variable is unit ES per area margin instead of per area watershed
+Change in ecosystem service is normalized by hectares of margin added so that the dependent variable is unit ES per area margin instead of per area watershed. I added total watershed area into the full models just to see if there is any association.
+
+```{r correlation, echo = FALSE}
+
+pairs.panels(wfs_lsm %>% 
+               select(ann_agr_pland, prn_agr_pland, aglu_iji,
+                      lu_shdi, aglu_frac_mn, lu_ta), 
+             cex.cor = 1, cex.labels=1, cex=0.5, method = "pearson")
+
+```
 
 ## Pollinator models
 
