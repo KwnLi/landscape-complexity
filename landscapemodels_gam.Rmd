@@ -69,7 +69,7 @@ concurvity(pol.gam1)
 ```{r plot_pol}
 
 polplot.df <- plot_fun(pol.gam1, 
-                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "margin_dens"),
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "margin_dens", "lu_shdi"),
                        wfs_lsm)
 
 ggplot(polplot.df[[1]], aes(x, delta_pollinators)) +  
@@ -118,7 +118,7 @@ concurvity(polresid.gam1)
 ```{r plot_pol_resid}
 
 residpolplot.df <- plot_fun(polresid.gam1, 
-                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn"),
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi"),
                        wfs_lsm_resids,
                        "ann_agr_pland")
 
@@ -157,7 +157,7 @@ concurvity(swy.gam1)
 ```{r plot_swy}
 
 swyplot.df <- plot_fun(swy.gam1, 
-                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "margin_dens"),
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "margin_dens", "lu_shdi"),
                        wfs_lsm)
 
 ggplot(swyplot.df[[1]], aes(x, delta_qb)) +  
@@ -206,7 +206,7 @@ concurvity(swyresid.gam1)
 ```{r plot_swy_resid}
 
 residswyplot.df <- plot_fun(swyresid.gam1, 
-                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn"),
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi"),
                        wfs_lsm_resids,
                        "ann_agr_pland")
 
@@ -294,7 +294,7 @@ concurvity(ndrresid.gam1)
 ```{r plot_ndr_resid}
 
 residndrplot.df <- plot_fun(ndrresid.gam1, 
-                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi"),
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn","lu_shdi"),
                        wfs_lsm_resids,
                        "ann_agr_pland")
 
@@ -333,7 +333,7 @@ concurvity(sdr.gam1)
 ```{r plot_sdr}
 
 sdrplot.df <- plot_fun(sdr.gam1, 
-                       c("ann_agr_pland", "prn_agr_pland", "margin_dens"),
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "margin_dens", "lu_shdi"),
                        wfs_lsm)
 
 ggplot(sdrplot.df[[1]], aes(x, delta_sed)) +  
@@ -382,7 +382,7 @@ concurvity(sdrresid.gam1)
 ```{r plot_sdr_resid}
 
 residsdrplot.df <- plot_fun(sdrresid.gam1, 
-                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn"),
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi"),
                        wfs_lsm_resids,
                        "ann_agr_pland")
 

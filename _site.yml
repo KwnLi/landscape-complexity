@@ -7,7 +7,5 @@ navbar:
       href: landscapemodels.html
     - text: "GAM models"
       href: landscapemodels_gam.html
-    - text: "GAM models with log-tranformed DV (pollinator results only)"
-      href: landscapemodels_logtrans.html
     - text: "GAM models with DV normalized by margin area"
       href: landscapemodels_margin.html

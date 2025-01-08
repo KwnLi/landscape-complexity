@@ -249,9 +249,6 @@ $(document).ready(function () {
   <a href="landscapemodels_gam.html">GAM models</a>
 </li>
 <li>
-  <a href="landscapemodels_logtrans.html">GAM models with log-tranformed DV (pollinator results only)</a>
-</li>
-<li>
   <a href="landscapemodels_margin.html">GAM models with DV normalized by margin area</a>
 </li>
       </ul>
@@ -346,7 +343,7 @@ performance::compare_performance(pol.lm0, pol.gam0, pol.gam1)</code></pre>
 ## observed      0.7031618  0.3688366
 ## estimate      0.5937077  0.5673864</code></pre>
 <pre class="r"><code>polplot.df &lt;- plot_fun(pol.gam1, 
-                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;margin_dens&quot;),
+                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;margin_dens&quot;, &quot;lu_shdi&quot;),
                        wfs_lsm)
 
 ggplot(polplot.df[[1]], aes(x, delta_pollinators)) +  
@@ -413,7 +410,7 @@ summary(polresid.gam1)</code></pre>
 ## observed  0.5370711
 ## estimate  0.4488346</code></pre>
 <pre class="r"><code>residpolplot.df &lt;- plot_fun(polresid.gam1, 
-                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;),
+                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;lu_shdi&quot;),
                        wfs_lsm_resids,
                        &quot;ann_agr_pland&quot;)
 
@@ -494,7 +491,7 @@ performance::compare_performance(swy.lm0, swy.gam0, swy.gam1)</code></pre>
 ## observed      0.6517873  0.2859374
 ## estimate      0.5937077  0.5673864</code></pre>
 <pre class="r"><code>swyplot.df &lt;- plot_fun(swy.gam1, 
-                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;margin_dens&quot;),
+                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;margin_dens&quot;, &quot;lu_shdi&quot;),
                        wfs_lsm)
 
 ggplot(swyplot.df[[1]], aes(x, delta_qb)) +  
@@ -561,7 +558,7 @@ summary(swyresid.gam1)</code></pre>
 ## observed  0.3538844
 ## estimate  0.4488346</code></pre>
 <pre class="r"><code>residswyplot.df &lt;- plot_fun(swyresid.gam1, 
-                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;),
+                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;lu_shdi&quot;),
                        wfs_lsm_resids,
                        &quot;ann_agr_pland&quot;)
 
@@ -709,7 +706,7 @@ summary(ndrresid.gam1)</code></pre>
 ## observed  0.5918965
 ## estimate  0.4488346</code></pre>
 <pre class="r"><code>residndrplot.df &lt;- plot_fun(ndrresid.gam1, 
-                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;lu_shdi&quot;),
+                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;,&quot;lu_shdi&quot;),
                        wfs_lsm_resids,
                        &quot;ann_agr_pland&quot;)
 
@@ -790,7 +787,7 @@ performance::compare_performance(sdr.lm0, sdr.gam0, sdr.gam1)</code></pre>
 ## observed      0.6134113  0.6451757
 ## estimate      0.5937077  0.5673864</code></pre>
 <pre class="r"><code>sdrplot.df &lt;- plot_fun(sdr.gam1, 
-                       c(&quot;ann_agr_pland&quot;, &quot;prn_agr_pland&quot;, &quot;margin_dens&quot;),
+                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;margin_dens&quot;, &quot;lu_shdi&quot;),
                        wfs_lsm)
 
 ggplot(sdrplot.df[[1]], aes(x, delta_sed)) +  
@@ -857,7 +854,7 @@ summary(sdrresid.gam1)</code></pre>
 ## observed  0.5292681
 ## estimate  0.4488346</code></pre>
 <pre class="r"><code>residsdrplot.df &lt;- plot_fun(sdrresid.gam1, 
-                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;),
+                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;lu_shdi&quot;),
                        wfs_lsm_resids,
                        &quot;ann_agr_pland&quot;)
 

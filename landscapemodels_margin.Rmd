@@ -2,7 +2,6 @@
 title: "R Notebook"
 ---
 
-
 ```{r setup, echo = FALSE}
 library(tidyverse)
 library(performance)
@@ -27,27 +26,18 @@ wfs_lsm <- wfs %>% left_join(lsm, by = "hu") %>%
          prn_pagr = 100*(prn_agr_pland/(ann_agr_pland+prn_agr_pland)),
          field_pland = field.ha/lu_ta,
          margin_dens = margin.ha/lu_ta,
-         delta_pollinators.margin = delta_pollinators/margin.ha,
-         delta_qb.margin = delta_qb/margin.ha,
-         delta_n_export.margin = delta_n_export/margin.ha,
-         delta_sed.margin = delta_sed/margin.ha)
+         delta_pollinators.margin = delta_pollinators/margin_dens,
+         delta_qb.margin = delta_qb/margin_dens,
+         delta_n_export.margin = delta_n_export/margin_dens,
+         delta_sed.margin = delta_sed/margin_dens)
 
 scaled.data <- wfs_lsm %>% mutate(across(lu_shdi:field_pland, ~scale(.x)[,1]))
 
 ```
 
-## Correlation between independent variables.
+## Normalize ecosystem service results by margin
 
-I selected a subset of variables that aren't strongly correlated and that represent potential drivers of ecosystem service patterns.
-
-```{r correlation, echo = FALSE}
-
-pairs.panels(wfs_lsm %>% 
-               select(ann_agr_pland, prn_agr_pland, aglu_iji,
-                      lu_shdi, aglu_frac_mn, margin_dens), 
-             cex.cor = 1, cex.labels=1, cex=0.5, method = "pearson")
-
-```
+Change in ecosystem service is normalized by hectares of margin added so that the dependent variable is unit ES per area margin instead of per area watershed
 
 ## Pollinator models
 
@@ -59,7 +49,7 @@ pol.lm0 <- gam(delta_pollinators.margin ~ margin_dens, data = wfs_lsm)
 
 summary(pol.lm0)
 
-pol.gam1 <- gam(delta_pollinators.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+pol.gam1 <- gam(delta_pollinators.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi) + s(lu_ta), 
                 data = wfs_lsm)
 
 performance::compare_performance(pol.lm0,pol.gam1)
@@ -73,7 +63,7 @@ concurvity(pol.gam1)
 ```{r plot_pol}
 
 polplot.df <- plot_fun(pol.gam1, 
-                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi"),
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi", "lu_ta"),
                        wfs_lsm, "ann_agr_pland")
 
 ggplot(polplot.df[[1]], aes(x, delta_pollinators.margin)) +  
@@ -94,7 +84,7 @@ swy.lm0 <- gam(delta_qb.margin ~ margin_dens, data = wfs_lsm)
 
 summary(swy.lm0)
 
-swy.gam1 <- gam(delta_qb.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+swy.gam1 <- gam(delta_qb.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi) + s(lu_ta), 
                 data = wfs_lsm)
 
 performance::compare_performance(swy.lm0,swy.gam1)
@@ -108,7 +98,7 @@ concurvity(swy.gam1)
 ```{r plot_swy}
 
 swyplot.df <- plot_fun(swy.gam1, 
-                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi"),
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi", "lu_ta"),
                        wfs_lsm, "ann_agr_pland")
 
 ggplot(swyplot.df[[1]], aes(x, delta_qb.margin)) +  
@@ -129,7 +119,7 @@ ndr.lm0 <- gam(delta_n_export.margin ~ margin_dens, data = wfs_lsm)
 
 summary(ndr.lm0)
 
-ndr.gam1 <- gam(delta_n_export.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+ndr.gam1 <- gam(delta_n_export.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi) + s(lu_ta), 
                 data = wfs_lsm)
 
 performance::compare_performance(ndr.lm0,ndr.gam1)
@@ -143,7 +133,7 @@ concurvity(ndr.gam1)
 ```{r plot_ndr}
 
 ndrplot.df <- plot_fun(ndr.gam1, 
-                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi"),
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi", "lu_ta"),
                        wfs_lsm, "ann_agr_pland")
 
 ggplot(ndrplot.df[[1]], aes(x, delta_n_export.margin)) +  
@@ -164,7 +154,7 @@ sdr.lm0 <- gam(delta_sed.margin ~ margin_dens, data = wfs_lsm)
 
 summary(sdr.lm0)
 
-sdr.gam1 <- gam(delta_sed.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+sdr.gam1 <- gam(delta_sed.margin ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi) + s(lu_ta), 
                 data = wfs_lsm)
 
 performance::compare_performance(sdr.lm0,sdr.gam1)
@@ -178,7 +168,7 @@ concurvity(sdr.gam1)
 ```{r plot_sdr}
 
 sdrplot.df <- plot_fun(sdr.gam1, 
-                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi"),
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi", "lu_ta"),
                        wfs_lsm, "ann_agr_pland")
 
 ggplot(sdrplot.df[[1]], aes(x, delta_sed.margin)) +  
