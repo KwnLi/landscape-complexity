@@ -586,7 +586,7 @@ concurvity(dpol.all.gam, full = TRUE)
 Partial effects plots and partial residuals
 
 ```{r part_plot_all, echo=FALSE}
-library(rgl)
+# library(rgl)
 
 dpol.all.viz <- getViz(dpol.all.gam)
 
@@ -596,5 +596,8 @@ dpol.all.vizplot <- plot(dpol.all.viz, allTerms = T) + l_points() + l_fitLine(li
 print(dpol.all.vizplot, pages = 1)
 
 
-plotRGL(sm(dpol.all.viz, 1), fix = c("z" = 0), residuals = TRUE)
+# plotRGL(sm(dpol.all.viz, 1), fix = c("z" = 0), residuals = TRUE)
+
+vis.gam(dpol.all.gam)
+
 ```
