@@ -3,9 +3,11 @@ output_dir: docs
 navbar:
   title: "Landscape Complexity Results"
   left:
-    - text: "Linear models"
+    - text: "Linear"
       href: landscapemodels.html
-    - text: "GAM models"
+    - text: "GAM"
       href: landscapemodels_gam.html
-    - text: "GAM models with DV normalized by margin area"
+    - text: "GAM + norm. margin"
       href: landscapemodels_margin.html
+    - text: "GAM + norm. margin + landscape groups"
+      href: landscapemodels_groups.html

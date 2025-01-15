@@ -243,13 +243,16 @@ $(document).ready(function () {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="landscapemodels.html">Linear models</a>
+  <a href="landscapemodels.html">Linear</a>
 </li>
 <li>
-  <a href="landscapemodels_gam.html">GAM models</a>
+  <a href="landscapemodels_gam.html">GAM</a>
 </li>
 <li>
-  <a href="landscapemodels_margin.html">GAM models with DV normalized by margin area</a>
+  <a href="landscapemodels_margin.html">GAM + norm. margin</a>
+</li>
+<li>
+  <a href="landscapemodels_groups.html">GAM + norm. margin + landscape groups</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -334,14 +337,14 @@ performance::compare_performance(pol.lm0, pol.gam0, pol.gam1)</code></pre>
 ## R-sq.(adj) =  0.967   Deviance explained = 96.9%
 ## GCV = 0.00027889  Scale est. = 0.00026294  n = 437</code></pre>
 <pre class="r"><code>concurvity(pol.gam1)</code></pre>
-<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
-## worst    5.890479e-25        0.8912197   0.6995208        0.7829295       0.6886298
-## observed 5.890479e-25        0.7571865   0.6595381        0.6038392       0.6132159
-## estimate 5.890479e-25        0.8110309   0.5771170        0.5064119       0.4851594
-##          s(margin_dens) s(lu_shdi)
-## worst         0.8374435  0.7308447
-## observed      0.7031618  0.3688366
-## estimate      0.5937077  0.5673864</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn) s(margin_dens)
+## worst    5.890479e-25        0.8912197   0.6995208        0.7829295       0.6886298      0.8374435
+## observed 5.890479e-25        0.7571865   0.6595381        0.6038392       0.6132159      0.7031618
+## estimate 5.890479e-25        0.8110309   0.5771170        0.5064119       0.4851594      0.5937077
+##          s(lu_shdi)
+## worst     0.7308447
+## observed  0.3688366
+## estimate  0.5673864</code></pre>
 <pre class="r"><code>polplot.df &lt;- plot_fun(pol.gam1, 
                        c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;margin_dens&quot;, &quot;lu_shdi&quot;),
                        wfs_lsm)
@@ -401,14 +404,10 @@ summary(polresid.gam1)</code></pre>
 ## R-sq.(adj) =  0.713   Deviance explained = 72.3%
 ## GCV = 0.00030405  Scale est. = 0.00029291  n = 437</code></pre>
 <pre class="r"><code>concurvity(polresid.gam1)</code></pre>
-<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
-## worst    5.223854e-25        0.7896108   0.6818488        0.7524929       0.6555056
-## observed 5.223854e-25        0.6779358   0.6428548        0.5343504       0.6058873
-## estimate 5.223854e-25        0.7235572   0.5471598        0.4679625       0.4491356
-##          s(lu_shdi)
-## worst     0.6444388
-## observed  0.5370711
-## estimate  0.4488346</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn) s(lu_shdi)
+## worst    5.223854e-25        0.7896108   0.6818488        0.7524929       0.6555056  0.6444388
+## observed 5.223854e-25        0.6779358   0.6428548        0.5343504       0.6058873  0.5370711
+## estimate 5.223854e-25        0.7235572   0.5471598        0.4679625       0.4491356  0.4488346</code></pre>
 <pre class="r"><code>residpolplot.df &lt;- plot_fun(polresid.gam1, 
                        c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;lu_shdi&quot;),
                        wfs_lsm_resids,
@@ -482,14 +481,14 @@ performance::compare_performance(swy.lm0, swy.gam0, swy.gam1)</code></pre>
 ## R-sq.(adj) =  0.443   Deviance explained = 47.2%
 ## GCV = 0.059289  Scale est. = 0.056035  n = 437</code></pre>
 <pre class="r"><code>concurvity(swy.gam1)</code></pre>
-<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
-## worst    5.890479e-25        0.8912197   0.6995208        0.7829295       0.6886298
-## observed 5.890479e-25        0.8235040   0.6606717        0.7665976       0.6116032
-## estimate 5.890479e-25        0.8110309   0.5771170        0.5064119       0.4851594
-##          s(margin_dens) s(lu_shdi)
-## worst         0.8374435  0.7308447
-## observed      0.6517873  0.2859374
-## estimate      0.5937077  0.5673864</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn) s(margin_dens)
+## worst    5.890479e-25        0.8912197   0.6995208        0.7829295       0.6886298      0.8374435
+## observed 5.890479e-25        0.8235040   0.6606717        0.7665976       0.6116032      0.6517873
+## estimate 5.890479e-25        0.8110309   0.5771170        0.5064119       0.4851594      0.5937077
+##          s(lu_shdi)
+## worst     0.7308447
+## observed  0.2859374
+## estimate  0.5673864</code></pre>
 <pre class="r"><code>swyplot.df &lt;- plot_fun(swy.gam1, 
                        c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;margin_dens&quot;, &quot;lu_shdi&quot;),
                        wfs_lsm)
@@ -549,14 +548,10 @@ summary(swyresid.gam1)</code></pre>
 ## R-sq.(adj) =  0.166   Deviance explained =   20%
 ## GCV = 0.059483  Scale est. = 0.056951  n = 437</code></pre>
 <pre class="r"><code>concurvity(swyresid.gam1)</code></pre>
-<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
-## worst    5.223854e-25        0.7896108   0.6818488        0.7524929       0.6555056
-## observed 5.223854e-25        0.6743896   0.6317698        0.7281318       0.5896608
-## estimate 5.223854e-25        0.7235572   0.5471598        0.4679625       0.4491356
-##          s(lu_shdi)
-## worst     0.6444388
-## observed  0.3538844
-## estimate  0.4488346</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn) s(lu_shdi)
+## worst    5.223854e-25        0.7896108   0.6818488        0.7524929       0.6555056  0.6444388
+## observed 5.223854e-25        0.6743896   0.6317698        0.7281318       0.5896608  0.3538844
+## estimate 5.223854e-25        0.7235572   0.5471598        0.4679625       0.4491356  0.4488346</code></pre>
 <pre class="r"><code>residswyplot.df &lt;- plot_fun(swyresid.gam1, 
                        c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;lu_shdi&quot;),
                        wfs_lsm_resids,
@@ -630,14 +625,14 @@ performance::compare_performance(ndr.lm0, ndr.gam0, ndr.gam1)</code></pre>
 ## R-sq.(adj) =  0.769   Deviance explained = 77.8%
 ## GCV = 0.0084351  Scale est. = 0.0080671  n = 437</code></pre>
 <pre class="r"><code>concurvity(ndr.gam1)</code></pre>
-<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
-## worst    5.890479e-25        0.8912197   0.6995208        0.7829295       0.6886298
-## observed 5.890479e-25        0.8420137   0.6662141        0.7565021       0.5934354
-## estimate 5.890479e-25        0.8110309   0.5771170        0.5064119       0.4851594
-##          s(margin_dens) s(lu_shdi)
-## worst         0.8374435  0.7308447
-## observed      0.5432781  0.7154259
-## estimate      0.5937077  0.5673864</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn) s(margin_dens)
+## worst    5.890479e-25        0.8912197   0.6995208        0.7829295       0.6886298      0.8374435
+## observed 5.890479e-25        0.8420137   0.6662141        0.7565021       0.5934354      0.5432781
+## estimate 5.890479e-25        0.8110309   0.5771170        0.5064119       0.4851594      0.5937077
+##          s(lu_shdi)
+## worst     0.7308447
+## observed  0.7154259
+## estimate  0.5673864</code></pre>
 <pre class="r"><code>ndrplot.df &lt;- plot_fun(ndr.gam1, 
                        c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;margin_dens&quot;, &quot;lu_shdi&quot;),
                        wfs_lsm)
@@ -697,14 +692,10 @@ summary(ndrresid.gam1)</code></pre>
 ## R-sq.(adj) =   0.59   Deviance explained = 60.5%
 ## GCV = 0.0095945  Scale est. = 0.0092223  n = 437</code></pre>
 <pre class="r"><code>concurvity(ndrresid.gam1)</code></pre>
-<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
-## worst    5.223854e-25        0.7896108   0.6818488        0.7524929       0.6555056
-## observed 5.223854e-25        0.7292153   0.5036131        0.6844730       0.5896608
-## estimate 5.223854e-25        0.7235572   0.5471598        0.4679625       0.4491356
-##          s(lu_shdi)
-## worst     0.6444388
-## observed  0.5918965
-## estimate  0.4488346</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn) s(lu_shdi)
+## worst    5.223854e-25        0.7896108   0.6818488        0.7524929       0.6555056  0.6444388
+## observed 5.223854e-25        0.7292153   0.5036131        0.6844730       0.5896608  0.5918965
+## estimate 5.223854e-25        0.7235572   0.5471598        0.4679625       0.4491356  0.4488346</code></pre>
 <pre class="r"><code>residndrplot.df &lt;- plot_fun(ndrresid.gam1, 
                        c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;,&quot;lu_shdi&quot;),
                        wfs_lsm_resids,
@@ -778,14 +769,14 @@ performance::compare_performance(sdr.lm0, sdr.gam0, sdr.gam1)</code></pre>
 ## R-sq.(adj) =  0.395   Deviance explained = 42.7%
 ## GCV = 0.37727  Scale est. = 0.35641   n = 437</code></pre>
 <pre class="r"><code>concurvity(sdr.gam1)</code></pre>
-<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
-## worst    5.890479e-25        0.8912197   0.6995208        0.7829295       0.6886298
-## observed 5.890479e-25        0.6326575   0.5017628        0.4172295       0.2354738
-## estimate 5.890479e-25        0.8110309   0.5771170        0.5064119       0.4851594
-##          s(margin_dens) s(lu_shdi)
-## worst         0.8374435  0.7308447
-## observed      0.6134113  0.6451757
-## estimate      0.5937077  0.5673864</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn) s(margin_dens)
+## worst    5.890479e-25        0.8912197   0.6995208        0.7829295       0.6886298      0.8374435
+## observed 5.890479e-25        0.6326575   0.5017628        0.4172295       0.2354738      0.6134113
+## estimate 5.890479e-25        0.8110309   0.5771170        0.5064119       0.4851594      0.5937077
+##          s(lu_shdi)
+## worst     0.7308447
+## observed  0.6451757
+## estimate  0.5673864</code></pre>
 <pre class="r"><code>sdrplot.df &lt;- plot_fun(sdr.gam1, 
                        c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;margin_dens&quot;, &quot;lu_shdi&quot;),
                        wfs_lsm)
@@ -845,14 +836,10 @@ summary(sdrresid.gam1)</code></pre>
 ## R-sq.(adj) =  0.262   Deviance explained = 29.3%
 ## GCV = 0.37109  Scale est. = 0.35437   n = 437</code></pre>
 <pre class="r"><code>concurvity(sdrresid.gam1)</code></pre>
-<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
-## worst    5.223854e-25        0.7896108   0.6818488        0.7524929       0.6555056
-## observed 5.223854e-25        0.5576897   0.5501282        0.2239870       0.1982746
-## estimate 5.223854e-25        0.7235572   0.5471598        0.4679625       0.4491356
-##          s(lu_shdi)
-## worst     0.6444388
-## observed  0.5292681
-## estimate  0.4488346</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn) s(lu_shdi)
+## worst    5.223854e-25        0.7896108   0.6818488        0.7524929       0.6555056  0.6444388
+## observed 5.223854e-25        0.5576897   0.5501282        0.2239870       0.1982746  0.5292681
+## estimate 5.223854e-25        0.7235572   0.5471598        0.4679625       0.4491356  0.4488346</code></pre>
 <pre class="r"><code>residsdrplot.df &lt;- plot_fun(sdrresid.gam1, 
                        c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;lu_shdi&quot;),
                        wfs_lsm_resids,

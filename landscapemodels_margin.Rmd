@@ -85,6 +85,33 @@ ggplot(polplot.df[[1]], aes(x, delta_pollinators.margin)) +
 
 ```
 
+```{r plot_pol2, include=FALSE}
+
+# Above makes predictions based on population averages for all other variables. Look at predictions with assumed low and high levels of annual agriculture for other variables
+
+# polplot.df_agr5 <- plot_fun(pol.gam1, 
+#                        c("aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi", "lu_ta"),
+#                        wfs_lsm, "ann_agr_pland",
+#                        return_data = FALSE,
+#                        typical = "mean",
+#                        condition = c(ann_agr_pland = 5))
+
+# polplot.df_agr75 <- plot_fun(pol.gam1, 
+#                        c("aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi", "lu_ta"),
+#                        wfs_lsm, "ann_agr_pland",
+#                        typical = "mean",
+#                        condition = c(ann_agr_pland = 75))
+
+# ggplot(polplot.df[[1]], aes(x, delta_pollinators.margin)) +  
+#   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+#   geom_point(data = polplot.df[[2]], 
+#              mapping = aes(color = ann_agr_pland), 
+#              size = 0.6) + scale_color_continuous(type = "viridis") +
+#   facet_wrap(~pred.var, scales = "free_x") +
+#   egg::theme_article()
+
+```
+
 ### Seasonal water yield delta
 
 ```{r swy_delta}
