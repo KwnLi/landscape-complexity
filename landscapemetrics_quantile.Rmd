@@ -1,0 +1,89 @@
+---
+title: "Quantile regression"
+---
+
+Quantile regression looks at relationships at different quantiles of response.
+
+```{r setup, echo = FALSE, message=FALSE}
+library(tidyverse)
+library(qgam)
+library(mgcViz)
+library(ggfortify)
+
+wfs_lsm <- readRDS("data/wfs_lsm.rds")
+
+```
+
+```{r qgam_fit}
+fit <- mqgamV(delta_pollinators.margin ~
+                  te(prn_ann_lograt,ntr_pland) +
+                  s(aglu_frac_mn) +
+                  s(aglu_iji) +
+                  s(lu_shdi),
+                  # s(lu_ta), 
+                data = wfs_lsm,
+              qu = c(0.2,0.5,0.8))
+
+```
+
+
+```{r qgam_vis}
+print(plot(fit, allTerms = TRUE), pages = 1)
+```
+
+Okay that looks similar to what I've already done
+
+```{r margin_relations}
+
+wfs_low <- wfs_lsm %>% filter(ntr_pland < 8.25 & ntr_pland > 7.75)
+
+pairs.panels(wfs_lsm %>% 
+               select(delta_pollinators.margin, delta_qb.margin, 
+                      delta_n_export.margin, delta_sed.margin), 
+             cex.cor = 1, cex.labels=1, cex=0.5, method = "pearson")
+
+```
+
+```{r es_relations}
+
+pairs.panels(wfs_lsm %>% 
+               select(pollinators_base, qb_base, 
+                      n_export_base, sed_export_base), 
+             cex.cor = 1, cex.labels=1, cex=0.5, method = "pearson")
+
+```
+
+```{r quant_cut}
+
+wfs_grp <- wfs_lsm %>%
+  mutate(habcat = cut(ntr_pland, breaks = c(-Inf,20,50,Inf),
+                      labels = c("simple","moderate","natural")))
+```
+
+```{r grp_pca_smp}
+
+wfs_pca_all <- prcomp(wfs_grp %>%
+                        select(ntr_pland, ann_agr_pland, prn_agr_pland, 
+                               aglu_iji, aglu_frac_mn),
+                      scale. = TRUE, center = TRUE)
+
+summary(wfs_pca_all)
+
+```
+
+
+```{r grp_pca_mod}
+
+wfs_mod_pca <- prcomp(wfs_grp %>% select(ntr_pland, ann_agr_pland, prn_agr_pland, 
+                                         aglu_iji, aglu_frac_mn),
+                      scale. = TRUE, center = TRUE)
+
+autoplot(wfs_pca_all, data = wfs_grp, color = "habcat", 
+         loadings = TRUE,
+         loadings.label.label,
+         choices = c(2,3))
+
+ggbiplot::ggbiplot(wfs_pca_all, groups = wfs_grp$habcat)
+ggbiplot::ggbiplot(wfs_pca_all, groups = wfs_grp$habcat, choices = c(2,3))
+
+```
