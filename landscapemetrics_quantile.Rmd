@@ -64,7 +64,7 @@ wfs_grp <- wfs_lsm %>%
 
 wfs_pca_all <- prcomp(wfs_grp %>%
                         select(ntr_pland, ann_agr_pland, prn_agr_pland, 
-                               aglu_iji, aglu_frac_mn),
+                               aglu_iji, aglu_frac_mn, lu_shdi),
                       scale. = TRUE, center = TRUE)
 
 summary(wfs_pca_all)
@@ -74,16 +74,36 @@ summary(wfs_pca_all)
 
 ```{r grp_pca_mod}
 
-wfs_mod_pca <- prcomp(wfs_grp %>% select(ntr_pland, ann_agr_pland, prn_agr_pland, 
-                                         aglu_iji, aglu_frac_mn),
-                      scale. = TRUE, center = TRUE)
-
-autoplot(wfs_pca_all, data = wfs_grp, color = "habcat", 
-         loadings = TRUE,
-         loadings.label.label,
-         choices = c(2,3))
-
 ggbiplot::ggbiplot(wfs_pca_all, groups = wfs_grp$habcat)
 ggbiplot::ggbiplot(wfs_pca_all, groups = wfs_grp$habcat, choices = c(2,3))
+
+```
+
+```{r grp_pca_smp2}
+
+wfs_pca_all2 <- prcomp(wfs_grp %>%
+                        select(ntr_pland, ann_agr_pland, prn_agr_pland, 
+                               aglu_iji, aglu_frac_mn),
+                      scale. = TRUE, center = TRUE)
+
+summary(wfs_pca_all2)
+
+```
+
+
+```{r grp_pca_mod2}
+
+ggbiplot::ggbiplot(wfs_pca_all2, groups = wfs_grp$habcat)
+ggbiplot::ggbiplot(wfs_pca_all2, groups = wfs_grp$habcat, choices = c(2,3))
+
+```
+
+```{r create_pc_var}
+
+lsm_pc <- wfs_grp %>% cbind(predict(wfs_pca_all))
+
+ggplot(lsm_pc, aes(PC1, pollinators_base, colour = habcat)) + geom_point()
+
+ggplot(lsm_pc, aes(PC3, sed_export_base, colour = habcat)) + geom_point()
 
 ```
