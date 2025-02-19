@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Update for Feb 19, 2025</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Landscape Complexity Results</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="landscapemodels.html">12/18/2024</a>
+</li>
+<li>
+  <a href="landscapemodels_gam.html">1/8/2025</a>
+</li>
+<li>
+  <a href="landscapemodels_margin.html">1/8/2025 - GAMs</a>
+</li>
+<li>
+  <a href="landscapemodels_groups.html">1/15/2025 - groups</a>
+</li>
+<li>
+  <a href="landscapemetrics_quantile.html">2/19/2025</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Update for Feb 19, 2025</h1>
+
+</div>
+
+
+<div id="quantile-regression" class="section level2">
+<h2>Quantile regression</h2>
+<p>Quantile regression looks at relationships at different quantiles of
+response. Below I fit the change in pollinator abundance (per added
+margin area) to these measures of landscape complexity:</p>
+<ul>
+<li><code>ntr_pland</code> percent natural land</li>
+<li><code>prn_ann_lograt</code> log-ratio of perennial to annual
+agriculture. Here a positive value means a greater proportion of
+perennial agriculture.</li>
+<li><code>aglu_frac_mn</code> average fractal dimension index</li>
+<li><code>aglu_iji</code> interspersion and juxtaposition index</li>
+<li><code>lu_shdi</code> Shannon diversity of land use</li>
+</ul>
+<p>I ran quantile GAM regression for 0.1, 0.2, 0.5, 0.8, and 0.9
+quantiles. I included an interaction between <code>ntr_pland</code> and
+<code>prn_ann_lograt</code> because: 1) it is of interest whether the
+role of perennial vs annual ag changes at different levels of
+naturalness, and 2) <code>ntr_pland</code> and
+<code>prn_ann_lograg</code> still co-vary, even though I made this index
+to try to create a variable that is more independent from the main
+agricultural-natural gradient. I think the interaction helps mitigate
+concurvity a little.</p>
+<div id="results" class="section level3">
+<h3>Results</h3>
+<pre class="r"><code>qgam.fit &lt;- mqgamV(delta_pollinators.margin ~
+                  te(ntr_pland, prn_ann_lograt) +
+                  s(aglu_frac_mn) +
+                  s(aglu_iji) +
+                  s(lu_shdi),
+                data = wfs_lsm,
+              qu = c(0.1, 0.2,0.5,0.8, 0.9))</code></pre>
+<pre><code>## Estimating learning rate. Each dot corresponds to a loss evaluation. 
+## qu = 0.5........done 
+## qu = 0.2..........done 
+## qu = 0.8................done 
+## qu = 0.1.........done 
+## qu = 0.9........................done</code></pre>
+<p>Below are the partial effects plots for the range of modeled
+quantiles.</p>
+<p><img src="landscapemetrics_quantile_files/figure-html/qgam_vis-1.png" width="672" /></p>
+<p>These results don’t suggest anything obviously different happening at
+different quantiles. Some of the extreme quantiles are different, but I
+don’t know how much to trust those trends.</p>
+<p>Looking at concurvity of the same model formula fit using
+<code>mgcv</code>, there is still some concurvity.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">.type</th>
+<th align="left">.term</th>
+<th align="right">.concurvity</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">worst</td>
+<td align="left">para</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">worst</td>
+<td align="left">te(ntr_pland,prn_ann_lograt)</td>
+<td align="right">0.8067195</td>
+</tr>
+<tr class="odd">
+<td align="left">worst</td>
+<td align="left">s(aglu_frac_mn)</td>
+<td align="right">0.6774797</td>
+</tr>
+<tr class="even">
+<td align="left">worst</td>
+<td align="left">s(aglu_iji)</td>
+<td align="right">0.7114217</td>
+</tr>
+<tr class="odd">
+<td align="left">worst</td>
+<td align="left">s(lu_shdi)</td>
+<td align="right">0.6904036</td>
+</tr>
+<tr class="even">
+<td align="left">observed</td>
+<td align="left">para</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="odd">
+<td align="left">observed</td>
+<td align="left">te(ntr_pland,prn_ann_lograt)</td>
+<td align="right">0.3104846</td>
+</tr>
+<tr class="even">
+<td align="left">observed</td>
+<td align="left">s(aglu_frac_mn)</td>
+<td align="right">0.6127946</td>
+</tr>
+<tr class="odd">
+<td align="left">observed</td>
+<td align="left">s(aglu_iji)</td>
+<td align="right">0.6407575</td>
+</tr>
+<tr class="even">
+<td align="left">observed</td>
+<td align="left">s(lu_shdi)</td>
+<td align="right">0.6269293</td>
+</tr>
+<tr class="odd">
+<td align="left">estimate</td>
+<td align="left">para</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">estimate</td>
+<td align="left">te(ntr_pland,prn_ann_lograt)</td>
+<td align="right">0.2961301</td>
+</tr>
+<tr class="odd">
+<td align="left">estimate</td>
+<td align="left">s(aglu_frac_mn)</td>
+<td align="right">0.4774049</td>
+</tr>
+<tr class="even">
+<td align="left">estimate</td>
+<td align="left">s(aglu_iji)</td>
+<td align="right">0.5657314</td>
+</tr>
+<tr class="odd">
+<td align="left">estimate</td>
+<td align="left">s(lu_shdi)</td>
+<td align="right">0.5028920</td>
+</tr>
+</tbody>
+</table>
+<p>I wonder if this is because all these metrics are calculated from the
+same base land use data. I expect the metrics of these watershed
+naturally have some correlations that limit the inferences we can make.
+This led me to try to identify these associations using PCA.</p>
+</div>
+</div>
+<div id="pca-of-landscape-metrics" class="section level2">
+<h2>PCA of landscape metrics</h2>
+<p>I ran PCA on the the following 6 landscape metrics:</p>
+<ul>
+<li><code>ntr_pland</code> percent natural land</li>
+<li><code>ann_agr_pland</code> annual agriculture percent landscape</li>
+<li><code>prn_agr_pland</code> perennial agriculture percent
+landscape</li>
+<li><code>aglu_frac_mn</code> average fractal dimension index</li>
+<li><code>aglu_iji</code> interspersion and juxtaposition index</li>
+<li><code>lu_shdi</code> Shannon diversity of land use</li>
+</ul>
+<p>I included all the major land use groups since the point was to
+visualize their associations.</p>
+<div id="results-1" class="section level3">
+<h3>Results</h3>
+<p>The first four PCs explain 95% of variation.</p>
+<pre><code>## Standard deviations (1, .., p=6):
+## [1] 1.73765630 1.16292941 0.93454415 0.66653794 0.55547512 0.04413145
+## 
+## Rotation (n x k) = (6 x 6):
+##                      PC1         PC2          PC3         PC4         PC5         PC6
+## ntr_pland      0.4927212  0.30682799  0.226253293  0.45878939  0.04538748  0.63193684
+## ann_agr_pland -0.5531921 -0.07838320 -0.008968895 -0.36757810  0.14560769  0.72899852
+## prn_agr_pland  0.3333439 -0.46289733 -0.575195337 -0.07455659 -0.51908946  0.26219398
+## aglu_iji      -0.2557566 -0.52712324  0.606285505  0.34893992 -0.40888082  0.01431613
+## aglu_frac_mn  -0.4199632 -0.05784385 -0.495166971  0.72519406  0.22157668 -0.00959293
+## lu_shdi        0.3135373 -0.63579391  0.071462490 -0.03427044  0.70071732  0.01320287</code></pre>
+<pre><code>## Importance of components:
+##                           PC1    PC2    PC3     PC4     PC5     PC6
+## Standard deviation     1.7377 1.1629 0.9345 0.66654 0.55548 0.04413
+## Proportion of Variance 0.5032 0.2254 0.1456 0.07405 0.05143 0.00032
+## Cumulative Proportion  0.5032 0.7286 0.8742 0.94825 0.99968 1.00000</code></pre>
+<p>PC1 positivley weights % natural, along with Shannon diversity and
+perennial agriculture to lesser degree, and negatively weights annual
+agriculture, fractional dimension index, and interspersion and
+juxtaposition index (IJI). PC1 strongly represents the natural vs
+(annual) agricultural gradient across the watersheds. This is evident in
+the biplot below, which has been colored according to simple, moderate,
+and natural landscape categories.</p>
+<p><img src="landscapemetrics_quantile_files/figure-html/PC12_biplot-1.png" width="672" /></p>
+<p>PC2 negatively and strongly weights Shannon diversity, IJI, and
+perennial agriculture, while positively and moderately weighting natural
+land cover.There is an arch shape to the point distribution of the PC1
+and PC2 axes. The arch is oriented so that the negative and positive
+extremes of PC1 (which I’m interpreting as highly agricultural and
+highly natural landscapes, respectively), are both positive on the PC2
+axis. I think positive PC2 values represent landscape homegeneity.
+Highly agricultural and highly natural landscapes are both homogeneous.
+Conversely, negative PC2 values are more heterogeneous, and correspond
+with higher Shannon diversity, interspersion, and perennial agriculture
+(maybe incidentally).</p>
+<p>I am not sure how to interpret PC3. It weights perennial agriculture
+and fractal dimension against interspersion/juxtaposition and natural
+land cover.</p>
+<p><img src="landscapemetrics_quantile_files/figure-html/PC23_biplot-1.png" width="672" /></p>
+</div>
+</div>
+<div id="predict-change-in-pollinators-using-pc1-and-pc2"
+class="section level2">
+<h2>Predict change in pollinators using PC1 and PC2</h2>
+<pre class="r"><code>lsm_pc &lt;- wfs_grp %&gt;% cbind(predict(wfs_pca_all))
+
+pol.delt.lm1 &lt;- lm(delta_pollinators.margin ~ PC1 + PC2, data = lsm_pc)
+
+pol.delt.lm2 &lt;- lm(delta_pollinators.margin ~ PC1 * PC2, data = lsm_pc)
+
+performance::compare_performance(pol.delt.lm1,pol.delt.lm2)</code></pre>
+<pre><code>## # Comparison of Model Performance Indices
+## 
+## Name         | Model |  AIC (weights) | AICc (weights) |  BIC (weights) |    R2 | R2 (adj.)
+## -------------------------------------------------------------------------------------------
+## pol.delt.lm1 |    lm | -205.0 (0.046) | -204.9 (0.047) | -188.7 (0.270) | 0.377 |     0.375
+## pol.delt.lm2 |    lm | -211.1 (0.954) | -210.9 (0.953) | -190.7 (0.730) | 0.389 |     0.385
+## 
+## Name         |  RMSE | Sigma
+## ----------------------------
+## pol.delt.lm1 | 0.190 | 0.190
+## pol.delt.lm2 | 0.188 | 0.189</code></pre>
+<pre class="r"><code>summary(pol.delt.lm2)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = delta_pollinators.margin ~ PC1 * PC2, data = lsm_pc)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.43792 -0.15715 -0.01438  0.13886  0.58047 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 1.952304   0.009029 216.216  &lt; 2e-16 ***
+## PC1         0.075285   0.005716  13.172  &lt; 2e-16 ***
+## PC2         0.020941   0.009003   2.326  0.02048 *  
+## PC1:PC2     0.013781   0.004852   2.840  0.00472 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.1888 on 433 degrees of freedom
+## Multiple R-squared:  0.3889, Adjusted R-squared:  0.3846 
+## F-statistic: 91.84 on 3 and 433 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>pred.PC1 &lt;- ggeffects::ggpredict(pol.delt.lm2, terms = c(&quot;PC1&quot;,&quot;PC2&quot;)) %&gt;%
+  rename(PC1 = x, delta_pollinators.margin = predicted, PC2 = group)
+
+pred.PC2 &lt;- ggeffects::ggpredict(pol.delt.lm2, terms = c(&quot;PC2&quot;,&quot;PC1&quot;)) %&gt;%
+  rename(PC2 = x, delta_pollinators.margin = predicted, PC1 = group)
+
+ggplot(lsm_pc, aes(PC1, delta_pollinators.margin)) + 
+  geom_point(aes(color = PC2)) + scale_color_continuous(type = &quot;viridis&quot;) + 
+  geom_ribbon(data = pred.PC1, 
+              mapping = aes(ymin = conf.low, ymax = conf.high, group = PC2, fill = PC2), alpha = 0.2) + egg::theme_article()</code></pre>
+<p><img src="landscapemetrics_quantile_files/figure-html/prediction_delta-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(lsm_pc, aes(PC2, delta_pollinators.margin)) + 
+  geom_point(aes(color = PC1)) + scale_color_continuous(type = &quot;viridis&quot;) + 
+  geom_ribbon(data = pred.PC2, 
+              mapping = aes(ymin = conf.low, ymax = conf.high, group = PC1, fill = PC1), alpha = 0.2) + egg::theme_article()</code></pre>
+<p><img src="landscapemetrics_quantile_files/figure-html/prediction_delta-2.png" width="672" /></p>
+</div>
+<div id="predict-base-pollinator-abundance-with-pc1-and-pc2"
+class="section level2">
+<h2>Predict base pollinator abundance with PC1 and PC2</h2>
+<pre class="r"><code>pol.base.lm1 &lt;- lm(pollinators_base ~ PC1 + PC2, data = lsm_pc)
+
+pol.base.lm2 &lt;- lm(pollinators_base ~ PC1 * PC2, data = lsm_pc)
+
+performance::compare_performance(pol.base.lm1,pol.base.lm2)</code></pre>
+<pre><code>## # Comparison of Model Performance Indices
+## 
+## Name         | Model | AIC (weights) | AICc (weights) | BIC (weights) |    R2 | R2 (adj.)
+## -----------------------------------------------------------------------------------------
+## pol.base.lm1 |    lm |  47.9 (&lt;.001) |   48.0 (&lt;.001) |  64.2 (&lt;.001) | 0.872 |     0.872
+## pol.base.lm2 |    lm |  13.2 (&gt;.999) |   13.4 (&gt;.999) |  33.6 (&gt;.999) | 0.883 |     0.882
+## 
+## Name         |  RMSE | Sigma
+## ----------------------------
+## pol.base.lm1 | 0.253 | 0.254
+## pol.base.lm2 | 0.243 | 0.244</code></pre>
+<pre class="r"><code>summary(pol.base.lm2)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = pollinators_base ~ PC1 * PC2, data = lsm_pc)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.55623 -0.19565  0.01328  0.18080  0.74799 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 1.455238   0.011671 124.684  &lt; 2e-16 ***
+## PC1         0.342356   0.007388  46.340  &lt; 2e-16 ***
+## PC2         0.146950   0.011638  12.627  &lt; 2e-16 ***
+## PC1:PC2     0.038599   0.006271   6.155 1.71e-09 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.244 on 433 degrees of freedom
+## Multiple R-squared:  0.8826, Adjusted R-squared:  0.8818 
+## F-statistic:  1085 on 3 and 433 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>pred.base.PC1 &lt;- ggeffects::ggpredict(pol.base.lm2, terms = c(&quot;PC1&quot;,&quot;PC2&quot;)) %&gt;%
+  rename(PC1 = x, pollinators_base = predicted, PC2 = group)
+
+pred.base.PC2 &lt;- ggeffects::ggpredict(pol.base.lm2, terms = c(&quot;PC2&quot;,&quot;PC1&quot;)) %&gt;%
+  rename(PC2 = x, pollinators_base = predicted, PC1 = group)
+
+ggplot(lsm_pc, aes(PC1, pollinators_base)) + 
+  geom_point(aes(color = PC2)) + scale_color_continuous(type = &quot;viridis&quot;) + 
+  geom_ribbon(data = pred.base.PC1, 
+              mapping = aes(ymin = conf.low, ymax = conf.high, group = PC2, fill = PC2), alpha = 0.2) + egg::theme_article()</code></pre>
+<p><img src="landscapemetrics_quantile_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(lsm_pc, aes(PC2, pollinators_base)) + 
+  geom_point(aes(color = PC1)) + scale_color_continuous(type = &quot;viridis&quot;) + 
+  geom_ribbon(data = pred.base.PC2, 
+              mapping = aes(ymin = conf.low, ymax = conf.high, group = PC1, fill = PC1), alpha = 0.2) + egg::theme_article()</code></pre>
+<p><img src="landscapemetrics_quantile_files/figure-html/unnamed-chunk-1-2.png" width="672" /></p>
+</div>
+<div
+id="relationships-between-base-ecosystem-service-values-and-change-in-es-normalized-by-margin-area"
+class="section level2">
+<h2>Relationships between base ecosystem service values and change in ES
+normalized by margin area</h2>
+<pre class="r"><code>psych::pairs.panels(wfs_lsm %&gt;% 
+               select(margin_dens,
+                      pollinators_base, qb_base, 
+                      n_export_base, sed_export_base,
+                      delta_pollinators.margin, delta_qb.margin,
+                      delta_n_export.margin, delta_sed.margin),
+             cex.cor = 1, cex.labels=1, cex=0.5, method = &quot;pearson&quot;)</code></pre>
+<p><img src="landscapemetrics_quantile_files/figure-html/margin_relations-1.png" width="100%" /></p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

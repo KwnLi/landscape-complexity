@@ -3,11 +3,13 @@ output_dir: docs
 navbar:
   title: "Landscape Complexity Results"
   left:
-    - text: "Linear"
+    - text: "12/18/2024"
       href: landscapemodels.html
-    - text: "GAM"
+    - text: "1/8/2025"
       href: landscapemodels_gam.html
-    - text: "GAM + norm. margin"
+    - text: "1/8/2025 - GAMs"
       href: landscapemodels_margin.html
-    - text: "GAM + norm. margin + landscape groups"
+    - text: "1/15/2025 - groups"
       href: landscapemodels_groups.html
+    - text: "2/19/2025"
+      href: landscapemetrics_quantile.html

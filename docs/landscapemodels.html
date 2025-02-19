@@ -243,16 +243,19 @@ $(document).ready(function () {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="landscapemodels.html">Linear</a>
+  <a href="landscapemodels.html">12/18/2024</a>
 </li>
 <li>
-  <a href="landscapemodels_gam.html">GAM</a>
+  <a href="landscapemodels_gam.html">1/8/2025</a>
 </li>
 <li>
-  <a href="landscapemodels_margin.html">GAM + norm. margin</a>
+  <a href="landscapemodels_margin.html">1/8/2025 - GAMs</a>
 </li>
 <li>
-  <a href="landscapemodels_groups.html">GAM + norm. margin + landscape groups</a>
+  <a href="landscapemodels_groups.html">1/15/2025 - groups</a>
+</li>
+<li>
+  <a href="landscapemetrics_quantile.html">2/19/2025</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -289,11 +292,17 @@ pol.dmod2 &lt;- lm(delta_pollinators ~ ann_agr_pland + I(ann_agr_pland^2) + aglu
 performance::compare_performance(pol.dmod0, pol.dmod1, pol.dmod2)</code></pre>
 <pre><code>## # Comparison of Model Performance Indices
 ## 
-## Name      | Model |   AIC (weights) |  AICc (weights) |   BIC (weights) |    R2 | R2 (adj.) |  RMSE | Sigma
-## -----------------------------------------------------------------------------------------------------------
-## pol.dmod0 |    lm | -1751.6 (&lt;.001) | -1751.5 (&lt;.001) | -1739.3 (&lt;.001) | 0.869 |     0.868 | 0.032 | 0.032
-## pol.dmod1 |    lm | -2112.5 (&lt;.001) | -2112.2 (&lt;.001) | -2079.9 (&lt;.001) | 0.944 |     0.943 | 0.021 | 0.021
-## pol.dmod2 |    lm | -2236.3 (&gt;.999) | -2235.9 (&gt;.999) | -2199.6 (&gt;.999) | 0.958 |     0.957 | 0.018 | 0.019</code></pre>
+## Name      | Model |   AIC (weights) |  AICc (weights) |   BIC (weights) |    R2 | R2 (adj.)
+## -------------------------------------------------------------------------------------------
+## pol.dmod0 |    lm | -1751.6 (&lt;.001) | -1751.5 (&lt;.001) | -1739.3 (&lt;.001) | 0.869 |     0.868
+## pol.dmod1 |    lm | -2112.5 (&lt;.001) | -2112.2 (&lt;.001) | -2079.9 (&lt;.001) | 0.944 |     0.943
+## pol.dmod2 |    lm | -2236.3 (&gt;.999) | -2235.9 (&gt;.999) | -2199.6 (&gt;.999) | 0.958 |     0.957
+## 
+## Name      |  RMSE | Sigma
+## -------------------------
+## pol.dmod0 | 0.032 | 0.032
+## pol.dmod1 | 0.021 | 0.021
+## pol.dmod2 | 0.018 | 0.019</code></pre>
 <pre class="r"><code>summary(pol.dmod2)</code></pre>
 <pre><code>## 
 ## Call:
@@ -335,11 +344,17 @@ swy.dmod2 &lt;- lm(delta_qb ~ ann_agr_pland + I(ann_agr_pland^2) + aglu_iji + pr
 performance::compare_performance(swy.dmod0, swy.dmod1, swy.dmod2)</code></pre>
 <pre><code>## # Comparison of Model Performance Indices
 ## 
-## Name      | Model | AIC (weights) | AICc (weights) | BIC (weights) |    R2 | R2 (adj.) |  RMSE | Sigma
-## ------------------------------------------------------------------------------------------------------
-## swy.dmod0 |    lm | 100.8 (&lt;.001) |  100.9 (&lt;.001) | 113.0 (&lt;.001) | 0.275 |     0.273 | 0.270 | 0.270
-## swy.dmod1 |    lm |  71.4 (0.006) |   71.7 (0.006) | 104.0 (0.042) | 0.338 |     0.328 | 0.258 | 0.260
-## swy.dmod2 |    lm |  61.1 (0.994) |   61.5 (0.994) |  97.8 (0.957) | 0.356 |     0.346 | 0.254 | 0.257</code></pre>
+## Name      | Model | AIC (weights) | AICc (weights) | BIC (weights) |    R2 | R2 (adj.)
+## --------------------------------------------------------------------------------------
+## swy.dmod0 |    lm | 100.8 (&lt;.001) |  100.9 (&lt;.001) | 113.0 (&lt;.001) | 0.275 |     0.273
+## swy.dmod1 |    lm |  71.4 (0.006) |   71.7 (0.006) | 104.0 (0.042) | 0.338 |     0.328
+## swy.dmod2 |    lm |  61.1 (0.994) |   61.5 (0.994) |  97.8 (0.957) | 0.356 |     0.346
+## 
+## Name      |  RMSE | Sigma
+## -------------------------
+## swy.dmod0 | 0.270 | 0.270
+## swy.dmod1 | 0.258 | 0.260
+## swy.dmod2 | 0.254 | 0.257</code></pre>
 <pre class="r"><code>summary(swy.dmod2)</code></pre>
 <pre><code>## 
 ## Call:
@@ -381,11 +396,17 @@ ndr.dmod2 &lt;- lm(delta_n_export ~ ann_agr_pland + I(ann_agr_pland^2) + aglu_ij
 performance::compare_performance(ndr.dmod0, ndr.dmod1, ndr.dmod2)</code></pre>
 <pre><code>## # Comparison of Model Performance Indices
 ## 
-## Name      | Model |  AIC (weights) | AICc (weights) |  BIC (weights) |    R2 | R2 (adj.) |  RMSE | Sigma
-## --------------------------------------------------------------------------------------------------------
-## ndr.dmod0 |    lm | -381.0 (&lt;.001) | -381.0 (&lt;.001) | -368.8 (&lt;.001) | 0.305 |     0.304 | 0.155 | 0.156
-## ndr.dmod1 |    lm | -794.7 (0.016) | -794.4 (0.016) | -762.1 (0.109) | 0.737 |     0.733 | 0.096 | 0.096
-## ndr.dmod2 |    lm | -803.0 (0.984) | -802.5 (0.984) | -766.3 (0.891) | 0.743 |     0.738 | 0.095 | 0.095</code></pre>
+## Name      | Model |  AIC (weights) | AICc (weights) |  BIC (weights) |    R2 | R2 (adj.)
+## ----------------------------------------------------------------------------------------
+## ndr.dmod0 |    lm | -381.0 (&lt;.001) | -381.0 (&lt;.001) | -368.8 (&lt;.001) | 0.305 |     0.304
+## ndr.dmod1 |    lm | -794.7 (0.016) | -794.4 (0.016) | -762.1 (0.109) | 0.737 |     0.733
+## ndr.dmod2 |    lm | -803.0 (0.984) | -802.5 (0.984) | -766.3 (0.891) | 0.743 |     0.738
+## 
+## Name      |  RMSE | Sigma
+## -------------------------
+## ndr.dmod0 | 0.155 | 0.156
+## ndr.dmod1 | 0.096 | 0.096
+## ndr.dmod2 | 0.095 | 0.095</code></pre>
 <pre class="r"><code>summary(ndr.dmod2)</code></pre>
 <pre><code>## 
 ## Call:
@@ -427,11 +448,17 @@ sdr.dmod2 &lt;- lm(delta_sed ~ ann_agr_pland + I(ann_agr_pland^2) + aglu_iji + p
 performance::compare_performance(sdr.dmod0, sdr.dmod1, sdr.dmod2)</code></pre>
 <pre><code>## # Comparison of Model Performance Indices
 ## 
-## Name      | Model | AIC (weights) | AICc (weights) | BIC (weights) |    R2 | R2 (adj.) |  RMSE | Sigma
-## ------------------------------------------------------------------------------------------------------
-## sdr.dmod0 |    lm | 953.9 (&lt;.001) |  953.9 (&lt;.001) | 966.1 (&lt;.001) | 0.128 |     0.126 | 0.716 | 0.717
-## sdr.dmod1 |    lm | 889.8 (&lt;.001) |  890.1 (&lt;.001) | 922.4 (0.001) | 0.264 |     0.254 | 0.658 | 0.663
-## sdr.dmod2 |    lm | 872.4 (&gt;.999) |  872.8 (&gt;.999) | 909.1 (0.999) | 0.296 |     0.284 | 0.643 | 0.649</code></pre>
+## Name      | Model | AIC (weights) | AICc (weights) | BIC (weights) |    R2 | R2 (adj.)
+## --------------------------------------------------------------------------------------
+## sdr.dmod0 |    lm | 953.9 (&lt;.001) |  953.9 (&lt;.001) | 966.1 (&lt;.001) | 0.128 |     0.126
+## sdr.dmod1 |    lm | 889.8 (&lt;.001) |  890.1 (&lt;.001) | 922.4 (0.001) | 0.264 |     0.254
+## sdr.dmod2 |    lm | 872.4 (&gt;.999) |  872.8 (&gt;.999) | 909.1 (0.999) | 0.296 |     0.284
+## 
+## Name      |  RMSE | Sigma
+## -------------------------
+## sdr.dmod0 | 0.716 | 0.717
+## sdr.dmod1 | 0.658 | 0.663
+## sdr.dmod2 | 0.643 | 0.649</code></pre>
 <pre class="r"><code>summary(sdr.dmod2)</code></pre>
 <pre><code>## 
 ## Call:

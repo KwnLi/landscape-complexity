@@ -1,8 +1,16 @@
 ---
-title: "Quantile regression"
+title: "Update for Feb 19, 2025"
 ---
 
-Quantile regression looks at relationships at different quantiles of response.
+## Quantile regression
+
+Quantile regression looks at relationships at different quantiles of response. Below I fit the change in pollinator abundance (per added margin area) to these measures of landscape complexity:
+
+- `ntr_pland` percent natural land
+- `prn_ann_lograt` log-ratio of perennial to annual agriculture. Here a positive value means a greater proportion of perennial agriculture.
+- `aglu_frac_mn` average fractal dimension index
+- `aglu_iji` interspersion and juxtaposition index
+- `lu_shdi` Shannon diversity of land use
 
 ```{r setup, echo = FALSE, message=FALSE}
 library(tidyverse)
@@ -10,100 +18,195 @@ library(qgam)
 library(mgcViz)
 library(ggfortify)
 
-wfs_lsm <- readRDS("data/wfs_lsm.rds")
+wfs_lsm <- readRDS("data/wfs_lsm.rds") %>%
+  mutate(pollinators_pcchng = (pollinators_max - pollinators_base)/pollinators_base,
+         n_export_pcchng = (n_export_max - n_export_base)/n_export_base,
+         qb_pcchng = (qb_max - qb_base)/qb_base,
+         sed_export_pcchng = (sed_export_max - sed_export_base)/sed_export_base,)
 
 ```
 
-```{r qgam_fit}
-fit <- mqgamV(delta_pollinators.margin ~
-                  te(prn_ann_lograt,ntr_pland) +
+
+I ran quantile GAM regression for 0.1, 0.2, 0.5, 0.8, and 0.9 quantiles. I included an interaction between `ntr_pland` and `prn_ann_lograt` because: 1) it is of interest whether the role of perennial vs annual ag changes at different levels of naturalness, and 2) `ntr_pland` and `prn_ann_lograg` still co-vary, even though I made this index to try to create a variable that is more independent from the main agricultural-natural gradient. I think the interaction helps mitigate concurvity a little.
+
+### Results
+
+```{r qgam_fit, message=FALSE}
+qgam.fit <- mqgamV(delta_pollinators.margin ~
+                  te(ntr_pland, prn_ann_lograt) +
                   s(aglu_frac_mn) +
                   s(aglu_iji) +
                   s(lu_shdi),
-                  # s(lu_ta), 
                 data = wfs_lsm,
-              qu = c(0.2,0.5,0.8))
+              qu = c(0.1, 0.2,0.5,0.8, 0.9))
 
 ```
 
+Below are the partial effects plots for the range of modeled quantiles.
 
-```{r qgam_vis}
-print(plot(fit, allTerms = TRUE), pages = 1)
+```{r qgam_vis, echo = FALSE}
+print(plot(qgam.fit, allTerms = TRUE), pages = 1)
 ```
 
-Okay that looks similar to what I've already done
+These results don't suggest anything obviously different happening at different quantiles. Some of the extreme quantiles are different, but I don't know how much to trust those trends.
 
-```{r margin_relations}
+Looking at concurvity of the same model formula fit using `mgcv`, there is still some concurvity.
 
-wfs_low <- wfs_lsm %>% filter(ntr_pland < 8.25 & ntr_pland > 7.75)
+```{r concurvity, echo = FALSE, message = FALSE}
 
-pairs.panels(wfs_lsm %>% 
-               select(delta_pollinators.margin, delta_qb.margin, 
-                      delta_n_export.margin, delta_sed.margin), 
-             cex.cor = 1, cex.labels=1, cex=0.5, method = "pearson")
+mcgv.fit <- gam(delta_pollinators.margin ~
+                  te(ntr_pland, prn_ann_lograt) +
+                  s(aglu_frac_mn) +
+                  s(aglu_iji) +
+                  s(lu_shdi),
+                data = wfs_lsm)
 
-```
+concurv.tbl <- gratia::model_concurvity(mcgv.fit)
 
-```{r es_relations}
-
-pairs.panels(wfs_lsm %>% 
-               select(pollinators_base, qb_base, 
-                      n_export_base, sed_export_base), 
-             cex.cor = 1, cex.labels=1, cex=0.5, method = "pearson")
+knitr::kable(concurv.tbl)
 
 ```
 
-```{r quant_cut}
+I wonder if this is because all these metrics are calculated from the same base land use data. I expect the metrics of these watershed naturally have some correlations that limit the inferences we can make. This led me to try to identify these associations using PCA.
+
+## PCA of landscape metrics
+
+I ran PCA on the the following 6 landscape metrics:
+
+- `ntr_pland` percent natural land
+- `ann_agr_pland` annual agriculture percent landscape
+- `prn_agr_pland` perennial agriculture percent landscape
+- `aglu_frac_mn` average fractal dimension index
+- `aglu_iji` interspersion and juxtaposition index
+- `lu_shdi` Shannon diversity of land use
+
+I included all the major land use groups since the point was to visualize their associations.
+
+```{r quant_cut, echo = FALSE}
 
 wfs_grp <- wfs_lsm %>%
   mutate(habcat = cut(ntr_pland, breaks = c(-Inf,20,50,Inf),
                       labels = c("simple","moderate","natural")))
 ```
 
-```{r grp_pca_smp}
+### Results
+
+The first four PCs explain 95% of variation.
+
+```{r grp_pca_smp, echo = FALSE}
 
 wfs_pca_all <- prcomp(wfs_grp %>%
                         select(ntr_pland, ann_agr_pland, prn_agr_pland, 
                                aglu_iji, aglu_frac_mn, lu_shdi),
                       scale. = TRUE, center = TRUE)
 
+wfs_pca_all
+
 summary(wfs_pca_all)
 
 ```
+PC1 positivley weights % natural, along with Shannon diversity and perennial agriculture to lesser degree, and negatively weights annual agriculture, fractional dimension index, and interspersion and juxtaposition index (IJI). PC1 strongly represents the natural vs (annual) agricultural gradient across the watersheds. This is evident in the biplot below, which has been colored according to simple, moderate, and natural landscape categories.
 
-
-```{r grp_pca_mod}
+```{r PC12_biplot, echo = FALSE}
 
 ggbiplot::ggbiplot(wfs_pca_all, groups = wfs_grp$habcat)
+
+```
+
+PC2 negatively and strongly weights Shannon diversity, IJI, and perennial agriculture, while positively and moderately weighting natural land cover.There is an arch shape to the point distribution of the PC1 and PC2 axes. The arch is oriented so that the negative and positive extremes of PC1 (which I'm interpreting as highly agricultural and highly natural landscapes, respectively), are both positive on the PC2 axis. I think positive PC2 values represent landscape homegeneity. Highly agricultural and highly natural landscapes are both homogeneous. Conversely, negative PC2 values are more heterogeneous, and correspond with higher Shannon diversity, interspersion, and perennial agriculture (maybe incidentally).
+
+I am not sure how to interpret PC3. It weights perennial agriculture and fractal dimension against interspersion/juxtaposition and natural land cover.
+
+```{r PC23_biplot, echo = FALSE}
+
 ggbiplot::ggbiplot(wfs_pca_all, groups = wfs_grp$habcat, choices = c(2,3))
 
 ```
 
-```{r grp_pca_smp2}
-
-wfs_pca_all2 <- prcomp(wfs_grp %>%
-                        select(ntr_pland, ann_agr_pland, prn_agr_pland, 
-                               aglu_iji, aglu_frac_mn),
-                      scale. = TRUE, center = TRUE)
-
-summary(wfs_pca_all2)
-
-```
-
-
-```{r grp_pca_mod2}
-
-ggbiplot::ggbiplot(wfs_pca_all2, groups = wfs_grp$habcat)
-ggbiplot::ggbiplot(wfs_pca_all2, groups = wfs_grp$habcat, choices = c(2,3))
-
-```
+## Predict change in pollinators using PC1 and PC2
 
 ```{r create_pc_var}
 
 lsm_pc <- wfs_grp %>% cbind(predict(wfs_pca_all))
 
-ggplot(lsm_pc, aes(PC1, pollinators_base, colour = habcat)) + geom_point()
+pol.delt.lm1 <- lm(delta_pollinators.margin ~ PC1 + PC2, data = lsm_pc)
 
-ggplot(lsm_pc, aes(PC3, sed_export_base, colour = habcat)) + geom_point()
+pol.delt.lm2 <- lm(delta_pollinators.margin ~ PC1 * PC2, data = lsm_pc)
+
+performance::compare_performance(pol.delt.lm1,pol.delt.lm2)
+
+summary(pol.delt.lm2)
+
+```
+
+
+```{r prediction_delta}
+
+pred.PC1 <- ggeffects::ggpredict(pol.delt.lm2, terms = c("PC1","PC2")) %>%
+  rename(PC1 = x, delta_pollinators.margin = predicted, PC2 = group)
+
+pred.PC2 <- ggeffects::ggpredict(pol.delt.lm2, terms = c("PC2","PC1")) %>%
+  rename(PC2 = x, delta_pollinators.margin = predicted, PC1 = group)
+
+ggplot(lsm_pc, aes(PC1, delta_pollinators.margin)) + 
+  geom_point(aes(color = PC2)) + scale_color_continuous(type = "viridis") + 
+  geom_ribbon(data = pred.PC1, 
+              mapping = aes(ymin = conf.low, ymax = conf.high, group = PC2, fill = PC2), alpha = 0.2) + egg::theme_article()
+
+ggplot(lsm_pc, aes(PC2, delta_pollinators.margin)) + 
+  geom_point(aes(color = PC1)) + scale_color_continuous(type = "viridis") + 
+  geom_ribbon(data = pred.PC2, 
+              mapping = aes(ymin = conf.low, ymax = conf.high, group = PC1, fill = PC1), alpha = 0.2) + egg::theme_article()
+
+
+```
+
+## Predict base pollinator abundance with PC1 and PC2
+
+```{r pol.base}
+
+pol.base.lm1 <- lm(pollinators_base ~ PC1 + PC2, data = lsm_pc)
+
+pol.base.lm2 <- lm(pollinators_base ~ PC1 * PC2, data = lsm_pc)
+
+performance::compare_performance(pol.base.lm1,pol.base.lm2)
+
+summary(pol.base.lm2)
+
+```
+
+```{r }
+
+pred.base.PC1 <- ggeffects::ggpredict(pol.base.lm2, terms = c("PC1","PC2")) %>%
+  rename(PC1 = x, pollinators_base = predicted, PC2 = group)
+
+pred.base.PC2 <- ggeffects::ggpredict(pol.base.lm2, terms = c("PC2","PC1")) %>%
+  rename(PC2 = x, pollinators_base = predicted, PC1 = group)
+
+ggplot(lsm_pc, aes(PC1, pollinators_base)) + 
+  geom_point(aes(color = PC2)) + scale_color_continuous(type = "viridis") + 
+  geom_ribbon(data = pred.base.PC1, 
+              mapping = aes(ymin = conf.low, ymax = conf.high, group = PC2, fill = PC2), alpha = 0.2) + egg::theme_article()
+
+ggplot(lsm_pc, aes(PC2, pollinators_base)) + 
+  geom_point(aes(color = PC1)) + scale_color_continuous(type = "viridis") + 
+  geom_ribbon(data = pred.base.PC2, 
+              mapping = aes(ymin = conf.low, ymax = conf.high, group = PC1, fill = PC1), alpha = 0.2) + egg::theme_article()
+
+
+
+```
+
+## Relationships between base ecosystem service values and change in ES normalized by margin area
+
+```{r margin_relations, out.width="100%"}
+
+psych::pairs.panels(wfs_lsm %>% 
+               select(margin_dens,
+                      pollinators_base, qb_base, 
+                      n_export_base, sed_export_base,
+                      delta_pollinators.margin, delta_qb.margin,
+                      delta_n_export.margin, delta_sed.margin),
+             cex.cor = 1, cex.labels=1, cex=0.5, method = "pearson")
 
 ```
