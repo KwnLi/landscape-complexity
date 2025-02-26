@@ -109,7 +109,8 @@ PC1 positivley weights % natural, along with Shannon diversity and perennial agr
 
 ```{r PC12_biplot, echo = FALSE}
 
-ggbiplot::ggbiplot(wfs_pca_all, groups = wfs_grp$habcat)
+ggbiplot::ggbiplot(wfs_pca_all, groups = wfs_grp$habcat) +
+  egg::theme_article()
 
 ```
 
@@ -119,7 +120,8 @@ I am not sure how to interpret PC3. It weights perennial agriculture and fractal
 
 ```{r PC23_biplot, echo = FALSE}
 
-ggbiplot::ggbiplot(wfs_pca_all, groups = wfs_grp$habcat, choices = c(2,3))
+ggbiplot::ggbiplot(wfs_pca_all, groups = wfs_grp$habcat, choices = c(2,3)) +
+  egg::theme_article()
 
 ```
 
@@ -128,6 +130,7 @@ ggbiplot::ggbiplot(wfs_pca_all, groups = wfs_grp$habcat, choices = c(2,3))
 ```{r create_pc_var}
 
 lsm_pc <- wfs_grp %>% cbind(predict(wfs_pca_all))
+saveRDS(lsm_pc, "data/wfs_lsm_pc.rds")
 
 pol.delt.lm1 <- lm(delta_pollinators.margin ~ PC1 + PC2, data = lsm_pc)
 
