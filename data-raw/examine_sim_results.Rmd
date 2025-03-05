@@ -1,0 +1,45 @@
+---
+title: "examine simulation results"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## 
+
+```{r load}
+wfs_lsm <- readRDS("data/wfs_lsm.rds")
+hu_meta <- readRDS("data/hu_meta.rds")
+
+hulandstats <- readRDS("data/hulandstats.rds")
+
+
+wfs_meta <- wfs_lsm %>% 
+  left_join(hu_meta %>% sf::st_drop_geometry(), 
+            by = c("hu" = "huc12", "huc2", "name")) %>%
+  left_join(hulandstats)
+
+```
+
+## Plots
+
+```{r wetland}
+ggplot(wfs_meta, aes(Wetland, delta_sed.margin)) + 
+  geom_point()
+```
+
+```{r erosivity}
+ggplot(wfs_meta, aes(erosivity_mean, delta_sed.margin)) + 
+  geom_point()
+```
+
+```{r erodibility}
+ggplot(wfs_meta, aes(erodibility_mean, delta_sed.margin)) + 
+  geom_point()
+```
+
+```{r erodibility_2}
+ggplot(wfs_meta, aes(ntr_pland, erodibility_mean)) + 
+  geom_point()
+```
