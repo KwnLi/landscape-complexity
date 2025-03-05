@@ -257,6 +257,12 @@ $(document).ready(function () {
 <li>
   <a href="landscapemetrics_quantile.html">2/19/2025</a>
 </li>
+<li>
+  <a href="landscapemetrics_onefield.html">2/26/2025</a>
+</li>
+<li>
+  <a href="examine_sim_results.html">3/5/2025</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -287,16 +293,6 @@ class="section level4">
 </div>
 <div id="pollinator-delta-for-simple-landscapes" class="section level4">
 <h4>Pollinator delta for simple landscapes</h4>
-<pre class="r"><code>dpol.sim.gam &lt;- gam(delta_pollinators.margin ~
-                  s(ann_agr_pland) +
-                  s(aglu_iji) +
-                  s(prn_agr_pland) +
-                  s(aglu_frac_mn) +
-                  s(lu_shdi) + 
-                  s(lu_ta), 
-                data = wfs_sim)
-
-summary(dpol.sim.gam)</code></pre>
 <pre><code>## 
 ## Family: gaussian 
 ## Link function: identity 
@@ -324,61 +320,59 @@ summary(dpol.sim.gam)</code></pre>
 ## 
 ## R-sq.(adj) =  0.737   Deviance explained = 76.1%
 ## GCV = 0.005166  Scale est. = 0.0046785  n = 203</code></pre>
-<pre class="r"><code>concurvity(dpol.sim.gam, full = FALSE)</code></pre>
 <pre><code>## $worst
-##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland)
-## para             1.000000e+00     3.495190e-26 1.276431e-26     3.950579e-25
-## s(ann_agr_pland) 3.517215e-26     1.000000e+00 4.147936e-01     9.684757e-01
-## s(aglu_iji)      1.260709e-26     4.147936e-01 1.000000e+00     2.979959e-01
-## s(prn_agr_pland) 3.912225e-25     9.684757e-01 2.979959e-01     1.000000e+00
-## s(aglu_frac_mn)  4.021861e-26     1.531491e-01 1.854495e-01     1.738446e-01
-## s(lu_shdi)       2.852411e-26     6.520229e-01 2.937927e-01     4.480547e-01
-## s(lu_ta)         8.841006e-26     9.996979e-02 1.263688e-01     1.409439e-01
-##                  s(aglu_frac_mn)   s(lu_shdi)     s(lu_ta)
-## para                4.074300e-26 2.837600e-26 8.766951e-26
-## s(ann_agr_pland)    1.531491e-01 6.520229e-01 9.996979e-02
-## s(aglu_iji)         1.854495e-01 2.937927e-01 1.263688e-01
-## s(prn_agr_pland)    1.738446e-01 4.480547e-01 1.409439e-01
-## s(aglu_frac_mn)     1.000000e+00 1.672713e-01 1.314534e-01
-## s(lu_shdi)          1.672713e-01 1.000000e+00 1.205648e-01
-## s(lu_ta)            1.314534e-01 1.205648e-01 1.000000e+00
+##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## para             1.000000e+00     3.495190e-26 1.276431e-26     3.950579e-25    4.074300e-26
+## s(ann_agr_pland) 3.517215e-26     1.000000e+00 4.147936e-01     9.684757e-01    1.531491e-01
+## s(aglu_iji)      1.260709e-26     4.147936e-01 1.000000e+00     2.979959e-01    1.854495e-01
+## s(prn_agr_pland) 3.912225e-25     9.684757e-01 2.979959e-01     1.000000e+00    1.738446e-01
+## s(aglu_frac_mn)  4.021861e-26     1.531491e-01 1.854495e-01     1.738446e-01    1.000000e+00
+## s(lu_shdi)       2.852411e-26     6.520229e-01 2.937927e-01     4.480547e-01    1.672713e-01
+## s(lu_ta)         8.841006e-26     9.996979e-02 1.263688e-01     1.409439e-01    1.314534e-01
+##                    s(lu_shdi)     s(lu_ta)
+## para             2.837600e-26 8.766951e-26
+## s(ann_agr_pland) 6.520229e-01 9.996979e-02
+## s(aglu_iji)      2.937927e-01 1.263688e-01
+## s(prn_agr_pland) 4.480547e-01 1.409439e-01
+## s(aglu_frac_mn)  1.672713e-01 1.314534e-01
+## s(lu_shdi)       1.000000e+00 1.205648e-01
+## s(lu_ta)         1.205648e-01 1.000000e+00
 ## 
 ## $observed
-##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland)
-## para             1.000000e+00     3.060105e-31 5.904924e-31     5.027925e-29
-## s(ann_agr_pland) 3.517215e-26     1.000000e+00 1.676118e-01     8.900990e-01
-## s(aglu_iji)      1.260709e-26     7.363499e-02 1.000000e+00     3.979171e-02
-## s(prn_agr_pland) 3.912225e-25     8.513926e-01 1.013937e-01     1.000000e+00
-## s(aglu_frac_mn)  4.021861e-26     3.878849e-02 1.312500e-01     7.402876e-02
-## s(lu_shdi)       2.852411e-26     6.066387e-01 1.934696e-01     3.270472e-01
-## s(lu_ta)         8.841006e-26     5.308125e-02 6.165593e-02     3.173862e-02
-##                  s(aglu_frac_mn)   s(lu_shdi)     s(lu_ta)
-## para                3.479742e-33 9.313202e-35 5.952150e-31
-## s(ann_agr_pland)    6.879036e-02 6.125586e-01 8.206342e-02
-## s(aglu_iji)         1.647540e-01 1.857947e-01 1.673806e-02
-## s(prn_agr_pland)    1.353203e-01 4.312666e-01 7.457102e-02
-## s(aglu_frac_mn)     1.000000e+00 1.289045e-01 6.166725e-02
-## s(lu_shdi)          1.372452e-01 1.000000e+00 7.347280e-02
-## s(lu_ta)            6.484571e-02 5.793377e-02 1.000000e+00
+##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## para             1.000000e+00     3.060105e-31 5.904924e-31     5.027925e-29    3.479742e-33
+## s(ann_agr_pland) 3.517215e-26     1.000000e+00 1.676118e-01     8.900990e-01    6.879036e-02
+## s(aglu_iji)      1.260709e-26     7.363499e-02 1.000000e+00     3.979171e-02    1.647540e-01
+## s(prn_agr_pland) 3.912225e-25     8.513926e-01 1.013937e-01     1.000000e+00    1.353203e-01
+## s(aglu_frac_mn)  4.021861e-26     3.878849e-02 1.312500e-01     7.402876e-02    1.000000e+00
+## s(lu_shdi)       2.852411e-26     6.066387e-01 1.934696e-01     3.270472e-01    1.372452e-01
+## s(lu_ta)         8.841006e-26     5.308125e-02 6.165593e-02     3.173862e-02    6.484571e-02
+##                    s(lu_shdi)     s(lu_ta)
+## para             9.313202e-35 5.952150e-31
+## s(ann_agr_pland) 6.125586e-01 8.206342e-02
+## s(aglu_iji)      1.857947e-01 1.673806e-02
+## s(prn_agr_pland) 4.312666e-01 7.457102e-02
+## s(aglu_frac_mn)  1.289045e-01 6.166725e-02
+## s(lu_shdi)       1.000000e+00 7.347280e-02
+## s(lu_ta)         5.793377e-02 1.000000e+00
 ## 
 ## $estimate
-##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland)
-## para             1.000000e+00     3.062679e-28 7.726625e-29     1.945028e-27
-## s(ann_agr_pland) 3.517215e-26     1.000000e+00 2.041713e-01     8.475226e-01
-## s(aglu_iji)      1.260709e-26     5.398520e-02 1.000000e+00     3.890542e-02
-## s(prn_agr_pland) 3.912225e-25     8.309419e-01 1.562758e-01     1.000000e+00
-## s(aglu_frac_mn)  4.021861e-26     5.484914e-02 7.261641e-02     7.150715e-02
-## s(lu_shdi)       2.852411e-26     4.516425e-01 1.912629e-01     2.542491e-01
-## s(lu_ta)         8.841006e-26     5.259363e-02 5.381418e-02     4.780151e-02
-##                  s(aglu_frac_mn)   s(lu_shdi)     s(lu_ta)
-## para                1.230392e-28 1.271592e-28 2.651862e-28
-## s(ann_agr_pland)    6.448691e-02 5.044038e-01 5.916732e-02
-## s(aglu_iji)         1.319772e-01 1.522204e-01 4.852983e-02
-## s(prn_agr_pland)    1.054344e-01 3.432870e-01 5.062001e-02
-## s(aglu_frac_mn)     1.000000e+00 1.041805e-01 6.252720e-02
-## s(lu_shdi)          1.162032e-01 1.000000e+00 3.023601e-02
-## s(lu_ta)            5.670188e-02 5.729500e-02 1.000000e+00</code></pre>
-<pre class="r"><code># gam.check(dpol.sim.gam)</code></pre>
+##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## para             1.000000e+00     3.062679e-28 7.726625e-29     1.945028e-27    1.230392e-28
+## s(ann_agr_pland) 3.517215e-26     1.000000e+00 2.041713e-01     8.475226e-01    6.448691e-02
+## s(aglu_iji)      1.260709e-26     5.398520e-02 1.000000e+00     3.890542e-02    1.319772e-01
+## s(prn_agr_pland) 3.912225e-25     8.309419e-01 1.562758e-01     1.000000e+00    1.054344e-01
+## s(aglu_frac_mn)  4.021861e-26     5.484914e-02 7.261641e-02     7.150715e-02    1.000000e+00
+## s(lu_shdi)       2.852411e-26     4.516425e-01 1.912629e-01     2.542491e-01    1.162032e-01
+## s(lu_ta)         8.841006e-26     5.259363e-02 5.381418e-02     4.780151e-02    5.670188e-02
+##                    s(lu_shdi)     s(lu_ta)
+## para             1.271592e-28 2.651862e-28
+## s(ann_agr_pland) 5.044038e-01 5.916732e-02
+## s(aglu_iji)      1.522204e-01 4.852983e-02
+## s(prn_agr_pland) 3.432870e-01 5.062001e-02
+## s(aglu_frac_mn)  1.041805e-01 6.252720e-02
+## s(lu_shdi)       1.000000e+00 3.023601e-02
+## s(lu_ta)         5.729500e-02 1.000000e+00</code></pre>
 <p>Partial effects plots and partial residuals. If variables are highly
 correlated, variance in the partial residual plot can be much less than
 the actual variance: <a
@@ -394,15 +388,6 @@ class="section level4">
 <h4>Without perennial agriculture or Shannon diversity</h4>
 <p>These two variables increased concurvity when included with annual
 agriculture</p>
-<pre class="r"><code>dpol.sim.gam2 &lt;- gam(delta_pollinators.margin ~
-                  s(ann_agr_pland) +
-                  s(aglu_iji) +
-                  s(aglu_frac_mn) +
-                  # s(lu_shdi) + 
-                  s(lu_ta), 
-                data = wfs_sim)
-
-summary(dpol.sim.gam2)</code></pre>
 <pre><code>## 
 ## Family: gaussian 
 ## Link function: identity 
@@ -428,7 +413,6 @@ summary(dpol.sim.gam2)</code></pre>
 ## 
 ## R-sq.(adj) =   0.59   Deviance explained = 60.8%
 ## GCV = 0.0076926  Scale est. = 0.0073093  n = 203</code></pre>
-<pre class="r"><code>concurvity(dpol.sim.gam2)</code></pre>
 <pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(aglu_frac_mn)  s(lu_ta)
 ## worst    1.939261e-25        0.5135293   0.4882250       0.3660882 0.2412315
 ## observed 1.939261e-25        0.2313410   0.3539394       0.3255057 0.1717468
@@ -445,16 +429,6 @@ class="section level4">
 <p>The two types of ag become relative to each other so the connection
 to the original natural habitat gradient is lost. Therefore I added
 <code>ntr_pland</code> into the model.</p>
-<pre class="r"><code>dpol.sim.gam3 &lt;- gam(delta_pollinators.margin ~
-                  s(prn_ann_lograt) +
-                  s(ntr_pland) +
-                  s(aglu_iji) +
-                  s(aglu_frac_mn) +
-                  # s(lu_shdi) +
-                  s(lu_ta), 
-                data = wfs_sim)
-
-summary(dpol.sim.gam3)</code></pre>
 <pre><code>## 
 ## Family: gaussian 
 ## Link function: identity 
@@ -481,7 +455,6 @@ summary(dpol.sim.gam3)</code></pre>
 ## 
 ## R-sq.(adj) =  0.691   Deviance explained = 71.1%
 ## GCV = 0.0059244  Scale est. = 0.0055099  n = 203</code></pre>
-<pre class="r"><code>concurvity(dpol.sim.gam3)</code></pre>
 <pre><code>##                  para s(prn_ann_lograt) s(ntr_pland) s(aglu_iji) s(aglu_frac_mn)  s(lu_ta)
 ## worst    2.276429e-24         0.5019678    0.3601966   0.5310411       0.4753209 0.2691309
 ## observed 2.276429e-24         0.3413470    0.3000680   0.4778711       0.4318476 0.1760535
@@ -499,22 +472,8 @@ class="section level3">
 habitat)</h3>
 <div id="correlation-between-predictors" class="section level4">
 <h4>Correlation between predictors</h4>
-<pre class="r"><code>pairs.panels(wfs_mod %&gt;% 
-               select(ann_agr_pland, prn_agr_pland, aglu_iji,
-                      lu_shdi, aglu_frac_mn, ntr_pland, prn_ann_lograt), 
-             cex.cor = 1, cex.labels=1, cex=0.5, method = &quot;pearson&quot;)</code></pre>
 <p><img src="landscapemodels_groups_files/figure-html/correlation_mod-1.png" width="672" /></p>
 <p>Like in simple landscapes, strong concurvity.</p>
-<pre class="r"><code>dpol.mod.gam &lt;- gam(delta_pollinators.margin ~
-                  s(ann_agr_pland) +
-                  s(aglu_iji) +
-                  s(prn_agr_pland) +
-                  s(aglu_frac_mn) +
-                  s(lu_shdi) + 
-                  s(lu_ta), 
-                data = wfs_mod)
-
-summary(dpol.mod.gam)</code></pre>
 <pre><code>## 
 ## Family: gaussian 
 ## Link function: identity 
@@ -542,60 +501,59 @@ summary(dpol.mod.gam)</code></pre>
 ## 
 ## R-sq.(adj) =  0.672   Deviance explained = 71.7%
 ## GCV = 0.011976  Scale est. = 0.010256  n = 134</code></pre>
-<pre class="r"><code>concurvity(dpol.mod.gam, full=FALSE)</code></pre>
 <pre><code>## $worst
-##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland)
-## para             1.000000e+00     5.940922e-27 3.001570e-27     2.954373e-26
-## s(ann_agr_pland) 5.941503e-27     1.000000e+00 9.081850e-01     7.709205e-01
-## s(aglu_iji)      3.138061e-27     9.081850e-01 1.000000e+00     6.553261e-01
-## s(prn_agr_pland) 2.963899e-26     7.709205e-01 6.553261e-01     1.000000e+00
-## s(aglu_frac_mn)  5.875167e-26     3.471142e-01 1.808796e-01     2.701383e-01
-## s(lu_shdi)       2.786048e-27     3.996283e-01 3.146720e-01     5.028945e-01
-## s(lu_ta)         5.228663e-26     2.071652e-01 1.750303e-01     1.634740e-01
-##                  s(aglu_frac_mn)   s(lu_shdi)     s(lu_ta)
-## para                5.864606e-26 2.887887e-27 5.107308e-26
-## s(ann_agr_pland)    3.471142e-01 3.996283e-01 2.071652e-01
-## s(aglu_iji)         1.808796e-01 3.146720e-01 1.750303e-01
-## s(prn_agr_pland)    2.701383e-01 5.028945e-01 1.634740e-01
-## s(aglu_frac_mn)     1.000000e+00 4.428449e-01 2.121595e-01
-## s(lu_shdi)          4.428449e-01 1.000000e+00 2.463950e-01
-## s(lu_ta)            2.121595e-01 2.463950e-01 1.000000e+00
+##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## para             1.000000e+00     5.940922e-27 3.001570e-27     2.954373e-26    5.864606e-26
+## s(ann_agr_pland) 5.941503e-27     1.000000e+00 9.081850e-01     7.709205e-01    3.471142e-01
+## s(aglu_iji)      3.138061e-27     9.081850e-01 1.000000e+00     6.553261e-01    1.808796e-01
+## s(prn_agr_pland) 2.963899e-26     7.709205e-01 6.553261e-01     1.000000e+00    2.701383e-01
+## s(aglu_frac_mn)  5.875167e-26     3.471142e-01 1.808796e-01     2.701383e-01    1.000000e+00
+## s(lu_shdi)       2.786048e-27     3.996283e-01 3.146720e-01     5.028945e-01    4.428449e-01
+## s(lu_ta)         5.228663e-26     2.071652e-01 1.750303e-01     1.634740e-01    2.121595e-01
+##                    s(lu_shdi)     s(lu_ta)
+## para             2.887887e-27 5.107308e-26
+## s(ann_agr_pland) 3.996283e-01 2.071652e-01
+## s(aglu_iji)      3.146720e-01 1.750303e-01
+## s(prn_agr_pland) 5.028945e-01 1.634740e-01
+## s(aglu_frac_mn)  4.428449e-01 2.121595e-01
+## s(lu_shdi)       1.000000e+00 2.463950e-01
+## s(lu_ta)         2.463950e-01 1.000000e+00
 ## 
 ## $observed
-##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland)
-## para             1.000000e+00     2.727826e-31 9.799843e-30     2.361291e-29
-## s(ann_agr_pland) 5.941503e-27     1.000000e+00 3.520376e-01     6.908235e-01
-## s(aglu_iji)      3.138061e-27     3.225735e-01 1.000000e+00     5.434168e-01
-## s(prn_agr_pland) 2.963899e-26     7.060632e-01 5.028774e-01     1.000000e+00
-## s(aglu_frac_mn)  5.875167e-26     1.996038e-01 7.737697e-02     1.803363e-01
-## s(lu_shdi)       2.786048e-27     3.644039e-01 1.755666e-01     4.468635e-01
-## s(lu_ta)         5.228663e-26     6.753496e-02 4.077721e-02     5.921496e-02
-##                  s(aglu_frac_mn)   s(lu_shdi)     s(lu_ta)
-## para                1.785641e-32 1.309089e-32 1.258005e-33
-## s(ann_agr_pland)    2.924194e-01 3.389941e-01 5.954404e-02
-## s(aglu_iji)         1.055242e-01 1.184936e-01 5.218076e-02
-## s(prn_agr_pland)    1.760762e-01 4.408835e-01 7.158946e-02
-## s(aglu_frac_mn)     1.000000e+00 3.854633e-01 8.870955e-02
-## s(lu_shdi)          3.791227e-01 1.000000e+00 4.760122e-02
-## s(lu_ta)            5.469810e-02 8.656661e-02 1.000000e+00
+##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## para             1.000000e+00     2.727826e-31 9.799843e-30     2.361291e-29    1.785641e-32
+## s(ann_agr_pland) 5.941503e-27     1.000000e+00 3.520376e-01     6.908235e-01    2.924194e-01
+## s(aglu_iji)      3.138061e-27     3.225735e-01 1.000000e+00     5.434168e-01    1.055242e-01
+## s(prn_agr_pland) 2.963899e-26     7.060632e-01 5.028774e-01     1.000000e+00    1.760762e-01
+## s(aglu_frac_mn)  5.875167e-26     1.996038e-01 7.737697e-02     1.803363e-01    1.000000e+00
+## s(lu_shdi)       2.786048e-27     3.644039e-01 1.755666e-01     4.468635e-01    3.791227e-01
+## s(lu_ta)         5.228663e-26     6.753496e-02 4.077721e-02     5.921496e-02    5.469810e-02
+##                    s(lu_shdi)     s(lu_ta)
+## para             1.309089e-32 1.258005e-33
+## s(ann_agr_pland) 3.389941e-01 5.954404e-02
+## s(aglu_iji)      1.184936e-01 5.218076e-02
+## s(prn_agr_pland) 4.408835e-01 7.158946e-02
+## s(aglu_frac_mn)  3.854633e-01 8.870955e-02
+## s(lu_shdi)       1.000000e+00 4.760122e-02
+## s(lu_ta)         8.656661e-02 1.000000e+00
 ## 
 ## $estimate
-##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland)
-## para             1.000000e+00     2.939964e-29 3.205692e-29     2.139917e-28
-## s(ann_agr_pland) 5.941503e-27     1.000000e+00 3.845905e-01     6.265938e-01
-## s(aglu_iji)      3.138061e-27     3.729062e-01 1.000000e+00     4.598821e-01
-## s(prn_agr_pland) 2.963899e-26     6.796568e-01 4.192708e-01     1.000000e+00
-## s(aglu_frac_mn)  5.875167e-26     2.387891e-01 7.571724e-02     1.595230e-01
-## s(lu_shdi)       2.786048e-27     3.268846e-01 1.437966e-01     3.750766e-01
-## s(lu_ta)         5.228663e-26     6.091076e-02 4.584781e-02     4.776450e-02
-##                  s(aglu_frac_mn)   s(lu_shdi)     s(lu_ta)
-## para                3.246434e-28 1.613363e-29 7.306340e-29
-## s(ann_agr_pland)    2.303574e-01 2.855604e-01 5.995903e-02
-## s(aglu_iji)         9.065323e-02 1.083315e-01 5.901373e-02
-## s(prn_agr_pland)    1.371711e-01 3.667042e-01 7.116351e-02
-## s(aglu_frac_mn)     1.000000e+00 3.577070e-01 8.855300e-02
-## s(lu_shdi)          3.378364e-01 1.000000e+00 5.117211e-02
-## s(lu_ta)            6.458661e-02 8.550852e-02 1.000000e+00</code></pre>
+##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## para             1.000000e+00     2.939964e-29 3.205692e-29     2.139917e-28    3.246434e-28
+## s(ann_agr_pland) 5.941503e-27     1.000000e+00 3.845905e-01     6.265938e-01    2.303574e-01
+## s(aglu_iji)      3.138061e-27     3.729062e-01 1.000000e+00     4.598821e-01    9.065323e-02
+## s(prn_agr_pland) 2.963899e-26     6.796568e-01 4.192708e-01     1.000000e+00    1.371711e-01
+## s(aglu_frac_mn)  5.875167e-26     2.387891e-01 7.571724e-02     1.595230e-01    1.000000e+00
+## s(lu_shdi)       2.786048e-27     3.268846e-01 1.437966e-01     3.750766e-01    3.378364e-01
+## s(lu_ta)         5.228663e-26     6.091076e-02 4.584781e-02     4.776450e-02    6.458661e-02
+##                    s(lu_shdi)     s(lu_ta)
+## para             1.613363e-29 7.306340e-29
+## s(ann_agr_pland) 2.855604e-01 5.995903e-02
+## s(aglu_iji)      1.083315e-01 5.901373e-02
+## s(prn_agr_pland) 3.667042e-01 7.116351e-02
+## s(aglu_frac_mn)  3.577070e-01 8.855300e-02
+## s(lu_shdi)       1.000000e+00 5.117211e-02
+## s(lu_ta)         8.550852e-02 1.000000e+00</code></pre>
 <p>Partial effects plots and partial residuals</p>
 <p><img src="landscapemodels_groups_files/figure-html/part_plot_mod-1.png" width="672" /></p>
 <p>Predicted effects against actual points. Covariates of each plot(not
@@ -606,16 +564,6 @@ on x axis) held at moderate landscape averages.</p>
 <h4>Without perennial ag and landscape iji</h4>
 <p>These variables increased concurvity when included with annual
 agriculture</p>
-<pre class="r"><code>dpol.mod.gam2 &lt;- gam(delta_pollinators.margin ~
-                  s(ann_agr_pland) +
-                  # s(aglu_iji) +
-                  # s(prn_agr_pland) +
-                  s(aglu_frac_mn) +
-                  s(lu_shdi) +
-                  s(lu_ta), 
-                data = wfs_mod)
-
-summary(dpol.mod.gam2)</code></pre>
 <pre><code>## 
 ## Family: gaussian 
 ## Link function: identity 
@@ -641,7 +589,6 @@ summary(dpol.mod.gam2)</code></pre>
 ## 
 ## R-sq.(adj) =  0.489   Deviance explained = 52.3%
 ## GCV = 0.017231  Scale est. = 0.015988  n = 134</code></pre>
-<pre class="r"><code>concurvity(dpol.mod.gam2, full = TRUE)</code></pre>
 <pre><code>##                  para s(ann_agr_pland) s(aglu_frac_mn) s(lu_shdi)  s(lu_ta)
 ## worst    1.501387e-25        0.5597992       0.5843440  0.5969329 0.3826714
 ## observed 1.501387e-25        0.4295216       0.5432946  0.5529519 0.1901933
@@ -658,16 +605,6 @@ class="section level4">
 <p>Using the composite variable isn’t as helpful now because the log
 ratio of perennial to annual ag is correlated with natural habitat, iji,
 and Shannon diversity.</p>
-<pre class="r"><code>dpol.mod.gam3 &lt;- gam(delta_pollinators.margin ~
-                  s(prn_ann_lograt) +
-                  s(ntr_pland) +
-                  # s(aglu_iji) +
-                  s(aglu_frac_mn) +
-                  # s(lu_shdi) +
-                  s(lu_ta), 
-                data = wfs_mod)
-
-summary(dpol.mod.gam3)</code></pre>
 <pre><code>## 
 ## Family: gaussian 
 ## Link function: identity 
@@ -693,7 +630,6 @@ summary(dpol.mod.gam3)</code></pre>
 ## 
 ## R-sq.(adj) =  0.586   Deviance explained = 62.9%
 ## GCV = 0.014572  Scale est. = 0.01297   n = 134</code></pre>
-<pre class="r"><code>concurvity(dpol.mod.gam3, full = TRUE)</code></pre>
 <pre><code>##                  para s(prn_ann_lograt) s(ntr_pland) s(aglu_frac_mn)  s(lu_ta)
 ## worst    2.984842e-25         0.5121413    0.5323226       0.4314362 0.3998508
 ## observed 2.984842e-25         0.3352122    0.4740053       0.3626445 0.1941480
@@ -710,21 +646,7 @@ class="section level3">
 <h3>Pollinator delta for natural landscapes (&gt;50% natural)</h3>
 <div id="correlation-between-predictors-1" class="section level4">
 <h4>Correlation between predictors</h4>
-<pre class="r"><code>pairs.panels(wfs_nat %&gt;% 
-               select(ann_agr_pland, prn_agr_pland, aglu_iji,
-                      lu_shdi, aglu_frac_mn, ntr_pland, prn_ann_lograt), 
-             cex.cor = 1, cex.labels=1, cex=0.5, method = &quot;pearson&quot;)</code></pre>
 <p><img src="landscapemodels_groups_files/figure-html/correlation_nat-1.png" width="672" /></p>
-<pre class="r"><code>dpol.nat.gam &lt;- gam(delta_pollinators.margin ~
-                  s(ann_agr_pland) +
-                  s(aglu_iji) +
-                  s(prn_agr_pland) +
-                  s(aglu_frac_mn) +
-                  s(lu_shdi) + 
-                  s(lu_ta), 
-                data = wfs_nat)
-
-summary(dpol.nat.gam)</code></pre>
 <pre><code>## 
 ## Family: gaussian 
 ## Link function: identity 
@@ -752,60 +674,59 @@ summary(dpol.nat.gam)</code></pre>
 ## 
 ## R-sq.(adj) =  0.373   Deviance explained = 44.1%
 ## GCV = 0.02751  Scale est. = 0.024269  n = 100</code></pre>
-<pre class="r"><code>concurvity(dpol.nat.gam, full = FALSE)</code></pre>
 <pre><code>## $worst
-##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland)
-## para             1.000000e+00     3.857414e-26 7.102279e-27     8.374562e-27
-## s(ann_agr_pland) 3.848054e-26     1.000000e+00 6.549448e-01     4.093743e-01
-## s(aglu_iji)      7.013940e-27     6.549448e-01 1.000000e+00     2.455593e-01
-## s(prn_agr_pland) 8.348788e-27     4.093743e-01 2.455593e-01     1.000000e+00
-## s(aglu_frac_mn)  1.182897e-26     3.540108e-01 1.852198e-01     3.060851e-01
-## s(lu_shdi)       3.821034e-27     1.950597e-01 4.458729e-01     3.464310e-01
-## s(lu_ta)         7.050402e-26     2.282794e-01 2.356749e-01     2.483118e-01
-##                  s(aglu_frac_mn)   s(lu_shdi)     s(lu_ta)
-## para                9.739771e-27 3.770422e-27 7.002749e-26
-## s(ann_agr_pland)    3.540108e-01 1.950597e-01 2.282794e-01
-## s(aglu_iji)         1.852198e-01 4.458729e-01 2.356749e-01
-## s(prn_agr_pland)    3.060851e-01 3.464310e-01 2.483118e-01
-## s(aglu_frac_mn)     1.000000e+00 2.973626e-01 2.671084e-01
-## s(lu_shdi)          2.973626e-01 1.000000e+00 2.569061e-01
-## s(lu_ta)            2.671084e-01 2.569061e-01 1.000000e+00
+##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## para             1.000000e+00     3.857414e-26 7.102279e-27     8.374562e-27    9.739771e-27
+## s(ann_agr_pland) 3.848054e-26     1.000000e+00 6.549448e-01     4.093743e-01    3.540108e-01
+## s(aglu_iji)      7.013940e-27     6.549448e-01 1.000000e+00     2.455593e-01    1.852198e-01
+## s(prn_agr_pland) 8.348788e-27     4.093743e-01 2.455593e-01     1.000000e+00    3.060851e-01
+## s(aglu_frac_mn)  1.182897e-26     3.540108e-01 1.852198e-01     3.060851e-01    1.000000e+00
+## s(lu_shdi)       3.821034e-27     1.950597e-01 4.458729e-01     3.464310e-01    2.973626e-01
+## s(lu_ta)         7.050402e-26     2.282794e-01 2.356749e-01     2.483118e-01    2.671084e-01
+##                    s(lu_shdi)     s(lu_ta)
+## para             3.770422e-27 7.002749e-26
+## s(ann_agr_pland) 1.950597e-01 2.282794e-01
+## s(aglu_iji)      4.458729e-01 2.356749e-01
+## s(prn_agr_pland) 3.464310e-01 2.483118e-01
+## s(aglu_frac_mn)  2.973626e-01 2.671084e-01
+## s(lu_shdi)       1.000000e+00 2.569061e-01
+## s(lu_ta)         2.569061e-01 1.000000e+00
 ## 
 ## $observed
-##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland)
-## para             1.000000e+00     1.158768e-31 2.260178e-34     9.483548e-35
-## s(ann_agr_pland) 3.848054e-26     1.000000e+00 5.509737e-01     2.920831e-01
-## s(aglu_iji)      7.013940e-27     5.614680e-01 1.000000e+00     1.277180e-01
-## s(prn_agr_pland) 8.348788e-27     2.675150e-01 1.014273e-01     1.000000e+00
-## s(aglu_frac_mn)  1.182897e-26     2.849231e-01 8.842859e-02     1.272280e-01
-## s(lu_shdi)       3.821034e-27     1.481387e-01 1.001373e-01     1.754914e-01
-## s(lu_ta)         7.050402e-26     7.203623e-02 1.192860e-01     6.929281e-02
-##                  s(aglu_frac_mn)   s(lu_shdi)     s(lu_ta)
-## para                1.334958e-29 1.856124e-32 3.438756e-33
-## s(ann_agr_pland)    2.543979e-01 1.283663e-01 6.118301e-02
-## s(aglu_iji)         9.993670e-02 1.648543e-01 8.825786e-02
-## s(prn_agr_pland)    4.254180e-02 2.008678e-01 1.341929e-01
-## s(aglu_frac_mn)     1.000000e+00 8.651317e-02 1.215356e-01
-## s(lu_shdi)          1.884950e-01 1.000000e+00 6.316372e-02
-## s(lu_ta)            7.891603e-02 3.157460e-02 1.000000e+00
+##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## para             1.000000e+00     1.158768e-31 2.260178e-34     9.483548e-35    1.334958e-29
+## s(ann_agr_pland) 3.848054e-26     1.000000e+00 5.509737e-01     2.920831e-01    2.543979e-01
+## s(aglu_iji)      7.013940e-27     5.614680e-01 1.000000e+00     1.277180e-01    9.993670e-02
+## s(prn_agr_pland) 8.348788e-27     2.675150e-01 1.014273e-01     1.000000e+00    4.254180e-02
+## s(aglu_frac_mn)  1.182897e-26     2.849231e-01 8.842859e-02     1.272280e-01    1.000000e+00
+## s(lu_shdi)       3.821034e-27     1.481387e-01 1.001373e-01     1.754914e-01    1.884950e-01
+## s(lu_ta)         7.050402e-26     7.203623e-02 1.192860e-01     6.929281e-02    7.891603e-02
+##                    s(lu_shdi)     s(lu_ta)
+## para             1.856124e-32 3.438756e-33
+## s(ann_agr_pland) 1.283663e-01 6.118301e-02
+## s(aglu_iji)      1.648543e-01 8.825786e-02
+## s(prn_agr_pland) 2.008678e-01 1.341929e-01
+## s(aglu_frac_mn)  8.651317e-02 1.215356e-01
+## s(lu_shdi)       1.000000e+00 6.316372e-02
+## s(lu_ta)         3.157460e-02 1.000000e+00
 ## 
 ## $estimate
-##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland)
-## para             1.000000e+00     4.998547e-29 2.906636e-29     2.043384e-29
-## s(ann_agr_pland) 3.848054e-26     1.000000e+00 4.570519e-01     2.544625e-01
-## s(aglu_iji)      7.013940e-27     3.452204e-01 1.000000e+00     1.200054e-01
-## s(prn_agr_pland) 8.348788e-27     1.796533e-01 9.867048e-02     1.000000e+00
-## s(aglu_frac_mn)  1.182897e-26     3.061359e-01 8.065645e-02     1.247965e-01
-## s(lu_shdi)       3.821034e-27     1.252359e-01 9.606945e-02     1.625455e-01
-## s(lu_ta)         7.050402e-26     7.166742e-02 1.130923e-01     6.522488e-02
-##                  s(aglu_frac_mn)   s(lu_shdi)     s(lu_ta)
-## para                1.141700e-29 1.786835e-29 2.040769e-28
-## s(ann_agr_pland)    2.502590e-01 1.089337e-01 6.287434e-02
-## s(aglu_iji)         1.251437e-01 1.464432e-01 9.252974e-02
-## s(prn_agr_pland)    1.413385e-01 1.957122e-01 1.273986e-01
-## s(aglu_frac_mn)     1.000000e+00 8.348052e-02 1.191427e-01
-## s(lu_shdi)          1.534707e-01 1.000000e+00 6.290970e-02
-## s(lu_ta)            5.954659e-02 6.485441e-02 1.000000e+00</code></pre>
+##                          para s(ann_agr_pland)  s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
+## para             1.000000e+00     4.998547e-29 2.906636e-29     2.043384e-29    1.141700e-29
+## s(ann_agr_pland) 3.848054e-26     1.000000e+00 4.570519e-01     2.544625e-01    2.502590e-01
+## s(aglu_iji)      7.013940e-27     3.452204e-01 1.000000e+00     1.200054e-01    1.251437e-01
+## s(prn_agr_pland) 8.348788e-27     1.796533e-01 9.867048e-02     1.000000e+00    1.413385e-01
+## s(aglu_frac_mn)  1.182897e-26     3.061359e-01 8.065645e-02     1.247965e-01    1.000000e+00
+## s(lu_shdi)       3.821034e-27     1.252359e-01 9.606945e-02     1.625455e-01    1.534707e-01
+## s(lu_ta)         7.050402e-26     7.166742e-02 1.130923e-01     6.522488e-02    5.954659e-02
+##                    s(lu_shdi)     s(lu_ta)
+## para             1.786835e-29 2.040769e-28
+## s(ann_agr_pland) 1.089337e-01 6.287434e-02
+## s(aglu_iji)      1.464432e-01 9.252974e-02
+## s(prn_agr_pland) 1.957122e-01 1.273986e-01
+## s(aglu_frac_mn)  8.348052e-02 1.191427e-01
+## s(lu_shdi)       1.000000e+00 6.290970e-02
+## s(lu_ta)         6.485441e-02 1.000000e+00</code></pre>
 <p>Partial effects plots and partial residuals</p>
 <p><img src="landscapemodels_groups_files/figure-html/part_plot_nat-1.png" width="672" /></p>
 <p>Predicted effects against actual points. Covariates of each plot(not
@@ -815,16 +736,6 @@ on x axis) held at natural landscape averages.</p>
 <div id="without-landscape-iji" class="section level4">
 <h4>Without landscape iji</h4>
 <p>IJI increased concurvity when included with annual agriculture.</p>
-<pre class="r"><code>dpol.nat.gam2 &lt;- gam(delta_pollinators.margin ~
-                  s(ann_agr_pland) +
-                  # s(aglu_iji) +
-                  s(prn_agr_pland) +
-                  s(aglu_frac_mn) +
-                  s(lu_shdi) +
-                  s(lu_ta), 
-                data = wfs_nat)
-
-summary(dpol.nat.gam2)</code></pre>
 <pre><code>## 
 ## Family: gaussian 
 ## Link function: identity 
@@ -851,15 +762,10 @@ summary(dpol.nat.gam2)</code></pre>
 ## 
 ## R-sq.(adj) =  0.284   Deviance explained = 34.6%
 ## GCV = 0.030573  Scale est. = 0.027673  n = 100</code></pre>
-<pre class="r"><code>concurvity(dpol.nat.gam2, full = TRUE)</code></pre>
-<pre><code>##                  para s(ann_agr_pland) s(prn_agr_pland) s(aglu_frac_mn) s(lu_shdi)
-## worst    2.160138e-25        0.6834082        0.6730752       0.6980271  0.6382087
-## observed 2.160138e-25        0.6046352        0.6023262       0.5910508  0.5334038
-## estimate 2.160138e-25        0.5668519        0.5459427       0.5612572  0.5016855
-##           s(lu_ta)
-## worst    0.5642694
-## observed 0.4380498
-## estimate 0.4293660</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(prn_agr_pland) s(aglu_frac_mn) s(lu_shdi)  s(lu_ta)
+## worst    2.160138e-25        0.6834082        0.6730752       0.6980271  0.6382087 0.5642694
+## observed 2.160138e-25        0.6046352        0.6023262       0.5910508  0.5334038 0.4380498
+## estimate 2.160138e-25        0.5668519        0.5459427       0.5612572  0.5016855 0.4293660</code></pre>
 <p>Partial effects plots and partial residuals</p>
 <p><img src="landscapemodels_groups_files/figure-html/part_plot_nat2-1.png" width="672" /></p>
 <p>Predicted effects against actual points. Covariates of each plot(not
@@ -871,14 +777,6 @@ class="section level4">
 <h4>A composite variable of log ratio of annual to perennial ag</h4>
 <p>Dropping IJI as before, but also Shannon diversity because it
 correlates with natural habitat</p>
-<pre class="r"><code>dpol.nat.gam3 &lt;- gam(delta_pollinators.margin ~
-                  s(prn_ann_lograt) +
-                  s(ntr_pland) +
-                  s(aglu_frac_mn) +
-                  s(lu_ta), 
-                data = wfs_nat)
-
-summary(dpol.nat.gam3)</code></pre>
 <pre><code>## 
 ## Family: gaussian 
 ## Link function: identity 
@@ -904,7 +802,6 @@ summary(dpol.nat.gam3)</code></pre>
 ## 
 ## R-sq.(adj) =  0.277   Deviance explained = 33.3%
 ## GCV = 0.030596  Scale est. = 0.027945  n = 100</code></pre>
-<pre class="r"><code>concurvity(dpol.nat.gam3, full = TRUE)</code></pre>
 <pre><code>##                  para s(prn_ann_lograt) s(ntr_pland) s(aglu_frac_mn)  s(lu_ta)
 ## worst    3.600625e-25         0.5543747    0.6085286       0.5234792 0.4890565
 ## observed 3.600625e-25         0.3734575    0.4237586       0.3083644 0.2302300
@@ -924,15 +821,6 @@ class="section level2">
 class="section level4">
 <h4>Correlation between independent variables in all landscapes.</h4>
 <p><img src="landscapemodels_groups_files/figure-html/correlation_all-1.png" width="672" /></p>
-<pre class="r"><code>dpol.all.gam &lt;- gam(delta_pollinators.margin ~
-                  te(prn_ann_lograt,ntr_pland) +
-                  s(aglu_frac_mn) +
-                  # s(aglu_iji) +
-                  # s(lu_shdi) +
-                  s(lu_ta), 
-                data = wfs_lsm)
-
-summary(dpol.all.gam)</code></pre>
 <pre><code>## 
 ## Family: gaussian 
 ## Link function: identity 
@@ -957,7 +845,6 @@ summary(dpol.all.gam)</code></pre>
 ## 
 ## R-sq.(adj) =  0.757   Deviance explained =   77%
 ## GCV = 0.014857  Scale est. = 0.014064  n = 437</code></pre>
-<pre class="r"><code>concurvity(dpol.all.gam, full = TRUE)</code></pre>
 <pre><code>##                  para te(prn_ann_lograt,ntr_pland) s(aglu_frac_mn)   s(lu_ta)
 ## worst    8.633949e-26                    0.5580195       0.5561864 0.15535816
 ## observed 8.633949e-26                    0.2652733       0.4276922 0.08238049

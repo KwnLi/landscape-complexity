@@ -13,3 +13,7 @@ navbar:
       href: landscapemodels_groups.html
     - text: "2/19/2025"
       href: landscapemetrics_quantile.html
+    - text: "2/26/2025"
+      href: landscapemetrics_onefield.html
+    - text: "3/5/2025"
+      href: examine_sim_results.html

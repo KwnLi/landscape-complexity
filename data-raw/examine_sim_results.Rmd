@@ -40,6 +40,33 @@ ggplot(wfs_meta, aes(erodibility_mean, delta_sed.margin)) +
 ```
 
 ```{r erodibility_2}
-ggplot(wfs_meta, aes(ntr_pland, erodibility_mean)) + 
-  geom_point()
+library(plotly)
+fig <- plot_ly(wfs_meta, x = ~erodibility_mean, y = ~erosivity_mean, z = ~delta_sed.margin, color = ~delta_sed.margin, text = ~hu)
+
+fig
+
+```
+
+```{r sediment_change}
+ggplot(wfs_meta, aes(sed_export_base, sed_export_max, color = delta_sed.margin)) + 
+  geom_point() + geom_abline(intercept = 0, slope = 1) + scale_color_continuous(type="viridis")
+
+```
+
+```{r nutrient_change}
+ggplot(wfs_meta, aes(n_export_base, n_export_max, color = delta_n_export.margin)) + 
+  geom_point() + geom_abline(intercept = 0, slope = 1) + scale_color_continuous(type="viridis")
+
+```
+
+```{r pollinator_change}
+ggplot(wfs_meta, aes(pollinators_base, pollinators_max, color = delta_pollinators.margin)) + 
+  geom_point() + geom_abline(intercept = 0, slope = 1) + scale_color_continuous(type="viridis")
+
+```
+
+```{r qb_change}
+ggplot(wfs_meta, aes(qb_base, qb_max, color = delta_qb.margin)) + 
+  geom_point() + geom_abline(intercept = 0, slope = 1) + scale_color_continuous(type="viridis")
+
 ```

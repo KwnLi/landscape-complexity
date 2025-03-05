@@ -292,7 +292,7 @@ ggbiplot::ggbiplot(es_max.margin_pca, groups = wfs_lsm_of$habcat, choices = c(2,
   egg::theme_article()
 ```
 
-```{r model}
+```{r model, include=FALSE, eval = FALSE}
 library(brms)
 
 both_wide.margin <- both_long.margin %>%

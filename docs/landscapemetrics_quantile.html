@@ -257,6 +257,12 @@ $(document).ready(function () {
 <li>
   <a href="landscapemetrics_quantile.html">2/19/2025</a>
 </li>
+<li>
+  <a href="landscapemetrics_onefield.html">2/26/2025</a>
+</li>
+<li>
+  <a href="examine_sim_results.html">3/5/2025</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -299,13 +305,6 @@ agricultural-natural gradient. I think the interaction helps mitigate
 concurvity a little.</p>
 <div id="results" class="section level3">
 <h3>Results</h3>
-<pre class="r"><code>qgam.fit &lt;- mqgamV(delta_pollinators.margin ~
-                  te(ntr_pland, prn_ann_lograt) +
-                  s(aglu_frac_mn) +
-                  s(aglu_iji) +
-                  s(lu_shdi),
-                data = wfs_lsm,
-              qu = c(0.1, 0.2,0.5,0.8, 0.9))</code></pre>
 <pre><code>## Estimating learning rate. Each dot corresponds to a loss evaluation. 
 ## qu = 0.5........done 
 ## qu = 0.2..........done 
@@ -473,13 +472,6 @@ land cover.</p>
 <div id="predict-change-in-pollinators-using-pc1-and-pc2"
 class="section level2">
 <h2>Predict change in pollinators using PC1 and PC2</h2>
-<pre class="r"><code>lsm_pc &lt;- wfs_grp %&gt;% cbind(predict(wfs_pca_all))
-
-pol.delt.lm1 &lt;- lm(delta_pollinators.margin ~ PC1 + PC2, data = lsm_pc)
-
-pol.delt.lm2 &lt;- lm(delta_pollinators.margin ~ PC1 * PC2, data = lsm_pc)
-
-performance::compare_performance(pol.delt.lm1,pol.delt.lm2)</code></pre>
 <pre><code>## # Comparison of Model Performance Indices
 ## 
 ## Name         | Model |  AIC (weights) | AICc (weights) |  BIC (weights) |    R2 | R2 (adj.)
@@ -491,7 +483,6 @@ performance::compare_performance(pol.delt.lm1,pol.delt.lm2)</code></pre>
 ## ----------------------------
 ## pol.delt.lm1 | 0.190 | 0.190
 ## pol.delt.lm2 | 0.188 | 0.189</code></pre>
-<pre class="r"><code>summary(pol.delt.lm2)</code></pre>
 <pre><code>## 
 ## Call:
 ## lm(formula = delta_pollinators.margin ~ PC1 * PC2, data = lsm_pc)
@@ -512,31 +503,11 @@ performance::compare_performance(pol.delt.lm1,pol.delt.lm2)</code></pre>
 ## Residual standard error: 0.1888 on 433 degrees of freedom
 ## Multiple R-squared:  0.3889, Adjusted R-squared:  0.3846 
 ## F-statistic: 91.84 on 3 and 433 DF,  p-value: &lt; 2.2e-16</code></pre>
-<pre class="r"><code>pred.PC1 &lt;- ggeffects::ggpredict(pol.delt.lm2, terms = c(&quot;PC1&quot;,&quot;PC2&quot;)) %&gt;%
-  rename(PC1 = x, delta_pollinators.margin = predicted, PC2 = group)
-
-pred.PC2 &lt;- ggeffects::ggpredict(pol.delt.lm2, terms = c(&quot;PC2&quot;,&quot;PC1&quot;)) %&gt;%
-  rename(PC2 = x, delta_pollinators.margin = predicted, PC1 = group)
-
-ggplot(lsm_pc, aes(PC1, delta_pollinators.margin)) + 
-  geom_point(aes(color = PC2)) + scale_color_continuous(type = &quot;viridis&quot;) + 
-  geom_ribbon(data = pred.PC1, 
-              mapping = aes(ymin = conf.low, ymax = conf.high, group = PC2, fill = PC2), alpha = 0.2) + egg::theme_article()</code></pre>
-<p><img src="landscapemetrics_quantile_files/figure-html/prediction_delta-1.png" width="672" /></p>
-<pre class="r"><code>ggplot(lsm_pc, aes(PC2, delta_pollinators.margin)) + 
-  geom_point(aes(color = PC1)) + scale_color_continuous(type = &quot;viridis&quot;) + 
-  geom_ribbon(data = pred.PC2, 
-              mapping = aes(ymin = conf.low, ymax = conf.high, group = PC1, fill = PC1), alpha = 0.2) + egg::theme_article()</code></pre>
-<p><img src="landscapemetrics_quantile_files/figure-html/prediction_delta-2.png" width="672" /></p>
+<p><img src="landscapemetrics_quantile_files/figure-html/prediction_delta-1.png" width="672" /><img src="landscapemetrics_quantile_files/figure-html/prediction_delta-2.png" width="672" /></p>
 </div>
 <div id="predict-base-pollinator-abundance-with-pc1-and-pc2"
 class="section level2">
 <h2>Predict base pollinator abundance with PC1 and PC2</h2>
-<pre class="r"><code>pol.base.lm1 &lt;- lm(pollinators_base ~ PC1 + PC2, data = lsm_pc)
-
-pol.base.lm2 &lt;- lm(pollinators_base ~ PC1 * PC2, data = lsm_pc)
-
-performance::compare_performance(pol.base.lm1,pol.base.lm2)</code></pre>
 <pre><code>## # Comparison of Model Performance Indices
 ## 
 ## Name         | Model | AIC (weights) | AICc (weights) | BIC (weights) |    R2 | R2 (adj.)
@@ -548,7 +519,6 @@ performance::compare_performance(pol.base.lm1,pol.base.lm2)</code></pre>
 ## ----------------------------
 ## pol.base.lm1 | 0.253 | 0.254
 ## pol.base.lm2 | 0.243 | 0.244</code></pre>
-<pre class="r"><code>summary(pol.base.lm2)</code></pre>
 <pre><code>## 
 ## Call:
 ## lm(formula = pollinators_base ~ PC1 * PC2, data = lsm_pc)
@@ -569,35 +539,13 @@ performance::compare_performance(pol.base.lm1,pol.base.lm2)</code></pre>
 ## Residual standard error: 0.244 on 433 degrees of freedom
 ## Multiple R-squared:  0.8826, Adjusted R-squared:  0.8818 
 ## F-statistic:  1085 on 3 and 433 DF,  p-value: &lt; 2.2e-16</code></pre>
-<pre class="r"><code>pred.base.PC1 &lt;- ggeffects::ggpredict(pol.base.lm2, terms = c(&quot;PC1&quot;,&quot;PC2&quot;)) %&gt;%
-  rename(PC1 = x, pollinators_base = predicted, PC2 = group)
-
-pred.base.PC2 &lt;- ggeffects::ggpredict(pol.base.lm2, terms = c(&quot;PC2&quot;,&quot;PC1&quot;)) %&gt;%
-  rename(PC2 = x, pollinators_base = predicted, PC1 = group)
-
-ggplot(lsm_pc, aes(PC1, pollinators_base)) + 
-  geom_point(aes(color = PC2)) + scale_color_continuous(type = &quot;viridis&quot;) + 
-  geom_ribbon(data = pred.base.PC1, 
-              mapping = aes(ymin = conf.low, ymax = conf.high, group = PC2, fill = PC2), alpha = 0.2) + egg::theme_article()</code></pre>
-<p><img src="landscapemetrics_quantile_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
-<pre class="r"><code>ggplot(lsm_pc, aes(PC2, pollinators_base)) + 
-  geom_point(aes(color = PC1)) + scale_color_continuous(type = &quot;viridis&quot;) + 
-  geom_ribbon(data = pred.base.PC2, 
-              mapping = aes(ymin = conf.low, ymax = conf.high, group = PC1, fill = PC1), alpha = 0.2) + egg::theme_article()</code></pre>
-<p><img src="landscapemetrics_quantile_files/figure-html/unnamed-chunk-1-2.png" width="672" /></p>
+<p><img src="landscapemetrics_quantile_files/figure-html/unnamed-chunk-1-1.png" width="672" /><img src="landscapemetrics_quantile_files/figure-html/unnamed-chunk-1-2.png" width="672" /></p>
 </div>
 <div
 id="relationships-between-base-ecosystem-service-values-and-change-in-es-normalized-by-margin-area"
 class="section level2">
 <h2>Relationships between base ecosystem service values and change in ES
 normalized by margin area</h2>
-<pre class="r"><code>psych::pairs.panels(wfs_lsm %&gt;% 
-               select(margin_dens,
-                      pollinators_base, qb_base, 
-                      n_export_base, sed_export_base,
-                      delta_pollinators.margin, delta_qb.margin,
-                      delta_n_export.margin, delta_sed.margin),
-             cex.cor = 1, cex.labels=1, cex=0.5, method = &quot;pearson&quot;)</code></pre>
 <p><img src="landscapemetrics_quantile_files/figure-html/margin_relations-1.png" width="100%" /></p>
 </div>
 

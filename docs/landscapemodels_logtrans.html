@@ -257,6 +257,12 @@ $(document).ready(function () {
 <li>
   <a href="landscapemetrics_quantile.html">2/19/2025</a>
 </li>
+<li>
+  <a href="landscapemetrics_onefield.html">2/26/2025</a>
+</li>
+<li>
+  <a href="examine_sim_results.html">3/5/2025</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -278,10 +284,6 @@ $(document).ready(function () {
 <h2>Pollinator models</h2>
 <div id="pollinator-delta" class="section level3">
 <h3>Pollinator delta</h3>
-<pre class="r"><code>pol.lm0 &lt;- gam(log.delta_pollinators ~ margin_dens, data = wfs_lsm)
-pol.gam0 &lt;- gam(log.delta_pollinators ~ s(margin_dens), data = wfs_lsm)
-
-anova(pol.lm0, pol.gam0)</code></pre>
 <pre><code>## Analysis of Deviance Table
 ## 
 ## Model 1: log.delta_pollinators ~ margin_dens
@@ -291,10 +293,6 @@ anova(pol.lm0, pol.gam0)</code></pre>
 ## 2    427.29     5.4886 7.7117   4.5791 46.309 &lt; 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<pre class="r"><code>pol.gam1 &lt;- gam(log.delta_pollinators ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(margin_dens) + s(lu_shdi), 
-                data = wfs_lsm)
-
-performance::compare_performance(pol.lm0, pol.gam0, pol.gam1)</code></pre>
 <pre><code>## Some of the nested models seem to be identical</code></pre>
 <pre><code>## # Comparison of Model Performance Indices
 ## 
@@ -303,7 +301,6 @@ performance::compare_performance(pol.lm0, pol.gam0, pol.gam1)</code></pre>
 ## pol.lm0  |   gam |  -401.6 (&lt;.001) |  -401.5 (&lt;.001) |  -389.4 (&lt;.001) | 0.843 | 0.152 | 0.152
 ## pol.gam0 |   gam |  -652.8 (&lt;.001) |  -652.3 (&lt;.001) |  -612.2 (&lt;.001) | 0.913 | 0.112 | 0.113
 ## pol.gam1 |   gam | -1250.9 (&gt;.999) | -1246.6 (&gt;.999) | -1131.7 (&gt;.999) | 0.979 | 0.054 | 0.056</code></pre>
-<pre class="r"><code>summary(pol.gam1)</code></pre>
 <pre><code>## 
 ## Family: gaussian 
 ## Link function: identity 
@@ -331,7 +328,6 @@ performance::compare_performance(pol.lm0, pol.gam0, pol.gam1)</code></pre>
 ## 
 ## R-sq.(adj) =  0.979   Deviance explained =   98%
 ## GCV = 0.003344  Scale est. = 0.0031281  n = 437</code></pre>
-<pre class="r"><code>concurvity(pol.gam1)</code></pre>
 <pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
 ## worst    5.890479e-25        0.8912197   0.6995208        0.7829295       0.6886298
 ## observed 5.890479e-25        0.7709157   0.6662133        0.6142880       0.5881407
@@ -340,40 +336,12 @@ performance::compare_performance(pol.lm0, pol.gam0, pol.gam1)</code></pre>
 ## worst         0.8374435  0.7308447
 ## observed      0.7928102  0.6736699
 ## estimate      0.5937077  0.5673864</code></pre>
-<pre class="r"><code>polplot.df &lt;- plot_fun(pol.gam1, 
-                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;margin_dens&quot;),
-                       wfs_lsm)
-
-ggplot(polplot.df[[1]], aes(x, log.delta_pollinators)) +  
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
-  geom_point(data = polplot.df[[2]], 
-             mapping = aes(color = margin_dens), 
-             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
-  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
-  egg::theme_article()</code></pre>
 <p><img src="landscapemodels_logtrans_files/figure-html/plot_pol-1.png" width="672" /></p>
-<pre class="r"><code>polplot0.df &lt;- plot_fun(pol.gam0, 
-                       &quot;margin_dens&quot;,
-                       wfs_lsm)
-
-ggplot(polplot0.df[[1]], aes(x, log.delta_pollinators)) +  
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
-  geom_point(data = polplot0.df[[2]], 
-             mapping = aes(color = margin_dens), 
-             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
-  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
-  egg::theme_article()</code></pre>
 <p><img src="landscapemodels_logtrans_files/figure-html/plot_pol0-1.png" width="672" /></p>
 </div>
 <div id="residual-model-from-gam0" class="section level3">
 <h3>Residual model from gam0</h3>
 <p>Trying to account for the effect of margins first</p>
-<pre class="r"><code>wfs_lsm_resids &lt;- wfs_lsm %&gt;% cbind(pol.resid = residuals(pol.gam0))
-
-polresid.gam1 &lt;- gam(pol.resid ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
-                data = wfs_lsm_resids)
-
-summary(polresid.gam1)</code></pre>
 <pre><code>## 
 ## Family: gaussian 
 ## Link function: identity 
@@ -398,27 +366,10 @@ summary(polresid.gam1)</code></pre>
 ## 
 ## R-sq.(adj) =  0.714   Deviance explained = 72.4%
 ## GCV = 0.0037414  Scale est. = 0.0035981  n = 437</code></pre>
-<pre class="r"><code>concurvity(polresid.gam1)</code></pre>
-<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
-## worst    5.223854e-25        0.7896108   0.6818488        0.7524929       0.6555056
-## observed 5.223854e-25        0.6910831   0.6428548        0.5375167       0.5896608
-## estimate 5.223854e-25        0.7235572   0.5471598        0.4679625       0.4491356
-##          s(lu_shdi)
-## worst     0.6444388
-## observed  0.5716857
-## estimate  0.4488346</code></pre>
-<pre class="r"><code>residpolplot.df &lt;- plot_fun(polresid.gam1, 
-                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;),
-                       wfs_lsm_resids,
-                       &quot;ann_agr_pland&quot;)
-
-ggplot(residpolplot.df[[1]], aes(x, pol.resid)) +  
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
-  geom_point(data = residpolplot.df[[2]], 
-             mapping = aes(color = ann_agr_pland), 
-             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
-  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
-  egg::theme_article()</code></pre>
+<pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn) s(lu_shdi)
+## worst    5.223854e-25        0.7896108   0.6818488        0.7524929       0.6555056  0.6444388
+## observed 5.223854e-25        0.6910831   0.6428548        0.5375167       0.5896608  0.5716857
+## estimate 5.223854e-25        0.7235572   0.5471598        0.4679625       0.4491356  0.4488346</code></pre>
 <p><img src="landscapemodels_logtrans_files/figure-html/plot_pol_resid-1.png" width="672" /></p>
 </div>
 </div>
@@ -426,10 +377,6 @@ ggplot(residpolplot.df[[1]], aes(x, pol.resid)) +
 <h2>Seasonal water yield</h2>
 <div id="seasonal-water-yield-delta" class="section level3">
 <h3>Seasonal water yield delta</h3>
-<pre class="r"><code>swy.lm0 &lt;- gam(log.delta_qb ~ margin_dens, data = wfs_lsm)
-swy.gam0 &lt;- gam(log.delta_qb ~ s(margin_dens), data = wfs_lsm)
-
-anova(swy.lm0, swy.gam0)</code></pre>
 <pre><code>## Analysis of Deviance Table
 ## 
 ## Model 1: log.delta_qb ~ margin_dens
@@ -439,10 +386,6 @@ anova(swy.lm0, swy.gam0)</code></pre>
 ## 2    430.66     1064.6 4.3436   36.799 3.4357 0.007098 **
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<pre class="r"><code>swy.gam1 &lt;- gam(log.delta_qb ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(margin_dens) + s(lu_shdi), 
-                data = wfs_lsm)
-
-performance::compare_performance(swy.lm0, swy.gam0, swy.gam1)</code></pre>
 <pre><code>## Some of the nested models seem to be identical</code></pre>
 <pre><code>## # Comparison of Model Performance Indices
 ## 
@@ -451,7 +394,6 @@ performance::compare_performance(swy.lm0, swy.gam0, swy.gam1)</code></pre>
 ## swy.lm0  |   gam | 1650.1 (&lt;.001) | 1650.2 (&lt;.001) | 1662.4 (0.802) | 0.128 | 1.588 | 1.591
 ## swy.gam0 |   gam | 1641.8 (&lt;.001) | 1642.0 (&lt;.001) | 1667.4 (0.063) | 0.151 | 1.561 | 1.570
 ## swy.gam1 |   gam | 1577.4 (&gt;.999) | 1579.8 (&gt;.999) | 1665.9 (0.135) | 0.292 | 1.400 | 1.434</code></pre>
-<pre class="r"><code>summary(swy.gam1)</code></pre>
 <pre><code>## 
 ## Family: gaussian 
 ## Link function: identity 
@@ -479,7 +421,6 @@ performance::compare_performance(swy.lm0, swy.gam0, swy.gam1)</code></pre>
 ## 
 ## R-sq.(adj) =  0.292   Deviance explained = 32.4%
 ## GCV = 2.1587  Scale est. = 2.0564    n = 437</code></pre>
-<pre class="r"><code>concurvity(swy.gam1)</code></pre>
 <pre><code>##                  para s(ann_agr_pland) s(aglu_iji) s(prn_agr_pland) s(aglu_frac_mn)
 ## worst    5.890479e-25        0.8912197   0.6995208        0.7829295       0.6886298
 ## observed 5.890479e-25        0.6045982   0.6662133        0.4745638       0.6116032
@@ -488,17 +429,6 @@ performance::compare_performance(swy.lm0, swy.gam0, swy.gam1)</code></pre>
 ## worst         0.8374435  0.7308447
 ## observed      0.7158746  0.2483719
 ## estimate      0.5937077  0.5673864</code></pre>
-<pre class="r"><code>swyplot.df &lt;- plot_fun(swy.gam1, 
-                       c(&quot;ann_agr_pland&quot;, &quot;aglu_iji&quot;, &quot;prn_agr_pland&quot;, &quot;aglu_frac_mn&quot;, &quot;margin_dens&quot;),
-                       wfs_lsm)
-
-ggplot(swyplot.df[[1]], aes(x, log.delta_qb)) +  
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
-  geom_point(data = swyplot.df[[2]], 
-             mapping = aes(color = margin_dens), 
-             size = 0.6) + scale_color_continuous(type = &quot;viridis&quot;) +
-  facet_wrap(~pred.var, scales = &quot;free_x&quot;) +
-  egg::theme_article()</code></pre>
 <p><img src="landscapemodels_logtrans_files/figure-html/plot_swy-1.png" width="672" /></p>
 </div>
 </div>
