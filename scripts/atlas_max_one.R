@@ -27,7 +27,7 @@ baseline <- list()
 maxwfs <- list()
 onefield <- list()
 
-for(i in seq_along(batchnum)){
+for(i in batchnum){
   i.start <- Sys.time()
   
   hu.name <- hu.names[i]
