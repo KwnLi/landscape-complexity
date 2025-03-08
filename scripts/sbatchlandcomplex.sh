@@ -18,4 +18,4 @@ module load miniconda3
 source activate
 conda activate r-invest2
 
-srun Rscript --vanilla 
+srun Rscript --vanilla /project/geoecoservices/optimization/landscape-complexity/scripts/atlas_max_one.R
