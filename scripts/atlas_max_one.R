@@ -1,9 +1,10 @@
-library(devtools)
-library(tidyverse)
-library(sf)
-library(terra)
-library(doFuture)
-library(optimEcoServices)
+arryindx <- as.numeric(commandArgs(trailingOnly = TRUE))
+
+suppressMessages(library(devtools))
+suppressMessages(library(tidyverse))
+suppressMessages(library(sf))
+suppressMessages(library(terra))
+suppressMessages(library(optimEcoServices))
 
 # projdir <- "/Users/kevinli/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/GIS/maxWFS/"
 projdir <- "/90daydata/geoecoservices/optimization/maxWFS/"
@@ -20,11 +21,18 @@ hu <- st_read(paste0(datadir, "hu12watersheds.gpkg"))
 
 hu.names <- hu$huc12
 
-# set up futures
-plan(multisession)
+batchnum <- (arryindx-1)*23+seq(1,23)
 
-out <- foreach(i = seq_along(hu.names)) %dofuture% {
+baseline <- list()
+maxwfs <- list()
+onefield <- list()
+
+for(i in seq_along(batchnum)){
+  i.start <- Sys.time()
+  
   hu.name <- hu.names[i]
+  
+  cat(paste(hu.name, "started on", lubridate::as_datetime(i.start), "\n"))
 
   hudir <- paste0(projdir, "hu/hu",hu.name,"/")
   hu.fields <- rast(paste0(hudir, "data/lu/fields", ".tif"))
@@ -35,7 +43,8 @@ out <- foreach(i = seq_along(hu.names)) %dofuture% {
   maxmargin <- terra::ifel(test = !is.na(hu.margins$id), 1, 0)
 
   # baseline
-  baseline <- wfs_fitness2(
+  base.start <- Sys.time()
+  baseline[[hu.name]] <- wfs_fitness2(
     margin.rast = basemargin,
     fields.rast = hu.fields,
     margin.lc = 171,   # land cover for 'pollinator habitat'
@@ -44,9 +53,17 @@ out <- foreach(i = seq_along(hu.names)) %dofuture% {
     workspace.dir = paste0(hudir,"baseline"),
     suffix="base"
   )
+  cat(
+    paste(
+      "baseline took",
+      round(as.numeric(difftime(Sys.time(), base.start, units="secs")), 0),
+      "seconds\n"
+    )
+    )
 
   # max wfs
-  maxwfs <- wfs_fitness2(
+  maxwfs.start <- Sys.time()
+  maxwfs[[hu.name]] <- wfs_fitness2(
     margin.rast = maxmargin,
     fields.rast = hu.fields,
     margin.lc = 171,   # land cover for 'pollinator habitat'
@@ -55,8 +72,16 @@ out <- foreach(i = seq_along(hu.names)) %dofuture% {
     workspace.dir = paste0(hudir,"max"),
     suffix="max"
   )
+  cat(
+    paste(
+      "maxwfs took",
+      round(as.numeric(difftime(Sys.time(), maxwfs.start, units="secs")), 0),
+      "seconds\n"
+    )
+  )
   
   # one field loop
+  onefield.start <- Sys.time()
   hu.fields.select.ids <- fields.select %>%
     filter(hu == hu.name) %>% pull(id)
   
@@ -65,7 +90,7 @@ out <- foreach(i = seq_along(hu.names)) %dofuture% {
     sample(seq_along(hu.fields.select.ids), size = 10, replace = FALSE)
   ]
   
-  onefields <- list()
+  onefields.i <- list()
   
   for(j in seq_along(hu.fields.select.10)){
     field.ij <- terra::ifel(
@@ -75,7 +100,7 @@ out <- foreach(i = seq_along(hu.names)) %dofuture% {
     margin.ij <- terra::boundaries(field.ij)
     
     # add wfs to field j
-    onefields[[j]] <- wfs_fitness2(
+    onefields.i[[j]] <- wfs_fitness2(
       margin.rast = margin.ij,
       fields.rast = hu.fields,
       margin.lc = 171,   # land cover for 'pollinator habitat'
@@ -85,10 +110,17 @@ out <- foreach(i = seq_along(hu.names)) %dofuture% {
       suffix="onefield"
     )
   }
-  onefields <- bind_rows(onefields)
+  onefield[[hu.name]] <- bind_rows(onefields.i)
   
-  # out
-  setNames(list(baseline, maxwfs, onefields), hu.name)
+  cat(
+    paste(
+      "onefields took",
+      round(as.numeric(difftime(Sys.time(), onefield.start, units="secs")), 0),
+      "seconds\n"
+    )
+  )
 }
 
-saveRDS(out, paste0(projdir,"out.rds"))
+saveRDS(baseline, paste0(projdir,"base-", arryindx, ".rds"))
+saveRDS(maxwfs, paste0(projdir,"maxwfs-", arryindx, ".rds"))
+saveRDS(onefield, paste0(projdir,"onefield-", arryindx, ".rds"))
