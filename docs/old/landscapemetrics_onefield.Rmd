@@ -1,0 +1,311 @@
+---
+title: "One Field"
+output: html_document
+date: "2025-02-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Add one field
+
+
+
+```{r load}
+library(tidyverse)
+library(psych)
+library(egg)
+
+wfs_lsm <- readRDS("data/wfs_lsm.rds") 
+of_lsm <- readRDS("data/of_lsm.rds")
+of_lsm_margin.med <- readRDS("data/of_lsm_marginmed.rds")
+
+```
+
+
+```{r recombine_data}
+wfs_lsm_pc <- readRDS("data/wfs_lsm_pc.rds")
+
+of_lsm.med <- of_lsm %>% 
+  group_by(hu) %>%
+  summarize(
+    across(delta_pollinators:delta_sed, 
+           list(mean = mean, sd = sd, median = median),
+           .names = "{.col}_of.{.fn}")
+  )
+
+wfs_lsm_of <- wfs_lsm_pc %>% 
+  left_join(
+    of_lsm_margin.med %>%
+      select(hu, 
+             delta_pollinators_of.margin.median,
+             delta_qb_of.margin.median,
+             delta_n_export_of.margin.median,
+             delta_sed_of.margin.median
+             )
+  ) %>% 
+  left_join(
+    of_lsm.med %>%
+      select(hu, 
+             delta_pollinators_of.median,
+             delta_qb_of.median,
+             delta_n_export_of.median,
+             delta_sed_of.median
+             )
+  )
+
+pairs.panels(
+  wfs_lsm_of %>% 
+    select(
+      delta_pollinators.margin,
+      delta_qb.margin,
+      delta_n_export.margin,
+      delta_sed.margin,
+      delta_pollinators_of.margin.median,
+      delta_qb_of.margin.median,
+      delta_n_export_of.margin.median,
+      delta_sed_of.margin.median
+    )
+)
+
+```
+
+```{r pol}
+
+pol_long <- wfs_lsm_of %>% 
+  pivot_longer(cols= c(delta_pollinators.margin, delta_pollinators_of.margin.median),
+               names_to = "treatment",
+               names_prefix = "delta_pollinators.")
+
+pol_long.ws <- wfs_lsm_of %>% 
+  pivot_longer(cols= c(delta_pollinators, delta_pollinators_of.median),
+               names_to = "treatment", values_to = "pollinators",
+               names_prefix = "delta_pollinators.") %>%
+  mutate(pollinators_ws = pollinators * lu_ta)
+
+ggplot(pol_long, aes(ntr_pland, value, color = treatment)) + geom_point()
+ggplot(pol_long.ws, aes(PC1, pollinators_ws, color = treatment)) + geom_point()
+
+ggplot(wfs_lsm_of, aes(delta_pollinators.margin,delta_pollinators_of.margin.median)) + geom_point()
+
+ggplot(wfs_lsm_of, aes(ntr_pland,delta_pollinators)) + geom_point()
+ggplot(wfs_lsm_of, aes(ntr_pland,delta_pollinators_of.median)) + geom_point()
+
+ggplot(wfs_lsm_of, aes(PC1,delta_pollinators)) + geom_point()
+ggplot(wfs_lsm_of, aes(ntr_pland,delta_n_export)) + geom_point()
+
+ggplot(wfs_lsm_of, aes(aglu_frac_mn,delta_pollinators.margin, color = habcat)) + geom_point()
+ggplot(wfs_lsm_of, aes(PC1,delta_pollinators.margin)) + geom_point()
+ggplot(wfs_lsm_of, aes(PC1,delta_pollinators_of.margin.median)) + geom_point()
+```
+
+
+```{r n_exp}
+
+nexp_long <- wfs_lsm_of %>% 
+  pivot_longer(cols= c(delta_n_export.margin, delta_n_export_of.margin.median),
+               names_to = "treatment",
+               names_prefix = "delta_n_export.")
+
+ggplot(nexp_long, aes(PC1, value, color = treatment)) + geom_point()
+
+```
+
+```{r panel_base}
+
+onefield_long <- wfs_lsm_of %>% 
+  pivot_longer(cols= c(pollinators_base,
+                       n_export_base,
+                       qb_base,
+                       sed_export_base),
+               names_to = "Ecosystem service",
+               values_to = "ES value")
+
+ggplot(onefield_long, aes(PC2, `ES value`)) + geom_point() + 
+  facet_wrap(~`Ecosystem service`, scales = "free_y")
+
+```
+
+```{r panel_onefield}
+
+onefield_long <- wfs_lsm_of %>% 
+  pivot_longer(cols= c(delta_pollinators_of.median,
+                       delta_n_export_of.median,
+                       delta_qb_of.median,
+                       delta_sed_of.median),
+               names_to = "Ecosystem service",
+               values_to = "ES value",
+               names_prefix = "delta_") %>%
+  mutate(`ES value` = `ES value`*lu_ta)
+
+ggplot(onefield_long, aes(PC2, `ES value`)) + geom_point() + 
+  facet_wrap(~`Ecosystem service`, scales = "free_y")
+
+```
+
+```{r panel_max}
+max_long <- wfs_lsm_of %>% 
+  pivot_longer(cols= c(delta_pollinators,
+                       delta_n_export,
+                       delta_qb,
+                       delta_sed),
+               names_to = "Ecosystem service",
+               values_to = "ES value",
+               names_prefix = "delta_") %>%
+  mutate(`ES value` = `ES value`*lu_ta)%>%
+  mutate(
+    `Ecosystem service` = fct_recode(
+      `Ecosystem service`,
+      "Pollinators" = "pollinators",
+      "N export reduced" = "n_export",
+      "Water recharge" = "qb",
+      "Sediment reduced" = "sed"
+    )
+  )
+
+ggplot(max_long, aes(PC1, `ES value`, color = "Treatment")) + geom_point(alpha = 0.5) + 
+  facet_wrap(~`Ecosystem service`, scales = "free_y") + 
+  theme_article() +
+  theme(strip.text = element_text(size = 12))
+
+```
+
+```{r panel_onefield_margin}
+
+onefield_long.margin <- wfs_lsm_of %>% 
+  pivot_longer(cols= c(delta_pollinators_of.margin.median,
+                       delta_n_export_of.margin.median,
+                       delta_qb_of.margin.median,
+                       delta_sed_of.margin.median),
+               names_to = "Ecosystem service",
+               values_to = "ES value",
+               names_prefix = "delta_") %>%
+  # filter(!(`Ecosystem service` == "sed_of.margin.median" & `ES value` > 60)) %>%
+  mutate(
+    `Ecosystem service` = fct_recode(
+      `Ecosystem service`,
+      "Pollinators" = "pollinators_of.margin.median",
+      "N export reduced" = "n_export_of.margin.median",
+      "Water recharge" = "qb_of.margin.median",
+      "Sediment reduced" = "sed_of.margin.median"
+    )
+  )
+
+ggplot(onefield_long.margin, aes(PC1, `ES value`, color = habcat)) + 
+  geom_point() + 
+  facet_wrap(~`Ecosystem service`, scales = "free_y") +
+  theme_article()
+
+ggplot(onefield_long.margin, aes(PC2, `ES value`, color = habcat)) + geom_point() + 
+  facet_wrap(~`Ecosystem service`, scales = "free_y") +
+  theme_article()
+
+
+```
+
+```{r panel_max_margin}
+
+max_long.margin <- wfs_lsm_of %>% 
+  pivot_longer(cols= c(delta_pollinators.margin,
+                       delta_n_export.margin,
+                       delta_qb.margin,
+                       delta_sed.margin),
+               names_to = "Ecosystem service",
+               values_to = "ES value",
+               names_prefix = "delta_") %>%
+  mutate(
+    `Ecosystem service` = fct_recode(
+      `Ecosystem service`,
+      "Pollinators" = "pollinators.margin",
+      "N export reduced" = "n_export.margin",
+      "Water recharge" = "qb.margin",
+      "Sediment reduced" = "sed.margin"
+    )
+  )
+
+ggplot(max_long.margin, aes(PC1, `ES value`, color = habcat)) +
+  geom_point() + 
+  facet_wrap(~`Ecosystem service`, scales = "free_y") +
+  theme_article() +
+  theme(strip.text = element_text(size = 12))
+
+ggplot(max_long.margin, aes(PC2, `ES value`, color = habcat)) + 
+  geom_point() + 
+  facet_wrap(~`Ecosystem service`, scales = "free_y") +
+  theme_article() +
+  theme(strip.text = element_text(size = 12))
+
+```
+
+```{r both_types_margin}
+both_long.margin <- bind_rows(
+  onefield_long.margin %>% mutate(Treatment = "One field"),
+  max_long.margin %>% mutate(Treatment = "Max fields")
+)
+
+ggplot(both_long.margin, aes(PC1, `ES value`, color = Treatment)) +
+  geom_point(alpha = 0.5) + 
+  facet_wrap(~`Ecosystem service`, scales = "free_y") +
+  theme_article() +
+  theme(strip.text = element_text(size = 12))
+
+ggplot(both_long.margin, aes(PC2, `ES value`, color = Treatment)) +
+  geom_point(alpha = 0.5) + 
+  facet_wrap(~`Ecosystem service`, scales = "free_y") +
+  theme_article() +
+  theme(strip.text = element_text(size = 12))
+
+```
+
+```{r es_pca}
+
+es_base_pca <- prcomp(wfs_lsm_of %>%
+                        select(pollinators_base:sed_export_base),
+                      scale. = TRUE, center = TRUE)
+
+es_base_pca
+
+summary(es_base_pca)
+
+ggbiplot::ggbiplot(es_base_pca, groups = wfs_lsm_of$habcat) +
+  egg::theme_article()
+
+ggbiplot::ggbiplot(es_base_pca, groups = wfs_lsm_of$habcat, choices = c(2,3)) +
+  egg::theme_article()
+```
+
+```{r es_margin_pca}
+
+es_max.margin_pca <- prcomp(wfs_lsm_of %>%
+                        select(delta_pollinators.margin:delta_sed.margin),
+                      scale. = TRUE, center = TRUE)
+
+es_max.margin_pca
+
+summary(es_max.margin_pca)
+
+ggbiplot::ggbiplot(es_max.margin_pca, groups = wfs_lsm_of$habcat) +
+  egg::theme_article()
+
+ggbiplot::ggbiplot(es_max.margin_pca, groups = wfs_lsm_of$habcat, choices = c(2,3)) +
+  egg::theme_article()
+```
+
+```{r model, include=FALSE, eval = FALSE}
+library(brms)
+
+both_wide.margin <- both_long.margin %>%
+  pivot_wider(id_cols = c(hu, Treatment),values_from = `ES value`, names_from = `Ecosystem service`) %>% left_join(wfs_lsm_pc, by = "hu") %>%
+  rename(
+      pollinators = "Pollinators",
+      N_exp_red = "N export reduced",
+      water_rech = "Water recharge",
+      sed_exp_red = "Sediment reduced"
+  )
+
+allmod <- brm(mvbind(pollinators, N_exp_red, water_rech, sed_exp_red) ~ Treatment * PC1 * PC2 + (1|p|hu), data = both_wide.margin)
+
+allmod2 <- brm(mvbind(pollinators, N_exp_red, water_rech, sed_exp_red) ~ Treatment + t2(PC1, PC2, by = Treatment) + (1|p|hu), data = both_wide.margin)
+
+```

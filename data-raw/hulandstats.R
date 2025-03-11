@@ -3,7 +3,7 @@ library(tidyverse)
 library(terra)
 library(sf)
 
-datadir <- "/Users/kevinli/Box Sync/InVEST/Optimization/Data/maxWFS/hu/"
+datadir <- "/Users/kevinli/Library/CloudStorage/OneDrive-ThePennsylvaniaStateUniversity/GIS/maxWFS/hu/"
 hu.files <- list.files(datadir)
 
 hustats <- list()

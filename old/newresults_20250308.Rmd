@@ -1,0 +1,35 @@
+---
+title: "New results"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r load_data}
+alldata <- readRDS("data/allresults_20250308.rds")
+lsm <- read.csv("data/lsm_reduced.csv") %>%
+  mutate(hu = gsub("hu", "", hu))
+hu_meta <- readRDS("data/hu_meta.rds")
+
+delta <- alldata$baseline %>% select(hu:sed_export,rawsdr_avoid_exp) %>%
+  left_join(alldata$maxwfs %>% select(hu:margin_cells,rawsdr_avoid_exp),
+            by = "hu", suffix = c("_base","_max")) %>%
+  mutate(
+    delta_pollinators = pollinators_max - pollinators_base,
+    delta_n_ret = n_ret_max - n_ret_base,
+    delta_qb = qb_max - qb_base,
+    delta_avoidsedexp = rawsdr_avoid_exp_max - rawsdr_avoid_exp_base,
+    delta_n_export = n_export_base - n_export_max,  # change per ha
+    delta_sed = sed_export_base - sed_export_max   # change per ha
+  ) %>%
+  select(hu, delta_pollinators, delta_n_ret, delta_qb, delta_avoidsedexp, delta_n_export, delta_sed) %>%
+  left_join(lsm)
+
+
+ggplot(delta, aes(ntr_pland, delta_sed)) + geom_point()
+ggplot(delta, aes(ntr_pland, delta_avoidsedexp)) + geom_point()
+ggplot(delta, aes(ntr_pland, delta_n_export)) + geom_point()
+ggplot(delta, aes(ntr_pland, delta_n_ret)) + geom_point()
+
+```

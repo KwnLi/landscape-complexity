@@ -1,0 +1,398 @@
+---
+title: "Landscape models with Generalized Additive Models"
+---
+
+```{r setup, echo = FALSE}
+library(tidyverse)
+library(performance)
+library(psych)
+library(mgcv)
+library(ggeffects)
+library(piecewiseSEM)
+source("R/utils-plot.r")
+
+wfs <- readRDS("data/maxwfsresults_20241217_fix.rds")
+lsm <- read.csv("data/lsm_reduced.csv") %>% 
+  mutate(hu = gsub("hu", "", hu))
+
+wfs_lsm <- wfs %>% left_join(lsm, by = "hu") %>%
+  select(c(hu, huc2, name, margin.ha, lu_ta,
+           pollinators_base:sed_export_base, 
+           pollinators_max:sed_export_max, 
+           delta_pollinators:delta_sed, 
+           fields_max, field.ha, margin.ha, 
+           lu_shdi:ntr_frac_mn)) %>%
+  mutate(prn_ann_ratio = log(prn_agr_pland/ann_agr_pland),
+         prn_pagr = 100*(prn_agr_pland/(ann_agr_pland+prn_agr_pland)),
+         field_pland = field.ha/lu_ta,
+         margin_dens = margin.ha/lu_ta)
+
+scaled.data <- wfs_lsm %>% mutate(across(lu_shdi:field_pland, ~scale(.x)[,1]))
+
+```
+
+## Correlation between independent variables.
+
+I selected a subset of variables that aren't strongly correlated and that represent potential drivers of ecosystem service patterns.
+
+```{r correlation, echo = FALSE}
+
+pairs.panels(wfs_lsm %>% 
+               select(ann_agr_pland, prn_agr_pland, aglu_iji,
+                      lu_shdi, aglu_frac_mn, margin_dens), 
+             cex.cor = 1, cex.labels=1, cex=0.5, method = "pearson")
+
+```
+
+## Pollinator models
+
+### Pollinator delta
+
+```{r pollinator_delta}
+
+pol.lm0 <- gam(delta_pollinators ~ margin_dens, data = wfs_lsm)
+pol.gam0 <- gam(delta_pollinators ~ s(margin_dens), data = wfs_lsm)
+
+anova(pol.lm0, pol.gam0)
+
+pol.gam1 <- gam(delta_pollinators ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(margin_dens) + s(lu_shdi), 
+                data = wfs_lsm)
+
+performance::compare_performance(pol.lm0, pol.gam0, pol.gam1)
+
+summary(pol.gam1)
+
+concurvity(pol.gam1)
+
+```
+
+```{r plot_pol}
+
+polplot.df <- plot_fun(pol.gam1, 
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "margin_dens", "lu_shdi"),
+                       wfs_lsm)
+
+ggplot(polplot.df[[1]], aes(x, delta_pollinators)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = polplot.df[[2]], 
+             mapping = aes(color = margin_dens), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+```{r plot_pol0}
+
+polplot0.df <- plot_fun(pol.gam0, 
+                       "margin_dens",
+                       wfs_lsm)
+
+ggplot(polplot0.df[[1]], aes(x, delta_pollinators)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = polplot0.df[[2]], 
+             mapping = aes(color = margin_dens), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+### Residual model from gam0
+
+Trying to account for the effect of margins first
+
+```{r pol_margin_resid}
+
+wfs_lsm_resids <- wfs_lsm %>% cbind(pol.resid = residuals(pol.gam0))
+
+polresid.gam1 <- gam(pol.resid ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+                data = wfs_lsm_resids)
+
+summary(polresid.gam1)
+
+concurvity(polresid.gam1)
+
+```
+
+```{r plot_pol_resid}
+
+residpolplot.df <- plot_fun(polresid.gam1, 
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi"),
+                       wfs_lsm_resids,
+                       "ann_agr_pland")
+
+ggplot(residpolplot.df[[1]], aes(x, pol.resid)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = residpolplot.df[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+## Seasonal water yield
+
+### Seasonal water yield delta
+
+```{r swy_delta}
+
+swy.lm0 <- gam(delta_qb ~ margin_dens, data = wfs_lsm)
+swy.gam0 <- gam(delta_qb ~ s(margin_dens), data = wfs_lsm)
+
+anova(swy.lm0, swy.gam0)
+
+swy.gam1 <- gam(delta_qb ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(margin_dens) + s(lu_shdi), 
+                data = wfs_lsm)
+
+performance::compare_performance(swy.lm0, swy.gam0, swy.gam1)
+
+summary(swy.gam1)
+
+concurvity(swy.gam1)
+
+```
+
+```{r plot_swy}
+
+swyplot.df <- plot_fun(swy.gam1, 
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "margin_dens", "lu_shdi"),
+                       wfs_lsm)
+
+ggplot(swyplot.df[[1]], aes(x, delta_qb)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = swyplot.df[[2]], 
+             mapping = aes(color = margin_dens), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+```{r plot_swy0}
+
+swyplot0.df <- plot_fun(swy.gam0, 
+                       "margin_dens",
+                       wfs_lsm)
+
+ggplot(swyplot0.df[[1]], aes(x, delta_qb)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = swyplot0.df[[2]], 
+             mapping = aes(color = margin_dens), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+### Residual model from gam0
+
+Trying to account for the effect of margins first
+
+```{r swy_margin_resid}
+
+wfs_lsm_resids <- wfs_lsm_resids %>% cbind(swy.resid = residuals(swy.gam0))
+
+swyresid.gam1 <- gam(swy.resid ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+                data = wfs_lsm_resids)
+
+summary(swyresid.gam1)
+
+concurvity(swyresid.gam1)
+
+```
+
+```{r plot_swy_resid}
+
+residswyplot.df <- plot_fun(swyresid.gam1, 
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi"),
+                       wfs_lsm_resids,
+                       "ann_agr_pland")
+
+ggplot(residswyplot.df[[1]], aes(x, swy.resid)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = residswyplot.df[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+## Nutrient delivery ratio
+
+### Nutrient delivery ratio delta
+
+```{r ndr_delta}
+
+ndr.lm0 <- gam(delta_n_export ~ margin_dens, data = wfs_lsm)
+ndr.gam0 <- gam(delta_n_export ~ s(margin_dens), data = wfs_lsm)
+
+anova(ndr.lm0, ndr.gam0)
+
+ndr.gam1 <- gam(delta_n_export ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(margin_dens) + s(lu_shdi), 
+                data = wfs_lsm)
+
+performance::compare_performance(ndr.lm0, ndr.gam0, ndr.gam1)
+
+summary(ndr.gam1)
+
+concurvity(ndr.gam1)
+
+```
+
+```{r plot_ndr}
+
+ndrplot.df <- plot_fun(ndr.gam1, 
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "margin_dens", "lu_shdi"),
+                       wfs_lsm)
+
+ggplot(ndrplot.df[[1]], aes(x, delta_n_export)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = ndrplot.df[[2]], 
+             mapping = aes(color = margin_dens), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+```{r plot_ndr0}
+
+ndrplot0.df <- plot_fun(ndr.gam0, 
+                       "margin_dens",
+                       wfs_lsm)
+
+ggplot(ndrplot0.df[[1]], aes(x, delta_n_export)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = ndrplot0.df[[2]], 
+             mapping = aes(color = margin_dens), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+### Residual model from gam0
+
+Trying to account for the effect of margins first
+
+```{r ndr_margin_resid}
+
+wfs_lsm_resids <- wfs_lsm_resids %>% cbind(ndr.resid = residuals(ndr.gam0))
+
+ndrresid.gam1 <- gam(ndr.resid ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+                data = wfs_lsm_resids)
+
+summary(ndrresid.gam1)
+
+concurvity(ndrresid.gam1)
+
+```
+
+```{r plot_ndr_resid}
+
+residndrplot.df <- plot_fun(ndrresid.gam1, 
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn","lu_shdi"),
+                       wfs_lsm_resids,
+                       "ann_agr_pland")
+
+ggplot(residndrplot.df[[1]], aes(x, ndr.resid)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = residndrplot.df[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+## Sediment delivery ratio
+
+### Sediment delivery ratio delta
+
+```{r sdr_delta}
+
+sdr.lm0 <- gam(delta_sed ~ margin_dens, data = wfs_lsm)
+sdr.gam0 <- gam(delta_sed ~ s(margin_dens), data = wfs_lsm)
+
+anova(sdr.lm0, sdr.gam0)
+
+sdr.gam1 <- gam(delta_sed ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(margin_dens) + s(lu_shdi), 
+                data = wfs_lsm)
+
+performance::compare_performance(sdr.lm0, sdr.gam0, sdr.gam1)
+
+summary(sdr.gam1)
+
+concurvity(sdr.gam1)
+
+```
+
+```{r plot_sdr}
+
+sdrplot.df <- plot_fun(sdr.gam1, 
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "margin_dens", "lu_shdi"),
+                       wfs_lsm)
+
+ggplot(sdrplot.df[[1]], aes(x, delta_sed)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = sdrplot.df[[2]], 
+             mapping = aes(color = margin_dens), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+```{r plot_sdr0}
+
+sdrplot0.df <- plot_fun(sdr.gam0, 
+                       "margin_dens",
+                       wfs_lsm)
+
+ggplot(sdrplot0.df[[1]], aes(x, delta_sed)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = sdrplot0.df[[2]], 
+             mapping = aes(color = margin_dens), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+### Residual model from gam0
+
+Trying to account for the effect of margins first
+
+```{r sdr_margin_resid}
+
+wfs_lsm_resids <- wfs_lsm_resids %>% cbind(sdr.resid = residuals(sdr.gam0))
+
+sdrresid.gam1 <- gam(sdr.resid ~ s(ann_agr_pland) + s(aglu_iji) + s(prn_agr_pland) + s(aglu_frac_mn) + s(lu_shdi), 
+                data = wfs_lsm_resids)
+
+summary(sdrresid.gam1)
+
+concurvity(sdrresid.gam1)
+
+```
+
+```{r plot_sdr_resid}
+
+residsdrplot.df <- plot_fun(sdrresid.gam1, 
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland", "aglu_frac_mn", "lu_shdi"),
+                       wfs_lsm_resids,
+                       "ann_agr_pland")
+
+ggplot(residsdrplot.df[[1]], aes(x, sdr.resid)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = residsdrplot.df[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+

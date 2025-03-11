@@ -1,0 +1,384 @@
+---
+title: "ES Models: Random Forest"
+author: "Sarah Goslee"
+date: "2025-03-06"
+format: 
+  html:
+    code-fold: true
+fig-height: 6
+fig-width: 10
+---
+
+
+Per Kevin (2025-02-26), everything is already normalized by area, so dividing by density is correct.
+
+Ecosystem services, per ha:
+
+	Pollinators
+	N export
+	Sediment export
+	Baseflow
+
+Change in ecosystem services (delta) per ha of watershed: delta
+
+Change in ecosystem services per ha per ha of margin: delta.margin
+
+
+
+```{r setup}
+
+    library(ranger)
+	library(pdp)
+    library(gridExtra)
+
+###
+
+    # wfs0 <- readRDS("data/old/wfs_lsm.rds")
+      wfs <- readRDS("data/allresults_20250308.rds")
+      
+    dat.predictors <-  wfs[, c(81:107,120:123)]
+
+    # drop log-transform
+    dat.predictors <- dat.predictors[, !grepl("log", colnames(dat.predictors))]
+
+### previously-completed analyses
+
+    # if(file.exists("RandomForest/ES-RF.RDA")) load("ES-RF.RDA")
+
+```
+
+
+```{r screening}
+
+#| label: fig-overview
+#| fig-cap: "Basic ES responses."
+#| warning: false
+
+    par(mfrow=c(1, 3))
+
+    # with(wfs, plot(ann_agr_pland, pollinators_base, col = "black", xlab = "Annual agriculture (%)", ylab = "Ecosystem Service", main = "Pollination"))
+    # with(wfs, points(ann_agr_pland, pollinators_max, col = "green"))
+    # legend("topright", pch = c(1, 1), col = c("black", "green"), legend = c("Base", "Max"))
+
+    with(wfs, plot(pollinators_base, pollinators_max, col = "darkblue", xlab = "Base value", ylab = "Max", main = "Pollination"))
+    abline(c(0, 1), lty = 2)
+
+    with(wfs, plot(pollinators_base, delta_pollinators.margin, col = "darkgreen", xlab = "Base value", ylab = "Delta", main = "Pollination"))
+
+    with(wfs, plot(ann_agr_pland, delta_pollinators.margin, col = "purple", xlab = "Annual agriculture (%)", ylab = "Delta", main = "Pollination"))
+
+
+    #
+
+    # with(wfs, plot(ann_agr_pland, n_export_base, col = "black", xlab = "Annual agriculture (%)", ylab = "Ecosystem Service", main = "Nitrogen"))
+    # with(wfs, points(ann_agr_pland, n_export_max, col = "purple"))
+
+    with(wfs, plot(n_export_base, n_export_max, col = "darkblue", xlab = "Base value", ylab = "Max", main = "Nitrogen"))
+    abline(c(0, 1), lty = 2)
+
+    with(wfs, plot(n_export_base, delta_n_export.margin, col = "darkgreen", xlab = "Base value", ylab = "Delta", main = "Nitrogen"))
+
+    with(wfs, plot(ann_agr_pland, delta_n_export.margin, col = "purple", xlab = "Annual agriculture (%)", ylab = "Delta", main = "Nitrogen"))
+
+    #
+
+
+    # with(wfs, plot(ann_agr_pland, sed_export_base, col = "black", xlab = "Annual agriculture (%)", ylab = "Ecosystem Service", main = "Sediment"))
+    # with(wfs, points(ann_agr_pland, sed_export_max, col = "purple"))
+
+    with(wfs, plot(sed_export_base, sed_export_max, col = "darkblue", xlab = "Base value", ylab = "Max", main = "Sediment"))
+    abline(c(0, 1), lty = 2)
+
+    with(wfs, plot(sed_export_base, delta_sed.margin, col = "darkgreen", xlab = "Base value", ylab = "Delta", main = "Sediment"))
+
+    with(wfs, plot(ann_agr_pland, delta_sed.margin, col = "purple", xlab = "Annual agriculture (%)", ylab = "Delta", main = "Sediment"))
+
+
+    #
+
+    # with(wfs, plot(ann_agr_pland, qb_base, col = "black", xlab = "Annual agriculture (%)", ylab = "Ecosystem Service", main = "Baseflow"))
+    # with(wfs, points(ann_agr_pland, qb_max, col = "purple"))
+
+    with(wfs, plot(qb_base, qb_max, col = "darkblue", xlab = "Base value", ylab = "Max", main = "Baseflow"))
+    abline(c(0, 1), lty = 2)
+
+    with(wfs, plot(qb_base, delta_qb.margin, col = "darkgreen", xlab = "Base value", ylab = "Delta", main = "Baseflow"))
+
+    with(wfs, plot(ann_agr_pland, delta_qb.margin, col = "purple", xlab = "Annual agriculture (%)", ylab = "Delta", main = "Baseflow"))
+
+```
+
+What factors correlate to the base rate of ecosystem services?
+
+What factors correlate to the per-ha effect of adding pollinator strips?
+
+
+## Random Forest
+
+These are basic regression RF models looking at the base ES value and at the delta-margin value.
+
+```{r rfstart}
+
+    if(!exists("pollinators_base.rf")) {
+
+        dat <- data.frame(y = wfs$pollinators_base, dat.predictors)
+        pollinators_base.rf <- ranger(y ~ ., data = dat, importance = "permutation", num.trees = 1000)
+        pollinators_base.p <- data.frame(importance_pvalues(pollinators_base.rf, method = "altmann", formula = y ~ ., data = dat, num.permutations = 1000))
+        rm(dat)
+
+        dat <- data.frame(y = wfs$delta_pollinators_max.margin, dat.predictors)
+        pollinators_margin.rf <- ranger(y ~ ., data = dat, importance = "permutation", num.trees = 1000)
+        pollinators_margin.p <- data.frame(importance_pvalues(pollinators_margin.rf, method = "altmann", formula = y ~ ., data = dat, num.permutations = 1000))
+        rm(dat)
+
+    }
+
+	####
+
+    if(!exists("n_export_base.rf")) {
+
+        dat <- data.frame(y = wfs$n_export_base, dat.predictors)
+        n_export_base.rf <- ranger(y ~ ., data = dat, importance = "permutation", num.trees = 1000)
+        n_export_base.p <- data.frame(importance_pvalues(n_export_base.rf, method = "altmann", formula = y ~ ., data = dat, num.permutations = 1000))
+        rm(dat)
+
+        dat <- data.frame(y = wfs$delta_n_export_max.margin, dat.predictors)
+        n_export_margin.rf <- ranger(y ~ ., data = dat, importance = "permutation", num.trees = 1000)
+        n_export_margin.p <- data.frame(importance_pvalues(n_export_margin.rf, method = "altmann", formula = y ~ ., data = dat, num.permutations = 1000))
+        rm(dat)
+
+    }
+
+	####
+
+    if(!exists("sed_export_base.rf")) {
+
+        dat <- data.frame(y = wfs$sed_export_base, dat.predictors)
+        sed_export_base.rf <- ranger(y ~ ., data = dat, importance = "permutation", num.trees = 1000)
+        sed_export_base.p <- data.frame(importance_pvalues(sed_export_base.rf, method = "altmann", formula = y ~ ., data = dat, num.permutations = 1000))
+        rm(dat)
+
+        dat <- data.frame(y = wfs$delta_sed_max.margin, dat.predictors)
+        sed_export_margin.rf <- ranger(y ~ ., data = dat, importance = "permutation", num.trees = 1000)
+        sed_export_margin.p <- data.frame(importance_pvalues(sed_export_margin.rf, method = "altmann", formula = y ~ ., data = dat, num.permutations = 1000))
+        rm(dat)
+
+    }
+
+	####
+
+    if(!exists("qb_base.rf")) {
+
+        dat <- data.frame(y = wfs$qb_base, dat.predictors)
+        qb_base.rf <- ranger(y ~ ., data = dat, importance = "permutation", num.trees = 1000)
+        qb_base.p <- data.frame(importance_pvalues(qb_base.rf, method = "altmann", formula = y ~ ., data = dat, num.permutations = 1000))
+        rm(dat)
+
+        dat <- data.frame(y = wfs$delta_qb_max.margin, dat.predictors)
+        qb_margin.rf <- ranger(y ~ ., data = dat, importance = "permutation", num.trees = 1000)
+        qb_margin.p <- data.frame(importance_pvalues(qb_margin.rf, method = "altmann", formula = y ~ ., data = dat, num.permutations = 1000))
+        rm(dat)
+
+    }
+
+
+```
+
+### Model performance
+
+These are regression RF, so model performance can be assessed by looking at r2 and at MSE. Note that these are on the training data, not on test data, so not a true validation assessment that would be needed for a predictive model. Since we're doing explanatory modeling currently, that's fine.
+
+
+*Pollinators:*
+
+   - Base
+
+     r2 = `{r} round(pollinators_base.rf$r.squared, 3)`
+     OOB MSE = `{r} round(pollinators_base.rf$prediction.error, 3)`
+
+  - Margin
+
+     r2 = `{r} round(pollinators_margin.rf$r.squared, 3)`
+     OOB MSE = `{r} round(pollinators_margin.rf$prediction.error, 3)`
+
+*Nitrogen export:*
+
+   - Base
+
+     r2 = `{r} round(n_export_base.rf$r.squared, 3)`
+     OOB MSE = `{r} round(n_export_base.rf$prediction.error, 3)`
+
+  - Margin
+
+     r2 = `{r} round(n_export_margin.rf$r.squared, 3)`
+     OOB MSE = `{r} round(n_export_margin.rf$prediction.error, 3)`
+
+*Sediment export:*
+
+   - Base
+
+     r2 = `{r} round(sed_export_base.rf$r.squared, 3)`
+     OOB MSE = `{r} round(sed_export_base.rf$prediction.error, 3)`
+
+  - Margin
+
+     r2 = `{r} round(sed_export_margin.rf$r.squared, 3)`
+     OOB MSE = `{r} round(sed_export_margin.rf$prediction.error, 3)`
+
+*Baseflow:*
+
+   - Base
+
+     r2 = `{r} round(qb_base.rf$r.squared, 3)`
+     OOB MSE = `{r} round(qb_base.rf$prediction.error, 3)`
+
+  - Margin
+
+     r2 = `{r} round(qb_margin.rf$r.squared, 3)`
+     OOB MSE = `{r} round(qb_margin.rf$prediction.error, 3)`
+
+
+Can predict pollination extremely well, N quite well, and sediment and baseflow moderately well.
+
+### Variable importance
+
+I used permutation importance, which is an unbiased measure (there's a huge literature on RF importance metrics), and p-values can be calculated. Blue bars denote p < 0.05.  
+
+```{r importance}
+
+
+#| label: fig-importance
+#| fig-cap: "RF importance values."
+#| warning: false
+
+
+    par(mfrow = c(1, 1))
+    par(mai = c(2, .8, .8, .4))
+
+    dat <- pollinators_base.p[order(pollinators_base.p$importance), ]
+    barplot(dat$importance, col = ifelse(dat$pvalue > .05, "gray", "darkblue"), las = 2, main = "Pollination: Base", names = rownames(dat))
+    dat <- pollinators_margin.p[order(pollinators_margin.p$importance), ]
+    barplot(dat$importance, col = ifelse(dat$pvalue > .05, "gray", "darkblue"), las = 2, main = "Pollination: Margin", names = rownames(dat))
+    rm(dat)
+
+    dat <- n_export_base.p[order(n_export_base.p$importance), ]
+    barplot(dat$importance, col = ifelse(dat$pvalue > .05, "gray", "darkblue"), las = 2, main = "Nitrogen: Base", names = rownames(dat))
+    dat <- n_export_margin.p[order(n_export_margin.p$importance), ]
+    barplot(dat$importance, col = ifelse(dat$pvalue > .05, "gray", "darkblue"), las = 2, main = "Nitrogen: Margin", names = rownames(dat))
+    rm(dat)
+
+    dat <- sed_export_base.p[order(sed_export_base.p$importance), ]
+    barplot(dat$importance, col = ifelse(dat$pvalue > .05, "gray", "darkblue"), las = 2, main = "Sediment: Base", names = rownames(dat))
+    dat <- sed_export_margin.p[order(sed_export_margin.p$importance), ]
+    barplot(dat$importance, col = ifelse(dat$pvalue > .05, "gray", "darkblue"), las = 2, main = "Sediment: Margin", names = rownames(dat))
+    rm(dat)
+
+    dat <- qb_base.p[order(qb_base.p$importance), ]
+    barplot(dat$importance, col = ifelse(dat$pvalue > .05, "gray", "darkblue"), las = 2, main = "Baseflow: Base", names = rownames(dat))
+    dat <- qb_margin.p[order(qb_margin.p$importance), ]
+    barplot(dat$importance, col = ifelse(dat$pvalue > .05, "gray", "darkblue"), las = 2, main = "Baseflow: Margin", names = rownames(dat))
+    rm(dat)
+
+```
+
+I want to look more closely at the response over various metrics.
+
+```{r pdp}
+
+
+    if(!exists("pollinators_base.ann_agr_pland.pdp")) {
+        dat <- data.frame(y = wfs$delta_pollinators.margin, orig = wfs$pollinators_base, dat.predictors)
+        pollinators_base.ann_agr_pland.pdp <- partial(pollinators_base.rf, train = dat, pred.var = "ann_agr_pland")
+        pollinators_margin.ann_agr_pland.pdp <- partial(pollinators_margin.rf, train = dat, pred.var = "ann_agr_pland")
+        pollinators_base.ntr_pland.pdp <- partial(pollinators_base.rf, train = dat, pred.var = "ntr_pland")
+        pollinators_margin.ntr_pland.pdp <- partial(pollinators_margin.rf, train = dat, pred.var = "ntr_pland")
+        rm(dat)
+    }
+
+    if(!exists("n_export_base.ann_agr_pland.pdp")) {
+        dat <- data.frame(y = wfs$delta_n_export.margin, orig = wfs$n_export_base, dat.predictors)
+        n_export_base.ann_agr_pland.pdp <- partial(n_export_base.rf, train = dat, pred.var = "ann_agr_pland")
+        n_export_margin.ann_agr_pland.pdp <- partial(n_export_margin.rf, train = dat, pred.var = "ann_agr_pland")
+        n_export_base.ntr_pland.pdp <- partial(n_export_base.rf, train = dat, pred.var = "ntr_pland")
+        n_export_margin.ntr_pland.pdp <- partial(n_export_margin.rf, train = dat, pred.var = "ntr_pland")
+        rm(dat)
+    }
+
+    if(!exists("sed_export_base.ann_agr_pland.pdp")) {
+        dat <- data.frame(y = wfs$delta_sed.margin, orig = wfs$sed_export_base, dat.predictors)
+        sed_export_base.ann_agr_pland.pdp <- partial(sed_export_base.rf, train = dat, pred.var = "ann_agr_pland")
+        sed_export_margin.ann_agr_pland.pdp <- partial(sed_export_margin.rf, train = dat, pred.var = "ann_agr_pland")
+        sed_export_base.ntr_pland.pdp <- partial(sed_export_base.rf, train = dat, pred.var = "ntr_pland")
+        sed_export_margin.ntr_pland.pdp <- partial(sed_export_margin.rf, train = dat, pred.var = "ntr_pland")
+        rm(dat)
+    }
+
+    if(!exists("qb_base.ann_agr_pland.pdp")) {
+        dat <- data.frame(y = wfs$delta_qb.margin, orig = wfs$qb_base, dat.predictors)
+        qb_base.ann_agr_pland.pdp <- partial(qb_base.rf, train = dat, pred.var = "ann_agr_pland")
+        qb_margin.ann_agr_pland.pdp <- partial(qb_margin.rf, train = dat, pred.var = "ann_agr_pland")
+        qb_base.ntr_pland.pdp <- partial(qb_base.rf, train = dat, pred.var = "ntr_pland")
+        qb_margin.ntr_pland.pdp <- partial(qb_margin.rf, train = dat, pred.var = "ntr_pland")
+        rm(dat)
+    }
+
+    save(list = ls(pattern = "^[npqs]"), file = "data/ES-RF.RDA")
+
+```
+
+
+Partial dependence plots show change in the Y variable across the range of a specific predictor (or more than one), when all other variables are held constant. 
+
+
+```{r partialplot1}
+
+
+    p1 <- plotPartial(pollinators_base.ann_agr_pland.pdp, main = "Pollinators base")
+    p2 <- plotPartial(pollinators_margin.ann_agr_pland.pdp, main = "Pollinators margin")
+    p3 <- plotPartial(pollinators_base.ntr_pland.pdp, main = "Pollinators base")
+    p4 <- plotPartial(pollinators_margin.ntr_pland.pdp, main = "Pollinators margin")
+    grid.arrange(p1, p3, p2, p4, ncol = 2)
+
+
+```
+
+
+```{r partialplot2}
+
+
+    p1 <- plotPartial(n_export_base.ann_agr_pland.pdp, main = "Nitrogen base")
+    p2 <- plotPartial(n_export_margin.ann_agr_pland.pdp, main = "Nitrogen margin")
+    p3 <- plotPartial(n_export_base.ntr_pland.pdp, main = "Nitrogen base")
+    p4 <- plotPartial(n_export_margin.ntr_pland.pdp, main = "Nitrogen margin")
+    grid.arrange(p1, p3, p2, p4, ncol = 2)
+
+
+```
+
+
+```{r partialplot3}
+
+
+    p1 <- plotPartial(sed_export_base.ann_agr_pland.pdp, main = "Sediment base")
+    p2 <- plotPartial(sed_export_margin.ann_agr_pland.pdp, main = "Sediment margin")
+    p3 <- plotPartial(sed_export_base.ntr_pland.pdp, main = "Sediment base")
+    p4 <- plotPartial(sed_export_margin.ntr_pland.pdp, main = "Sediment margin")
+    grid.arrange(p1, p3, p2, p4, ncol = 2)
+
+
+```
+
+
+```{r partialplot4}
+
+
+    p1 <- plotPartial(qb_base.ann_agr_pland.pdp, main = "Baseflow base")
+    p2 <- plotPartial(qb_margin.ann_agr_pland.pdp, main = "Baseflow margin")
+    p3 <- plotPartial(qb_base.ntr_pland.pdp, main = "Baseflow base")
+    p4 <- plotPartial(qb_margin.ntr_pland.pdp, main = "Baseflow margin")
+    grid.arrange(p1, p3, p2, p4, ncol = 2)
+
+
+```
+
+

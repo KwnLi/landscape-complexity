@@ -8,65 +8,125 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## 
 
-```{r load}
-wfs_lsm <- readRDS("data/wfs_lsm.rds")
-hu_meta <- readRDS("data/hu_meta.rds")
+```{r load, include = FALSE}
+library(tidyverse)
+# wfs_lsm <- readRDS("data/wfs_lsm.rds")
+# hu_meta <- readRDS("data/hu_meta.rds")
+# 
+# hulandstats <- readRDS("data/hulandstats.rds")
+# 
+# 
+# wfs_meta <- wfs_lsm %>% 
+#   left_join(hu_meta %>% sf::st_drop_geometry(), 
+#             by = c("hu" = "huc12", "huc2", "name")) %>%
+#   left_join(hulandstats)
 
-hulandstats <- readRDS("data/hulandstats.rds")
+wfs_meta <- readRDS("data/allresults_20250308.rds")
 
+```
 
-wfs_meta <- wfs_lsm %>% 
-  left_join(hu_meta %>% sf::st_drop_geometry(), 
-            by = c("hu" = "huc12", "huc2", "name")) %>%
-  left_join(hulandstats)
+```{r visualize_base}
+
+base_df <- wfs_meta %>% 
+  select(c(hu, ntr_pland, pollinators_base:sed_export_base)) %>%
+  pivot_longer(cols = pollinators_base:sed_export_base,
+               names_to = "Ecosystem_service", values_to = "Ecosystem_value")
+
+ggplot(base_df, aes(ntr_pland, Ecosystem_value)) +
+  geom_point() +
+  facet_wrap(~Ecosystem_service, scales = "free_y") + egg::theme_article()
+
+```
+
+```{r visualize_delta}
+
+delta_df <- wfs_meta %>% 
+  select(c(hu, ntr_pland, delta_pollinators:delta_sed)) %>%
+  pivot_longer(cols = delta_pollinators:delta_sed,
+               names_to = "Ecosystem_service", values_to = "ES_value_change")
+
+ggplot(delta_df, aes(ntr_pland, ES_value_change)) +
+  geom_point() +
+  facet_wrap(~Ecosystem_service, scales = "free_y") + egg::theme_article()
+
+```
+
+```{r visualize_delta_margin}
+
+delta_df <- wfs_meta %>% 
+  select(c(hu, ntr_pland, delta_pollinators_max.margin:delta_sed_max.margin)) %>%
+  pivot_longer(cols = delta_pollinators_max.margin:delta_sed_max.margin,
+               names_to = "Ecosystem_service", values_to = "ES_value_change_ha_margin")
+
+ggplot(delta_df, aes(ntr_pland, ES_value_change_ha_margin)) +
+  geom_point() +
+  facet_wrap(~Ecosystem_service, scales = "free_y") + egg::theme_article()
+
+```
+
+```{r visualize_delta_margin_onefield}
+
+delta_df <- wfs_meta %>% 
+  select(c(hu, ntr_pland,
+           delta_pollinators_of.margin.median, 
+           delta_n_export_of.margin.median,
+           delta_qb_of.margin.median,
+           delta_sed_of.margin.median)) %>%
+  pivot_longer(cols = delta_pollinators_of.margin.median:delta_sed_of.margin.median,
+               names_to = "Ecosystem_service", 
+               values_to = "One_field_change_ha_margin")
+
+ggplot(delta_df, aes(ntr_pland, One_field_change_ha_margin)) +
+  geom_point() +
+  facet_wrap(~Ecosystem_service, scales = "free_y") + egg::theme_article()
 
 ```
 
 ## Plots
 
 ```{r wetland}
-ggplot(wfs_meta, aes(Wetland, delta_sed.margin)) + 
+ggplot(wfs_meta, aes(Wetland, delta_sed_max.margin)) + 
   geom_point()
 ```
 
 ```{r erosivity}
-ggplot(wfs_meta, aes(erosivity_mean, delta_sed.margin)) + 
+ggplot(wfs_meta, aes(erosivity_mean, delta_sed_max.margin)) + 
   geom_point()
 ```
 
 ```{r erodibility}
-ggplot(wfs_meta, aes(erodibility_mean, delta_sed.margin)) + 
+ggplot(wfs_meta, aes(erodibility_mean, delta_sed_max.margin)) + 
   geom_point()
 ```
 
 ```{r erodibility_2}
 library(plotly)
-fig <- plot_ly(wfs_meta, x = ~erodibility_mean, y = ~erosivity_mean, z = ~delta_sed.margin, color = ~delta_sed.margin, text = ~hu)
+fig <- plot_ly(wfs_meta, x = ~erodibility_mean, y = ~erosivity_mean, z = ~delta_sed_max.margin, color = ~delta_sed_max.margin, text = ~hu)
 
 fig
 
 ```
 
 ```{r sediment_change}
-ggplot(wfs_meta, aes(sed_export_base, sed_export_max, color = delta_sed.margin)) + 
+ggplot(wfs_meta, aes(sed_export_base, sed_export_max, color = delta_sed_max.margin)) + 
   geom_point() + geom_abline(intercept = 0, slope = 1) + scale_color_continuous(type="viridis")
 
 ```
 
 ```{r nutrient_change}
-ggplot(wfs_meta, aes(n_export_base, n_export_max, color = delta_n_export.margin)) + 
+ggplot(wfs_meta, aes(n_export_base, n_export_max, color = delta_n_export_max.margin)) + 
   geom_point() + geom_abline(intercept = 0, slope = 1) + scale_color_continuous(type="viridis")
 
 ```
 
 ```{r pollinator_change}
-ggplot(wfs_meta, aes(pollinators_base, pollinators_max, color = delta_pollinators.margin)) + 
+ggplot(wfs_meta, aes(pollinators_base, pollinators_max, color = delta_pollinators_max.margin)) + 
   geom_point() + geom_abline(intercept = 0, slope = 1) + scale_color_continuous(type="viridis")
 
 ```
 
 ```{r qb_change}
-ggplot(wfs_meta, aes(qb_base, qb_max, color = delta_qb.margin)) + 
+ggplot(wfs_meta, aes(qb_base, qb_max, color = delta_qb_max.margin)) + 
   geom_point() + geom_abline(intercept = 0, slope = 1) + scale_color_continuous(type="viridis")
 
 ```

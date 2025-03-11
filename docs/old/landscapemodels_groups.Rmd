@@ -1,0 +1,603 @@
+---
+title: "Landscape analysis grouped by natural habitat level"
+---
+
+```{r setup, echo = FALSE, message=FALSE}
+library(tidyverse)
+library(performance)
+library(psych)
+library(mgcv)
+library(ggeffects)
+library(mgcViz)
+source("R/utils-plot.r")
+
+wfs <- readRDS("data/maxwfsresults_20241217_fix.rds")
+lsm <- read.csv("data/lsm_reduced.csv") %>% 
+  mutate(hu = gsub("hu", "", hu))
+
+wfs_lsm <- wfs %>% left_join(lsm, by = "hu") %>%
+  select(c(hu, huc2, name, margin.ha, lu_ta,
+           pollinators_base:sed_export_base, 
+           pollinators_max:sed_export_max, 
+           delta_pollinators:delta_sed, 
+           fields_max, field.ha, margin.ha, 
+           lu_shdi:ntr_frac_mn)) %>%
+  mutate(prn_ann_ratio = log(prn_agr_pland/ann_agr_pland),
+         prn_pagr = 100*(prn_agr_pland/(ann_agr_pland+prn_agr_pland)),
+         prn_ann_lograt = log(prn_agr_pland/ann_agr_pland),
+         field_pland = field.ha/lu_ta,
+         margin_dens = margin.ha/lu_ta,
+         delta_pollinators.margin = delta_pollinators/margin_dens,
+         delta_qb.margin = delta_qb/margin_dens,
+         delta_n_export.margin = delta_n_export/margin_dens,
+         delta_sed.margin = delta_sed/margin_dens) %>%
+  mutate(habcat = cut(ntr_pland, breaks = c(-Inf,20,50,Inf),
+                      labels = c("simple","moderate","natural")))
+
+scaled.data <- wfs_lsm %>% mutate(across(lu_shdi:field_pland, ~scale(.x)[,1]))
+
+wfs_sim <- wfs_lsm %>% filter(habcat == "simple")
+wfs_mod <- wfs_lsm %>% filter(habcat == "moderate")
+wfs_nat <- wfs_lsm %>% filter(habcat == "natural")
+
+```
+
+
+## Pollinator models
+
+### Simple landscapes (<20% natural habitat)
+
+#### Correlation between independent variables in simple landscapes.
+
+```{r correlation_sim, echo = FALSE}
+
+pairs.panels(wfs_sim %>% 
+               select(ann_agr_pland, prn_agr_pland, aglu_iji,
+                      lu_shdi, aglu_frac_mn, ntr_pland, prn_ann_lograt), 
+             cex.cor = 1, cex.labels=1, cex=0.5, method = "pearson")
+
+```
+
+#### Pollinator delta for simple landscapes
+
+```{r pollinator_delta_simple}
+
+dpol.sim.gam <- gam(delta_pollinators.margin ~
+                  s(ann_agr_pland) +
+                  s(aglu_iji) +
+                  s(prn_agr_pland) +
+                  s(aglu_frac_mn) +
+                  s(lu_shdi) + 
+                  s(lu_ta), 
+                data = wfs_sim)
+
+summary(dpol.sim.gam)
+
+concurvity(dpol.sim.gam, full = FALSE)
+
+# gam.check(dpol.sim.gam)
+
+```
+
+Partial effects plots and partial residuals. If variables are highly correlated, variance in the partial residual plot can be much less than the actual variance: https://en.wikipedia.org/wiki/Partial_residual_plot
+
+```{r part_plot_sim, echo=FALSE}
+
+dpol.sim.viz <- getViz(dpol.sim.gam)
+
+dpol.sim.vizplot <- plot(dpol.sim.viz, allTerms = T) + l_points() + l_fitLine(linetype = 3) + l_fitContour() + 
+      l_ciLine(colour = 2) + l_ciBar()
+
+print(dpol.sim.vizplot, pages = 1)
+
+```
+
+Predicted effects against actual points. Covariates of each plot(not on x axis) held at simple landscape averages.
+
+```{r plot_pol_sim, echo=FALSE}
+
+dpol.sim.pred <- plot_fun(dpol.sim.gam, 
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland",
+                         "aglu_frac_mn", "lu_shdi", "lu_ta"),
+                       wfs_sim, "ann_agr_pland")
+
+ggplot(dpol.sim.pred[[1]], aes(x, delta_pollinators.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = dpol.sim.pred[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+#### Without perennial agriculture or Shannon diversity
+
+These two variables increased concurvity when included with annual agriculture
+
+```{r pollinator_delta_simple2}
+
+dpol.sim.gam2 <- gam(delta_pollinators.margin ~
+                  s(ann_agr_pland) +
+                  s(aglu_iji) +
+                  s(aglu_frac_mn) +
+                  # s(lu_shdi) + 
+                  s(lu_ta), 
+                data = wfs_sim)
+
+summary(dpol.sim.gam2)
+
+concurvity(dpol.sim.gam2)
+
+```
+
+Partial effects plots and partial residuals
+
+```{r part_plot_sim2, echo=FALSE}
+
+dpol.sim.viz2 <- getViz(dpol.sim.gam2)
+
+dpol.sim.vizplot2 <- plot(dpol.sim.viz2, allTerms = T) + l_points() + l_fitLine(linetype = 3) + l_fitContour() + 
+      l_ciLine(colour = 2) + l_ciBar()
+
+print(dpol.sim.vizplot2, pages = 1)
+
+```
+
+Predicted effects against actual points. Covariates of each plot(not on x axis) held at simple landscape averages.
+
+```{r plot_pol_sim2, echo=FALSE}
+
+dpol.sim.pred2 <- plot_fun(dpol.sim.gam2, 
+                       c("ann_agr_pland", "aglu_iji",
+                         "aglu_frac_mn", "lu_ta"),
+                       wfs_sim, "ann_agr_pland")
+
+ggplot(dpol.sim.pred2[[1]], aes(x, delta_pollinators.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = dpol.sim.pred2[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+#### A composite variable of log ratio of annual to perennial ag
+
+The two types of ag become relative to each other so the connection to the original natural habitat gradient is lost. Therefore I added `ntr_pland` into the model.
+
+```{r pollinator_delta_simple3}
+
+
+dpol.sim.gam3 <- gam(delta_pollinators.margin ~
+                  s(prn_ann_lograt) +
+                  s(ntr_pland) +
+                  s(aglu_iji) +
+                  s(aglu_frac_mn) +
+                  # s(lu_shdi) +
+                  s(lu_ta), 
+                data = wfs_sim)
+
+summary(dpol.sim.gam3)
+
+concurvity(dpol.sim.gam3)
+
+```
+
+Partial effects plots and partial residuals
+
+```{r part_plot_sim3, echo=FALSE}
+
+dpol.sim.viz3 <- getViz(dpol.sim.gam3)
+
+dpol.sim.vizplot3 <- plot(dpol.sim.viz3, allTerms = T) + l_points() + l_fitLine(linetype = 3) + l_fitContour() + 
+      l_ciLine(colour = 2) + l_ciBar()
+
+print(dpol.sim.vizplot3, pages = 1)
+
+```
+
+Predicted effects against actual points. Covariates of each plot(not on x axis) held at simple landscape averages.
+
+```{r plot_pol_sim3, echo=FALSE}
+
+dpol.sim.pred3 <- plot_fun(dpol.sim.gam3, 
+                       c("prn_ann_lograt", "ntr_pland", "aglu_iji",
+                         "aglu_frac_mn", "lu_ta"),
+                       wfs_sim, "prn_ann_lograt")
+
+ggplot(dpol.sim.pred3[[1]], aes(x, delta_pollinators.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = dpol.sim.pred3[[2]], 
+             mapping = aes(color = prn_ann_lograt), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+### Pollinator delta for moderate landscapes (20-50% natural habitat)
+
+#### Correlation between predictors
+
+```{r correlation_mod}
+
+pairs.panels(wfs_mod %>% 
+               select(ann_agr_pland, prn_agr_pland, aglu_iji,
+                      lu_shdi, aglu_frac_mn, ntr_pland, prn_ann_lograt), 
+             cex.cor = 1, cex.labels=1, cex=0.5, method = "pearson")
+
+```
+
+Like in simple landscapes, strong concurvity.
+
+```{r pollinator_delta_mod}
+
+dpol.mod.gam <- gam(delta_pollinators.margin ~
+                  s(ann_agr_pland) +
+                  s(aglu_iji) +
+                  s(prn_agr_pland) +
+                  s(aglu_frac_mn) +
+                  s(lu_shdi) + 
+                  s(lu_ta), 
+                data = wfs_mod)
+
+summary(dpol.mod.gam)
+
+concurvity(dpol.mod.gam, full=FALSE)
+
+```
+
+Partial effects plots and partial residuals
+
+```{r part_plot_mod, echo=FALSE}
+
+dpol.mod.viz <- getViz(dpol.mod.gam)
+
+dpol.mod.vizplot <- plot(dpol.mod.viz, allTerms = T) + l_points() + l_fitLine(linetype = 3) + l_fitContour() + 
+      l_ciLine(colour = 2) + l_ciBar()
+
+print(dpol.mod.vizplot, pages = 1)
+
+```
+
+Predicted effects against actual points. Covariates of each plot(not on x axis) held at moderate landscape averages.
+
+```{r plot_pol_mod, echo=FALSE}
+
+dpol.mod.pred <- plot_fun(dpol.mod.gam, 
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland",
+                         "aglu_frac_mn", "lu_shdi"),
+                       wfs_mod, "ann_agr_pland")
+
+ggplot(dpol.mod.pred[[1]], aes(x, delta_pollinators.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = dpol.mod.pred[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+#### Without perennial ag and landscape iji
+
+These variables increased concurvity when included with annual agriculture
+
+```{r pollinator_delta_mod2}
+
+dpol.mod.gam2 <- gam(delta_pollinators.margin ~
+                  s(ann_agr_pland) +
+                  # s(aglu_iji) +
+                  # s(prn_agr_pland) +
+                  s(aglu_frac_mn) +
+                  s(lu_shdi) +
+                  s(lu_ta), 
+                data = wfs_mod)
+
+summary(dpol.mod.gam2)
+
+concurvity(dpol.mod.gam2, full = TRUE)
+
+```
+
+Partial effects plots and partial residuals
+
+```{r part_plot_mod2, echo=FALSE}
+
+dpol.mod.viz2 <- getViz(dpol.mod.gam2)
+
+dpol.mod.vizplot2 <- plot(dpol.mod.viz2, allTerms = T) + l_points() + l_fitLine(linetype = 3) + l_fitContour() + 
+      l_ciLine(colour = 2) + l_ciBar()
+
+print(dpol.mod.vizplot2, pages = 1)
+
+```
+
+Predicted effects against actual points. Covariates of each plot(not on x axis) held at moderate landscape averages.
+
+```{r plot_pol_mod2, echo=FALSE}
+
+dpol.mod.pred2 <- plot_fun(dpol.mod.gam2, 
+                       c("ann_agr_pland", "lu_shdi",
+                         "aglu_frac_mn", "lu_ta"),
+                       wfs_mod, "ann_agr_pland")
+
+ggplot(dpol.mod.pred2[[1]], aes(x, delta_pollinators.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = dpol.mod.pred2[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+#### A composite variable of log ratio of annual to perennial ag
+
+Using the composite variable isn't as helpful now because the log ratio of perennial to annual ag is correlated with natural habitat, iji, and Shannon diversity.
+
+```{r pollinator_delta_mod3}
+
+
+dpol.mod.gam3 <- gam(delta_pollinators.margin ~
+                  s(prn_ann_lograt) +
+                  s(ntr_pland) +
+                  # s(aglu_iji) +
+                  s(aglu_frac_mn) +
+                  # s(lu_shdi) +
+                  s(lu_ta), 
+                data = wfs_mod)
+
+summary(dpol.mod.gam3)
+
+concurvity(dpol.mod.gam3, full = TRUE)
+
+```
+
+Partial effects plots and partial residuals
+
+```{r part_plot_mod3, echo=FALSE}
+
+dpol.mod.viz3 <- getViz(dpol.mod.gam3)
+
+dpol.mod.vizplot3 <- plot(dpol.mod.viz3, allTerms = T) + l_points() + l_fitLine(linetype = 3) + l_fitContour() + 
+      l_ciLine(colour = 2) + l_ciBar()
+
+print(dpol.mod.vizplot3, pages = 1)
+
+```
+
+Predicted effects against actual points. Covariates of each plot(not on x axis) held at moderate landscape averages.
+
+```{r plot_pol_mod3, echo=FALSE}
+
+dpol.mod.pred3 <- plot_fun(dpol.mod.gam3, 
+                       c("prn_ann_lograt", "ntr_pland", 
+                         "aglu_frac_mn", "lu_ta"),
+                       wfs_mod, "prn_ann_lograt")
+
+ggplot(dpol.mod.pred3[[1]], aes(x, delta_pollinators.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = dpol.mod.pred3[[2]], 
+             mapping = aes(color = prn_ann_lograt), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+### Pollinator delta for natural landscapes (>50% natural)
+
+#### Correlation between predictors
+
+```{r correlation_nat}
+
+pairs.panels(wfs_nat %>% 
+               select(ann_agr_pland, prn_agr_pland, aglu_iji,
+                      lu_shdi, aglu_frac_mn, ntr_pland, prn_ann_lograt), 
+             cex.cor = 1, cex.labels=1, cex=0.5, method = "pearson")
+
+```
+
+```{r pollinator_delta_nat}
+
+dpol.nat.gam <- gam(delta_pollinators.margin ~
+                  s(ann_agr_pland) +
+                  s(aglu_iji) +
+                  s(prn_agr_pland) +
+                  s(aglu_frac_mn) +
+                  s(lu_shdi) + 
+                  s(lu_ta), 
+                data = wfs_nat)
+
+summary(dpol.nat.gam)
+
+concurvity(dpol.nat.gam, full = FALSE)
+
+```
+
+Partial effects plots and partial residuals
+
+```{r part_plot_nat, echo=FALSE}
+
+dpol.nat.viz <- getViz(dpol.nat.gam)
+
+dpol.nat.vizplot <- plot(dpol.nat.viz, allTerms = T) + l_points() + l_fitLine(linetype = 3) + l_fitContour() + 
+      l_ciLine(colour = 2) + l_ciBar()
+
+print(dpol.nat.vizplot, pages = 1)
+
+```
+
+Predicted effects against actual points. Covariates of each plot(not on x axis) held at natural landscape averages.
+
+```{r plot_pol_nat, echo=FALSE}
+
+dpol.nat.pred <- plot_fun(dpol.nat.gam, 
+                       c("ann_agr_pland", "aglu_iji", "prn_agr_pland",
+                         "aglu_frac_mn", "lu_shdi", "lu_ta"),
+                       wfs_nat, "ann_agr_pland")
+
+ggplot(dpol.nat.pred[[1]], aes(x, delta_pollinators.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = dpol.nat.pred[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+#### Without landscape iji
+
+IJI increased concurvity when included with annual agriculture.
+
+```{r pollinator_delta_nat2}
+
+dpol.nat.gam2 <- gam(delta_pollinators.margin ~
+                  s(ann_agr_pland) +
+                  # s(aglu_iji) +
+                  s(prn_agr_pland) +
+                  s(aglu_frac_mn) +
+                  s(lu_shdi) +
+                  s(lu_ta), 
+                data = wfs_nat)
+
+summary(dpol.nat.gam2)
+
+concurvity(dpol.nat.gam2, full = TRUE)
+
+```
+
+Partial effects plots and partial residuals
+
+```{r part_plot_nat2, echo=FALSE}
+
+dpol.nat.viz2 <- getViz(dpol.nat.gam2)
+
+dpol.nat.vizplot2 <- plot(dpol.nat.viz2, allTerms = T) + l_points() + l_fitLine(linetype = 3) + l_fitContour() + 
+      l_ciLine(colour = 2) + l_ciBar()
+
+print(dpol.nat.vizplot2, pages = 1)
+
+```
+
+Predicted effects against actual points. Covariates of each plot(not on x axis) held at natural landscape averages.
+
+```{r plot_pol_nat2, echo=FALSE}
+
+dpol.nat.pred2 <- plot_fun(dpol.nat.gam2, 
+                       c("ann_agr_pland", "lu_shdi", "prn_agr_pland",
+                         "aglu_frac_mn", "lu_ta"),
+                       wfs_nat, "ann_agr_pland")
+
+ggplot(dpol.nat.pred2[[1]], aes(x, delta_pollinators.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = dpol.nat.pred2[[2]], 
+             mapping = aes(color = ann_agr_pland), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+#### A composite variable of log ratio of annual to perennial ag
+
+Dropping IJI as before, but also Shannon diversity because it correlates with natural habitat
+
+```{r pollinator_delta_nat3}
+
+dpol.nat.gam3 <- gam(delta_pollinators.margin ~
+                  s(prn_ann_lograt) +
+                  s(ntr_pland) +
+                  s(aglu_frac_mn) +
+                  s(lu_ta), 
+                data = wfs_nat)
+
+summary(dpol.nat.gam3)
+
+concurvity(dpol.nat.gam3, full = TRUE)
+
+```
+
+Partial effects plots and partial residuals
+
+```{r part_plot_nat3, echo=FALSE}
+
+dpol.nat.viz3 <- getViz(dpol.nat.gam3)
+
+dpol.nat.vizplot3 <- plot(dpol.nat.viz3, allTerms = T) + l_points() + l_fitLine(linetype = 3) + l_fitContour() + 
+      l_ciLine(colour = 2) + l_ciBar()
+
+print(dpol.nat.vizplot3, pages = 1)
+
+```
+
+Predicted effects against actual points. Covariates of each plot(not on x axis) held at natural landscape averages.
+
+```{r plot_pol_nat3, echo=FALSE}
+
+dpol.nat.pred3 <- plot_fun(dpol.nat.gam3, 
+                       c("prn_ann_lograt", "ntr_pland",
+                         "aglu_frac_mn", "lu_ta"),
+                       wfs_nat, "prn_ann_lograt")
+
+ggplot(dpol.nat.pred3[[1]], aes(x, delta_pollinators.margin)) +  
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) + geom_line() +
+  geom_point(data = dpol.nat.pred3[[2]], 
+             mapping = aes(color = prn_ann_lograt), 
+             size = 0.6) + scale_color_continuous(type = "viridis") +
+  facet_wrap(~pred.var, scales = "free_x") +
+  egg::theme_article()
+
+```
+
+## A complete dataset pollinator model attempt
+
+#### Correlation between independent variables in all landscapes.
+
+```{r correlation_all, echo = FALSE}
+
+pairs.panels(wfs_lsm %>% 
+               select(ann_agr_pland, prn_agr_pland, aglu_iji,
+                      lu_shdi, aglu_frac_mn, ntr_pland, prn_ann_lograt), 
+             cex.cor = 1, cex.labels=1, cex=0.5, method = "pearson")
+
+```
+
+```{r pol_complete}
+
+dpol.all.gam <- gam(delta_pollinators.margin ~
+                  te(prn_ann_lograt,ntr_pland) +
+                  s(aglu_frac_mn) +
+                  # s(aglu_iji) +
+                  # s(lu_shdi) +
+                  s(lu_ta), 
+                data = wfs_lsm)
+
+summary(dpol.all.gam)
+
+concurvity(dpol.all.gam, full = TRUE)
+
+```
+
+Partial effects plots and partial residuals
+
+```{r part_plot_all, echo=FALSE}
+# library(rgl)
+
+dpol.all.viz <- getViz(dpol.all.gam)
+
+dpol.all.vizplot <- plot(dpol.all.viz, allTerms = T) + l_points() + l_fitLine(linetype = 3) + l_fitContour() + 
+      l_ciLine(colour = 2) + l_ciBar()
+
+print(dpol.all.vizplot, pages = 1)
+
+
+# plotRGL(sm(dpol.all.viz, 1), fix = c("z" = 0), residuals = TRUE)
+
+vis.gam(dpol.all.gam)
+
+```
