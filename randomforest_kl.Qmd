@@ -43,7 +43,7 @@ Change in ecosystem services per ha per ha of margin: delta.margin
 
 ### previously-completed analyses
 
-    # if(file.exists("RandomForest/ES-RF.RDA")) load("ES-RF.RDA")
+    if(file.exists("data/ES-RF.RDA")) load("data/ES-RF.RDA")
 
 ```
 
@@ -63,9 +63,9 @@ Change in ecosystem services per ha per ha of margin: delta.margin
     with(wfs, plot(pollinators_base, pollinators_max, col = "darkblue", xlab = "Base value", ylab = "Max", main = "Pollination"))
     abline(c(0, 1), lty = 2)
 
-    with(wfs, plot(pollinators_base, delta_pollinators.margin, col = "darkgreen", xlab = "Base value", ylab = "Delta", main = "Pollination"))
+    with(wfs, plot(pollinators_base, delta_pollinators_max.margin, col = "darkgreen", xlab = "Base value", ylab = "Delta", main = "Pollination"))
 
-    with(wfs, plot(ann_agr_pland, delta_pollinators.margin, col = "purple", xlab = "Annual agriculture (%)", ylab = "Delta", main = "Pollination"))
+    with(wfs, plot(ann_agr_pland, delta_pollinators_max.margin, col = "purple", xlab = "Annual agriculture (%)", ylab = "Delta", main = "Pollination"))
 
 
     #
@@ -76,9 +76,9 @@ Change in ecosystem services per ha per ha of margin: delta.margin
     with(wfs, plot(n_export_base, n_export_max, col = "darkblue", xlab = "Base value", ylab = "Max", main = "Nitrogen"))
     abline(c(0, 1), lty = 2)
 
-    with(wfs, plot(n_export_base, delta_n_export.margin, col = "darkgreen", xlab = "Base value", ylab = "Delta", main = "Nitrogen"))
+    with(wfs, plot(n_export_base, delta_n_export_max.margin, col = "darkgreen", xlab = "Base value", ylab = "Delta", main = "Nitrogen"))
 
-    with(wfs, plot(ann_agr_pland, delta_n_export.margin, col = "purple", xlab = "Annual agriculture (%)", ylab = "Delta", main = "Nitrogen"))
+    with(wfs, plot(ann_agr_pland, delta_n_export_max.margin, col = "purple", xlab = "Annual agriculture (%)", ylab = "Delta", main = "Nitrogen"))
 
     #
 
@@ -89,9 +89,9 @@ Change in ecosystem services per ha per ha of margin: delta.margin
     with(wfs, plot(sed_export_base, sed_export_max, col = "darkblue", xlab = "Base value", ylab = "Max", main = "Sediment"))
     abline(c(0, 1), lty = 2)
 
-    with(wfs, plot(sed_export_base, delta_sed.margin, col = "darkgreen", xlab = "Base value", ylab = "Delta", main = "Sediment"))
+    with(wfs, plot(sed_export_base, delta_sed_max.margin, col = "darkgreen", xlab = "Base value", ylab = "Delta", main = "Sediment"))
 
-    with(wfs, plot(ann_agr_pland, delta_sed.margin, col = "purple", xlab = "Annual agriculture (%)", ylab = "Delta", main = "Sediment"))
+    with(wfs, plot(ann_agr_pland, delta_sed_max.margin, col = "purple", xlab = "Annual agriculture (%)", ylab = "Delta", main = "Sediment"))
 
 
     #
@@ -102,9 +102,9 @@ Change in ecosystem services per ha per ha of margin: delta.margin
     with(wfs, plot(qb_base, qb_max, col = "darkblue", xlab = "Base value", ylab = "Max", main = "Baseflow"))
     abline(c(0, 1), lty = 2)
 
-    with(wfs, plot(qb_base, delta_qb.margin, col = "darkgreen", xlab = "Base value", ylab = "Delta", main = "Baseflow"))
+    with(wfs, plot(qb_base, delta_qb_max.margin, col = "darkgreen", xlab = "Base value", ylab = "Delta", main = "Baseflow"))
 
-    with(wfs, plot(ann_agr_pland, delta_qb.margin, col = "purple", xlab = "Annual agriculture (%)", ylab = "Delta", main = "Baseflow"))
+    with(wfs, plot(ann_agr_pland, delta_qb_max.margin, col = "purple", xlab = "Annual agriculture (%)", ylab = "Delta", main = "Baseflow"))
 
 ```
 
@@ -287,7 +287,7 @@ I want to look more closely at the response over various metrics.
 
 
     if(!exists("pollinators_base.ann_agr_pland.pdp")) {
-        dat <- data.frame(y = wfs$delta_pollinators.margin, orig = wfs$pollinators_base, dat.predictors)
+        dat <- data.frame(y = wfs$delta_pollinators_max.margin, orig = wfs$pollinators_base, dat.predictors)
         pollinators_base.ann_agr_pland.pdp <- partial(pollinators_base.rf, train = dat, pred.var = "ann_agr_pland")
         pollinators_margin.ann_agr_pland.pdp <- partial(pollinators_margin.rf, train = dat, pred.var = "ann_agr_pland")
         pollinators_base.ntr_pland.pdp <- partial(pollinators_base.rf, train = dat, pred.var = "ntr_pland")
@@ -296,7 +296,7 @@ I want to look more closely at the response over various metrics.
     }
 
     if(!exists("n_export_base.ann_agr_pland.pdp")) {
-        dat <- data.frame(y = wfs$delta_n_export.margin, orig = wfs$n_export_base, dat.predictors)
+        dat <- data.frame(y = wfs$delta_n_export_max.margin, orig = wfs$n_export_base, dat.predictors)
         n_export_base.ann_agr_pland.pdp <- partial(n_export_base.rf, train = dat, pred.var = "ann_agr_pland")
         n_export_margin.ann_agr_pland.pdp <- partial(n_export_margin.rf, train = dat, pred.var = "ann_agr_pland")
         n_export_base.ntr_pland.pdp <- partial(n_export_base.rf, train = dat, pred.var = "ntr_pland")
@@ -305,7 +305,7 @@ I want to look more closely at the response over various metrics.
     }
 
     if(!exists("sed_export_base.ann_agr_pland.pdp")) {
-        dat <- data.frame(y = wfs$delta_sed.margin, orig = wfs$sed_export_base, dat.predictors)
+        dat <- data.frame(y = wfs$delta_sed_max.margin, orig = wfs$sed_export_base, dat.predictors)
         sed_export_base.ann_agr_pland.pdp <- partial(sed_export_base.rf, train = dat, pred.var = "ann_agr_pland")
         sed_export_margin.ann_agr_pland.pdp <- partial(sed_export_margin.rf, train = dat, pred.var = "ann_agr_pland")
         sed_export_base.ntr_pland.pdp <- partial(sed_export_base.rf, train = dat, pred.var = "ntr_pland")
@@ -314,7 +314,7 @@ I want to look more closely at the response over various metrics.
     }
 
     if(!exists("qb_base.ann_agr_pland.pdp")) {
-        dat <- data.frame(y = wfs$delta_qb.margin, orig = wfs$qb_base, dat.predictors)
+        dat <- data.frame(y = wfs$delta_qb_max.margin, orig = wfs$qb_base, dat.predictors)
         qb_base.ann_agr_pland.pdp <- partial(qb_base.rf, train = dat, pred.var = "ann_agr_pland")
         qb_margin.ann_agr_pland.pdp <- partial(qb_margin.rf, train = dat, pred.var = "ann_agr_pland")
         qb_base.ntr_pland.pdp <- partial(qb_base.rf, train = dat, pred.var = "ntr_pland")
