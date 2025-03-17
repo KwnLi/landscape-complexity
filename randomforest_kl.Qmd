@@ -359,7 +359,7 @@ Partial dependence plots show change in the Y variable across the range of a spe
 ```{r partialplot3}
 
 
-    p1 <- plotPartial(sed_export_base.ann_agr_pland.pdp, main = "Sediment base")
+    p1 <- plotPartial(sed_export_base.ann_agr_pland.pdp, main = "Sediment base", rug = TRUE)
     p2 <- plotPartial(sed_export_margin.ann_agr_pland.pdp, main = "Sediment margin")
     p3 <- plotPartial(sed_export_base.ntr_pland.pdp, main = "Sediment base")
     p4 <- plotPartial(sed_export_margin.ntr_pland.pdp, main = "Sediment margin")
