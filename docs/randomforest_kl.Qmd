@@ -193,49 +193,49 @@ These are regression RF, so model performance can be assessed by looking at r2 a
 
    - Base
 
-     r2 = `{r} round(pollinators_base.rf$r.squared, 3)`
-     OOB MSE = `{r} round(pollinators_base.rf$prediction.error, 3)`
+     r2 = `r round(pollinators_base.rf$r.squared, 3)`
+     OOB MSE = `r round(pollinators_base.rf$prediction.error, 3)`
 
   - Margin
 
-     r2 = `{r} round(pollinators_margin.rf$r.squared, 3)`
-     OOB MSE = `{r} round(pollinators_margin.rf$prediction.error, 3)`
+     r2 = `r round(pollinators_margin.rf$r.squared, 3)`
+     OOB MSE = `r round(pollinators_margin.rf$prediction.error, 3)`
 
 *Nitrogen export:*
 
    - Base
 
-     r2 = `{r} round(n_export_base.rf$r.squared, 3)`
-     OOB MSE = `{r} round(n_export_base.rf$prediction.error, 3)`
+     r2 = `r round(n_export_base.rf$r.squared, 3)`
+     OOB MSE = `r round(n_export_base.rf$prediction.error, 3)`
 
   - Margin
 
-     r2 = `{r} round(n_export_margin.rf$r.squared, 3)`
-     OOB MSE = `{r} round(n_export_margin.rf$prediction.error, 3)`
+     r2 = `r round(n_export_margin.rf$r.squared, 3)`
+     OOB MSE = `r round(n_export_margin.rf$prediction.error, 3)`
 
 *Sediment export:*
 
    - Base
 
-     r2 = `{r} round(sed_export_base.rf$r.squared, 3)`
-     OOB MSE = `{r} round(sed_export_base.rf$prediction.error, 3)`
+     r2 = `r round(sed_export_base.rf$r.squared, 3)`
+     OOB MSE = `r round(sed_export_base.rf$prediction.error, 3)`
 
   - Margin
 
-     r2 = `{r} round(sed_export_margin.rf$r.squared, 3)`
-     OOB MSE = `{r} round(sed_export_margin.rf$prediction.error, 3)`
+     r2 = `r round(sed_export_margin.rf$r.squared, 3)`
+     OOB MSE = `r round(sed_export_margin.rf$prediction.error, 3)`
 
 *Baseflow:*
 
    - Base
 
-     r2 = `{r} round(qb_base.rf$r.squared, 3)`
-     OOB MSE = `{r} round(qb_base.rf$prediction.error, 3)`
+     r2 = `r round(qb_base.rf$r.squared, 3)`
+     OOB MSE = `r round(qb_base.rf$prediction.error, 3)`
 
   - Margin
 
-     r2 = `{r} round(qb_margin.rf$r.squared, 3)`
-     OOB MSE = `{r} round(qb_margin.rf$prediction.error, 3)`
+     r2 = `r round(qb_margin.rf$r.squared, 3)`
+     OOB MSE = `r round(qb_margin.rf$prediction.error, 3)`
 
 
 Can predict pollination extremely well, N quite well, and sediment and baseflow moderately well.
@@ -359,7 +359,7 @@ Partial dependence plots show change in the Y variable across the range of a spe
 ```{r partialplot3}
 
 
-    p1 <- plotPartial(sed_export_base.ann_agr_pland.pdp, main = "Sediment base")
+    p1 <- plotPartial(sed_export_base.ann_agr_pland.pdp, main = "Sediment base", rug = TRUE)
     p2 <- plotPartial(sed_export_margin.ann_agr_pland.pdp, main = "Sediment margin")
     p3 <- plotPartial(sed_export_base.ntr_pland.pdp, main = "Sediment base")
     p4 <- plotPartial(sed_export_margin.ntr_pland.pdp, main = "Sediment margin")

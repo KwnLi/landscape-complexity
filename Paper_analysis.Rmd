@@ -1,0 +1,198 @@
+---
+title: "Paper analysis"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r load}
+library(tidyverse)
+load("data/ES-RF2.RDA")
+
+```
+
+## Patterns with composition
+
+Making 4 x 3 plots, each showing relationships with 
+
+```{r compplots}
+
+dat.long <- dat %>% 
+  pivot_longer(cols = 1:12, names_to = "ES_response", values_to = "ES_value") %>%
+  pivot_longer(cols = c("ntr_pland", "ann_agr_pland"), names_to = "Landuse",
+               values_to = "Landuse_value") %>%
+  select(ES_response, ES_value, Landuse, Landuse_value) %>%
+  mutate(ES = gsub("delta_|_base|_max.margin","", ES_response)) %>%
+  mutate(ES = gsub("sed$","sed_export", ES)) %>%
+  mutate(response_type =
+           gsub("sed|export|n_|pollinators|qb|_|max","",ES_response))
+
+# fit some gams
+dat.gam <- dat.long %>% filter(Landuse == "ntr_pland") %>% 
+  group_by(response_type, ES) %>%
+  nest() %>%
+  # Fit GAM
+  mutate(Mod = map(data, ~mgcv::gam(ES_value ~ s(Landuse_value), data = .x))) %>%
+  # Get R2
+  mutate(R2 = map_dbl(Mod, ~round(summary(.x)$r.sq, 2)))  
+
+ggplot(dat.long %>% filter(Landuse == "ntr_pland"),
+       aes(Landuse_value, ES_value)) + 
+  geom_point() + geom_smooth(method="gam") +
+  ggh4x::facet_grid2(response_type ~ ES, 
+                                    scales = "free", independent = "y") + 
+  egg::theme_article() + 
+  # Add label
+  geom_label(data = dat.gam, 
+             aes(x = Inf, y = Inf, 
+                 label = paste("R2 = ", R2, sep = " ")),
+             hjust = 1, vjust = 1)
+```
+
+# Model performance
+*Pollinators:*
+
+   - Base
+
+     r2 = `r round(pollinators_base.rf$r.squared, 3)`
+     OOB MSE = `r round(pollinators_base.rf$prediction.error, 3)`
+
+  - Margin
+
+     r2 = `r round(pollinators_margin.rf$r.squared, 3)`
+     OOB MSE = `r round(pollinators_margin.rf$prediction.error, 3)`
+
+*Nitrogen export:*
+
+   - Base
+
+     r2 = `r round(n_export_base.rf$r.squared, 3)`
+     OOB MSE = `r round(n_export_base.rf$prediction.error, 3)`
+
+  - Margin
+
+     r2 = `r round(n_export_margin.rf$r.squared, 3)`
+     OOB MSE = `r round(n_export_margin.rf$prediction.error, 3)`
+
+*Sediment export:*
+
+   - Base
+
+     r2 = `r round(sed_export_base.rf$r.squared, 3)`
+     OOB MSE = `r round(sed_export_base.rf$prediction.error, 3)`
+
+  - Margin
+
+     r2 = `r round(sed_export_margin.rf$r.squared, 3)`
+     OOB MSE = `r round(sed_export_margin.rf$prediction.error, 3)`
+
+*Baseflow:*
+
+   - Base
+
+     r2 = `r round(qb_base.rf$r.squared, 3)`
+     OOB MSE = `r round(qb_base.rf$prediction.error, 3)`
+
+  - Margin
+
+     r2 = `r round(qb_margin.rf$r.squared, 3)`
+     OOB MSE = `r round(qb_margin.rf$prediction.error, 3)`
+     
+
+# Variable importance
+
+```{r importance, fig.height=16, fig.width=9}
+library(ggpattern)
+
+metric.descr <- read.csv("data/lsm_description.csv")
+
+imp.df <- bind_rows(
+  pollinators_base.p %>% rownames_to_column("metric") %>% 
+    mutate(ES = "Pollinators", model = "base"),
+  pollinators_margin.p %>% rownames_to_column("metric") %>% 
+    mutate(ES = "Pollinators", model = "margin"),
+  n_export_base.p %>% rownames_to_column("metric") %>% 
+    mutate(ES = "N export", model = "base"),
+  n_export_margin.p %>% rownames_to_column("metric") %>% 
+    mutate(ES = "N export", model = "margin"),
+  sed_export_base.p %>% rownames_to_column("metric") %>% 
+    mutate(ES = "Sed export", model = "base"),
+  sed_export_margin.p %>% rownames_to_column("metric") %>% 
+    mutate(ES = "Sed export", model = "margin"),
+  qb_base.p %>% rownames_to_column("metric") %>% 
+    mutate(ES = "Baseflow", model = "base"),
+  qb_margin.p %>% rownames_to_column("metric") %>% 
+    mutate(ES = "Baseflow", model = "margin")
+) %>%
+  mutate(sig = ifelse(pvalue <0.05, TRUE, FALSE)) %>%
+  mutate(metric2 = tidytext::reorder_within(metric, importance,
+                                           within = list(ES, model))) %>%
+  left_join(metric.descr %>% select(lsm, type), by = c("metric"="lsm")) %>%
+  mutate(type = case_match(
+    metric,
+    "field_pland" ~ "area and edge metric",
+    "field_frac_mn" ~ "shape metric",
+    "field_frac_cv" ~ "shape metric",
+    "prn_ann_ratio" ~ "area and edge metric",
+    .default = type
+  ))
+
+ggplot(imp.df, aes(metric2, importance, fill = type, pattern = sig)) + 
+  geom_bar_pattern(stat="identity",
+                   color = "black", 
+                   pattern_fill = "black",
+                   pattern_angle = 45,
+                   pattern_density = 0.1,
+                   pattern_spacing = 0.025,
+                   pattern_key_scale_factor = 0.6) + 
+  tidytext::scale_x_reordered() +
+  coord_flip() +
+  ggh4x::facet_grid2(ES~model, scales = "free", independent = "all") +
+  scale_pattern_manual(values = c("TRUE" = "none", "FALSE" = "stripe")) +
+  egg::theme_article() +
+  theme(legend.position = "top") + 
+  guides(pattern = guide_legend(override.aes = list(fill = "white")),
+         fill = guide_legend(override.aes = list(pattern = "none")))
+
+
+```
+
+*Significant metrics count*
+
+```{r}
+
+sigct <- imp.df %>% filter(sig==TRUE)
+
+ggplot(sigct, aes(fct_infreq(metric), fill = type)) +
+  scale_x_discrete(limits=rev) +
+  geom_bar() + coord_flip() + labs(x="metric") + egg::theme_article()
+
+```
+
+# Interactions
+```{r int_load}
+library(iml)
+library(gridExtra)
+load("data/ES-RF2-preds.RDA")
+```
+
+## Pollinator base interactions
+
+```{r polbase_int}
+grid.arrange(
+  int.polbase %>% plot() + ggtitle("Interaction strength") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  int.polbase.ntr_pland %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  ncol = 2
+)
+```
+
+## Pollinators margins interactions
+
+```{r polmarg_int}
+grid.arrange(
+  int.polmarg %>% plot() + ggtitle("Interaction strength") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  int.polmarg.ntr_pland %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  ncol = 2
+)
+```
