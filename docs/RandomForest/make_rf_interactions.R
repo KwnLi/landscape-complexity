@@ -52,7 +52,7 @@ pred.n_export_margin <- Predictor$new(
 )
 
 int.nexpmarg  <- Interaction$new(pred.n_export_margin)
-int.nexpmarg.ntr_pland  <- Interaction$new(pred.n_export_margin, feature = "ntr_pland")
+int.nexpmarg.ann_agr_pland  <- Interaction$new(pred.n_export_margin, feature = "ann_agr_pland")
 
 # Sediment export base
 
@@ -76,7 +76,7 @@ pred.sed_export_margin <- Predictor$new(
 )
 
 int.sedexpmarg  <- Interaction$new(pred.sed_export_margin)
-int.sedexpmarg.ann_agr_ed  <- Interaction$new(pred.sed_export_margin, feature = "ann_agr_ed")
+int.sedexpmarg.lu_shdi  <- Interaction$new(pred.sed_export_margin, feature = "lu_shdi")
 
 # Water recharge base
 
@@ -100,6 +100,6 @@ pred.qb_margin <- Predictor$new(
 )
 
 int.qbmarg  <- Interaction$new(pred.qb_margin)
-int.qbmarg.prn_agr_para_mn <- Interaction$new(pred.qb_margin, feature = "prn_agr_para_mn")
+int.qbmarg.field_frac_cv <- Interaction$new(pred.qb_margin, feature = "field_frac_cv")
 
 save(list = ls(pattern = "^int|^pred"), file = "data/ES-RF2-preds.RDA")

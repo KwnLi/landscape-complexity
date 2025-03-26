@@ -212,7 +212,7 @@ grid.arrange(
 ```{r nexpmarg_int}
 grid.arrange(
   int.nexpmarg %>% plot() + ggtitle("Interaction strength") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
-  int.nexpmarg.ntr_pland %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  int.nexpmarg.ann_agr_pland %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
   ncol = 2
 )
 ```
@@ -232,7 +232,7 @@ grid.arrange(
 ```{r sedmarg_int}
 grid.arrange(
   int.sedexpmarg %>% plot() + ggtitle("Interaction strength") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
-  int.sedexpmarg.ann_agr_ed %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  int.sedexpmarg.lu_shdi %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
   ncol = 2
 )
 ```
@@ -253,7 +253,7 @@ grid.arrange(
 ```{r qbmarg_int}
 grid.arrange(
   int.qbmarg %>% plot() + ggtitle("Interaction strength") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
-  int.qbmarg.prn_agr_para_mn %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  int.qbmarg.field_frac_cv %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
   ncol = 2
 )
 ```
