@@ -158,77 +158,6 @@ ggplot(imp.df, aes(metric2, importance, fill = type, pattern = sig)) +
 
 ```
 
-*Significant metrics count*
-
-```{r}
-
-sigct <- imp.df %>% filter(sig==TRUE)
-
-ggplot(sigct, aes(fct_infreq(metric), fill = type)) +
-  scale_x_discrete(limits=rev) +
-  geom_bar() + coord_flip() + labs(x="metric") + egg::theme_article()
-
-```
-
-```{r impurity_importance, fig.height=16, fig.width=9}
-
-load("data/ES-RF2-impurity.RDA")
-
-library(ggpattern)
-
-metric.descr <- read.csv("data/lsm_description.csv")
-
-imp.imp.df <- bind_rows(
-  pollinators_base.imp.p %>% rownames_to_column("metric") %>% 
-    mutate(ES = "Pollinators", model = "base"),
-  pollinators_margin.imp.p %>% rownames_to_column("metric") %>% 
-    mutate(ES = "Pollinators", model = "margin"),
-  n_export_base.imp.p %>% rownames_to_column("metric") %>% 
-    mutate(ES = "N export", model = "base"),
-  n_export_margin.imp.p %>% rownames_to_column("metric") %>% 
-    mutate(ES = "N export", model = "margin"),
-  sed_export_base.imp.p %>% rownames_to_column("metric") %>% 
-    mutate(ES = "Sed export", model = "base"),
-  sed_export_margin.imp.p %>% rownames_to_column("metric") %>% 
-    mutate(ES = "Sed export", model = "margin"),
-  qb_base.imp.p %>% rownames_to_column("metric") %>% 
-    mutate(ES = "Baseflow", model = "base"),
-  qb_margin.imp.p %>% rownames_to_column("metric") %>% 
-    mutate(ES = "Baseflow", model = "margin")
-) %>%
-  mutate(sig = ifelse(pvalue <0.05, TRUE, FALSE)) %>%
-  mutate(metric2 = tidytext::reorder_within(metric, importance,
-                                           within = list(ES, model))) %>%
-  left_join(metric.descr %>% select(lsm, type), by = c("metric"="lsm")) %>%
-  mutate(type = case_match(
-    metric,
-    "field_pland" ~ "area and edge metric",
-    "field_frac_mn" ~ "shape metric",
-    "field_frac_cv" ~ "shape metric",
-    "prn_ann_ratio" ~ "area and edge metric",
-    .default = type
-  ))
-
-ggplot(imp.imp.df, aes(metric2, importance, fill = type, pattern = sig)) + 
-  geom_bar_pattern(stat="identity",
-                   color = "black", 
-                   pattern_fill = "black",
-                   pattern_angle = 45,
-                   pattern_density = 0.1,
-                   pattern_spacing = 0.025,
-                   pattern_key_scale_factor = 0.6) + 
-  tidytext::scale_x_reordered() +
-  coord_flip() +
-  ggh4x::facet_grid2(ES~model, scales = "free", independent = "all") +
-  scale_pattern_manual(values = c("TRUE" = "none", "FALSE" = "stripe")) +
-  egg::theme_article() +
-  theme(legend.position = "top") + 
-  guides(pattern = guide_legend(override.aes = list(fill = "white")),
-         fill = guide_legend(override.aes = list(pattern = "none")))
-
-
-```
-
 ## Shapley importance
 ```{r importance_shap}
 load("data/ES-RF2-shapimportance.RDA")
@@ -239,113 +168,128 @@ library(gridExtra)
 
 ### Pollinators
 
-*Pollinators*
-
 ```{r shap_pol, fig.width=9}
 grid.arrange(
-  sv_importance(ex.polbase.glb), sv_importance(ex.polmarg.glb),
+  sv_importance(ex.polbase.glb) + egg::theme_article(),
+  sv_importance(ex.polmarg.glb) + egg::theme_article(),
   ncol = 2
 )
 
 ```
 
-Base pollinator model Shapley dependence plot. Colors are the strongest interactor with that variable.
+**_Base pollinator model Shapley dependence plots_** The two major contributors. Colors are the strongest interactor with that variable.
 
 ```{r shap_pol_baseshap, fig.width=9}
 grid.arrange(
-  sv_dependence(ex.polbase.glb, v="ntr_pland"),
-  sv_dependence(ex.polbase.glb, v="ann_agr_pland"), 
+  sv_dependence(ex.polbase.glb, v="ntr_pland") + egg::theme_article(),
+  sv_dependence(ex.polbase.glb, v="ann_agr_pland") + egg::theme_article(), 
   ncol = 2
 )
 
 ```
 
-Margin pollinator model Shapley dependence plot. Colors are the strongest interactor with that variable.
+**_Margin pollinator model Shapley dependence plot_** Colors are the strongest interactor with that variable.
 
 ```{r shap_pol_margshap, fig.width=9}
 grid.arrange(
-  sv_dependence(ex.polmarg.glb, v="ntr_pland")
+  sv_dependence(ex.polmarg.glb, v="ntr_pland") + egg::theme_article()
 )
 
 ```
 
-*N Export*
+### N Export
 
 ```{r shap_nexp, fig.width=9}
+
 grid.arrange(
-  sv_importance(ex.nexpbase.glb), sv_importance(ex.nexpmarg.glb),
+  sv_importance(ex.nexpbase.glb) + egg::theme_article(), 
+  sv_importance(ex.nexpmarg.glb) + egg::theme_article(),
   ncol = 2
 )
 
 ```
+
+**_Base N export shapley dependence plots_** Three major -ish contributors.
 
 ```{r shap_nexp_baseshap, fig.width=9}
 grid.arrange(
-  sv_dependence(ex.nexpbase.glb, v="ntr_pland"),
-  sv_dependence(ex.nexpbase.glb, v="ann_agr_pland"), 
-  sv_dependence(ex.nexpbase.glb, v="ntr_ed"), 
+  sv_dependence(ex.nexpbase.glb, v="ntr_pland") + egg::theme_article(),
+  sv_dependence(ex.nexpbase.glb, v="ann_agr_pland") + egg::theme_article(), 
+  sv_dependence(ex.nexpbase.glb, v="ntr_ed") + egg::theme_article(), 
   ncol = 2
 )
 
 ```
+
+**_Margin N export Shapley dependence plots_** Three major contributors.
 
 ```{r shap_nexp_margshap, fig.width=9}
 grid.arrange(
-  sv_dependence(ex.nexpmarg.glb, v="ntr_pland"),
-  sv_dependence(ex.nexpmarg.glb, v="ann_agr_pland"), 
-  sv_dependence(ex.nexpmarg.glb, v="ntr_ed"), 
+  sv_dependence(ex.nexpmarg.glb, v="ntr_pland") + egg::theme_article(),
+  sv_dependence(ex.nexpmarg.glb, v="ann_agr_pland") + egg::theme_article(), 
+  sv_dependence(ex.nexpmarg.glb, v="ntr_ed") + egg::theme_article(), 
   ncol = 2
 )
 
 ```
 
-*Sediment Export*
+### Sediment Export
 
 ```{r shap_sed, fig.width=9}
 grid.arrange(
-  sv_importance(ex.sedbase.glb), sv_importance(ex.sedmarg.glb),
+  sv_importance(ex.sedbase.glb) + egg::theme_article(),
+  sv_importance(ex.sedmarg.glb) + egg::theme_article(),
   ncol = 2
 )
 
 ```
 
+**_Base sediment export Shapley dependence plots_** One major contributor
+
 ```{r shap_sed_baseshap, fig.width=9}
 grid.arrange(
-  sv_dependence(ex.sedbase.glb, v="ann_agr_ed")
+  sv_dependence(ex.sedbase.glb, v="ann_agr_ed") + egg::theme_article()
 )
 
 ```
 
+**_Margin sediment runoff Shapley dependence plots_** One or two major contributors. `field_frac_mn` is the strongest interactor with `ann_agr_ed`, and vice versa, while `field_frac_mn` does not stand out as strongly in the permutation results.
+
 ```{r shap_sed_margshap, fig.width=9}
 grid.arrange(
-  sv_dependence(ex.sedmarg.glb, v="ann_agr_ed"),
-  sv_dependence(ex.sedmarg.glb, v="field_frac_mn"),
+  sv_dependence(ex.sedmarg.glb, v="ann_agr_ed") + egg::theme_article(),
+  sv_dependence(ex.sedmarg.glb, v="field_frac_mn") + egg::theme_article(),
   ncol=2
 )
 
 ```
 
-*Water recharge*
+### Water recharge
 
 ```{r shap_wb, fig.width=9}
 grid.arrange(
-  sv_importance(ex.qbbase.glb), sv_importance(ex.qbmarg.glb),
+  sv_importance(ex.qbbase.glb) + egg::theme_article(),
+  sv_importance(ex.qbmarg.glb) + egg::theme_article(),
   ncol = 2
 )
 
 ```
 
+**_Base water runoff Shapley depednence plot_** One major contributor.
+
 ```{r shap_qb_baseshap, fig.width=9}
 grid.arrange(
-  sv_dependence(ex.qbbase.glb, v="field_frac_mn")
+  sv_dependence(ex.qbbase.glb, v="field_frac_mn") + egg::theme_article()
 )
 
 ```
 
+**_Margin water runoff Shapley dependence plots_** One or two major contributors. Differs a little from the permutation results from above. In the permutation results, `prn_agr_para_mn` does not have as high importance so that it isn't separated from other variables.
+
 ```{r shap_qb_margshap, fig.width=9}
 grid.arrange(
-  sv_dependence(ex.qbmarg.glb, v="prn_ann_ratio"),
-  sv_dependence(ex.qbmarg.glb, v="prn_agr_para_mn"),
+  sv_dependence(ex.qbmarg.glb, v="prn_ann_ratio") + egg::theme_article(),
+  sv_dependence(ex.qbmarg.glb, v="prn_agr_para_mn") + egg::theme_article(),
   ncol=2
 )
 

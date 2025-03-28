@@ -307,32 +307,55 @@ $(document).ready(function () {
 <div id="variable-importance" class="section level1">
 <h1>Variable importance</h1>
 <p><img src="Paper_analysis_files/figure-html/importance-1.png" width="864" /></p>
-<p><em>Significant metrics count</em></p>
-<p><img src="Paper_analysis_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
-<p><img src="Paper_analysis_files/figure-html/impurity_importance-1.png" width="864" /></p>
 <div id="shapley-importance" class="section level2">
 <h2>Shapley importance</h2>
 <div id="pollinators" class="section level3">
 <h3>Pollinators</h3>
-<p><em>Pollinators</em></p>
 <p><img src="Paper_analysis_files/figure-html/shap_pol-1.png" width="864" /></p>
-<p>Base pollinator model Shapley dependence plot. Colors are the
-strongest interactor with that variable.</p>
+<p><strong><em>Base pollinator model Shapley dependence
+plots</em></strong> The two major contributors. Colors are the strongest
+interactor with that variable.</p>
 <p><img src="Paper_analysis_files/figure-html/shap_pol_baseshap-1.png" width="864" /></p>
-<p>Margin pollinator model Shapley dependence plot. Colors are the
-strongest interactor with that variable.</p>
+<p><strong><em>Margin pollinator model Shapley dependence
+plot</em></strong> Colors are the strongest interactor with that
+variable.</p>
 <p><img src="Paper_analysis_files/figure-html/shap_pol_margshap-1.png" width="864" /></p>
-<p><em>N Export</em></p>
+</div>
+<div id="n-export" class="section level3">
+<h3>N Export</h3>
 <p><img src="Paper_analysis_files/figure-html/shap_nexp-1.png" width="864" /></p>
+<p><strong><em>Base N export shapley dependence plots</em></strong>
+Three major -ish contributors.</p>
 <p><img src="Paper_analysis_files/figure-html/shap_nexp_baseshap-1.png" width="864" /></p>
+<p><strong><em>Margin N export Shapley dependence plots</em></strong>
+Three major contributors.</p>
 <p><img src="Paper_analysis_files/figure-html/shap_nexp_margshap-1.png" width="864" /></p>
-<p><em>Sediment Export</em></p>
+</div>
+<div id="sediment-export" class="section level3">
+<h3>Sediment Export*</h3>
 <p><img src="Paper_analysis_files/figure-html/shap_sed-1.png" width="864" /></p>
+<p><strong><em>Base sediment export Shapley dependence
+plots</em></strong> One major contributor</p>
 <p><img src="Paper_analysis_files/figure-html/shap_sed_baseshap-1.png" width="864" /></p>
+<p><strong><em>Margin sediment runoff Shapley dependence
+plots</em></strong> One or two major contributors.
+<code>field_frac_mn</code> is the strongest interactor with
+<code>ann_agr_ed</code>, and vice versa, while
+<code>field_frac_mn</code> does not stand out as strongly in the
+permutation results.</p>
 <p><img src="Paper_analysis_files/figure-html/shap_sed_margshap-1.png" width="864" /></p>
-<p><em>Water recharge</em></p>
+</div>
+<div id="water-recharge" class="section level3">
+<h3>Water recharge</h3>
 <p><img src="Paper_analysis_files/figure-html/shap_wb-1.png" width="864" /></p>
+<p><strong><em>Base water runoff Shapley depednence plot</em></strong>
+One major contributor.</p>
 <p><img src="Paper_analysis_files/figure-html/shap_qb_baseshap-1.png" width="864" /></p>
+<p><strong><em>Margin water runoff Shapley dependence
+plots</em></strong> One or two major contributors. Differs a little from
+the permutation results from above. In the permutation results,
+<code>prn_agr_para_mn</code> does not have as high importance so that it
+isn’t separated from other variables.</p>
 <p><img src="Paper_analysis_files/figure-html/shap_qb_margshap-1.png" width="864" /></p>
 </div>
 </div>
