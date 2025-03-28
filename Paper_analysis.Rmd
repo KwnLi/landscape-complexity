@@ -241,7 +241,7 @@ library(gridExtra)
 
 *Pollinators*
 
-```{r shap_pol}
+```{r shap_pol, fig.width=9}
 grid.arrange(
   sv_importance(ex.polbase.glb), sv_importance(ex.polmarg.glb),
   ncol = 2
@@ -249,9 +249,29 @@ grid.arrange(
 
 ```
 
+Base pollinator model Shapley dependence plot. Colors are the strongest interactor with that variable.
+
+```{r shap_pol_baseshap, fig.width=9}
+grid.arrange(
+  sv_dependence(ex.polbase.glb, v="ntr_pland"),
+  sv_dependence(ex.polbase.glb, v="ann_agr_pland"), 
+  ncol = 2
+)
+
+```
+
+Margin pollinator model Shapley dependence plot. Colors are the strongest interactor with that variable.
+
+```{r shap_pol_margshap}
+grid.arrange(
+  sv_dependence(ex.polmarg.glb, v="ntr_pland")
+)
+
+```
+
 *N Export*
 
-```{r shap_Nexp}
+```{r shap_nexp, fig.width=9}
 grid.arrange(
   sv_importance(ex.nexpbase.glb), sv_importance(ex.nexpmarg.glb),
   ncol = 2
@@ -259,9 +279,29 @@ grid.arrange(
 
 ```
 
+```{r shap_nexp_baseshap, fig.width=9}
+grid.arrange(
+  sv_dependence(ex.nexpbase.glb, v="ntr_pland"),
+  sv_dependence(ex.nexpbase.glb, v="ann_agr_pland"), 
+  sv_dependence(ex.nexpbase.glb, v="ntr_ed"), 
+  ncol = 2
+)
+
+```
+
+```{r shap_nexp_margshap, fig.width=9}
+grid.arrange(
+  sv_dependence(ex.nexpmarg.glb, v="ntr_pland"),
+  sv_dependence(ex.nexpmarg.glb, v="ann_agr_pland"), 
+  sv_dependence(ex.nexpmarg.glb, v="ntr_ed"), 
+  ncol = 2
+)
+
+```
+
 *Sediment Export*
 
-```{r shap_sed}
+```{r shap_sed, fig.width=9}
 grid.arrange(
   sv_importance(ex.sedbase.glb), sv_importance(ex.sedmarg.glb),
   ncol = 2
@@ -269,13 +309,44 @@ grid.arrange(
 
 ```
 
+```{r shap_sed_baseshap}
+grid.arrange(
+  sv_dependence(ex.sedbase.glb, v="ann_agr_ed")
+)
+
+```
+
+```{r shap_sed_margshap}
+grid.arrange(
+  sv_dependence(ex.sedmarg.glb, v="ann_agr_ed"),
+  sv_dependence(ex.sedmarg.glb, v="field_frac_mn"),
+  ncol=2
+)
+
+```
 
 *Water recharge*
 
-```{r shap_wb}
+```{r shap_wb, fig.width=9}
 grid.arrange(
   sv_importance(ex.qbbase.glb), sv_importance(ex.qbmarg.glb),
   ncol = 2
+)
+
+```
+
+```{r shap_qb_baseshap}
+grid.arrange(
+  sv_dependence(ex.qbbase.glb, v="field_frac_mn")
+)
+
+```
+
+```{r shap_qb_margshap}
+grid.arrange(
+  sv_dependence(ex.qbmarg.glb, v="prn_ann_ratio"),
+  sv_dependence(ex.qbmarg.glb, v="prn_agr_para_mn"),
+  ncol=2
 )
 
 ```
