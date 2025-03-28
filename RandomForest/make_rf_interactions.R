@@ -103,3 +103,91 @@ int.qbmarg  <- Interaction$new(pred.qb_margin)
 int.qbmarg.field_frac_cv <- Interaction$new(pred.qb_margin, feature = "field_frac_cv")
 
 save(list = ls(pattern = "^int|^pred"), file = "data/ES-RF2-preds.RDA")
+
+## Interactions
+```{r int_load}
+library(iml)
+library(gridExtra)
+load("data/ES-RF2-preds.RDA")
+```
+
+## Pollinator base interactions
+
+```{r polbase_int}
+grid.arrange(
+  int.polbase %>% plot() + ggtitle("Interaction strength") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  int.polbase.ntr_pland %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  ncol = 2
+)
+```
+
+## Pollinators margins interactions
+
+```{r polmarg_int}
+grid.arrange(
+  int.polmarg %>% plot() + ggtitle("Interaction strength") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  int.polmarg.ntr_pland %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  ncol = 2
+)
+```
+
+## N export base interactions
+
+```{r nexpbase_int}
+grid.arrange(
+  int.nexpbase %>% plot() + ggtitle("Interaction strength") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  int.nexpbase.ntr_pland %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  ncol = 2
+)
+```
+
+## N export margin interactions
+
+```{r nexpmarg_int}
+grid.arrange(
+  int.nexpmarg %>% plot() + ggtitle("Interaction strength") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  int.nexpmarg.ann_agr_pland %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  ncol = 2
+)
+```
+
+## Sediment export base interactions
+
+```{r sedbase_int}
+grid.arrange(
+  int.sedexpbase %>% plot() + ggtitle("Interaction strength") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  int.sedexpbase.ann_agr_ed %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  ncol = 2
+)
+```
+
+## Sediment export margin interactions
+
+```{r sedmarg_int}
+grid.arrange(
+  int.sedexpmarg %>% plot() + ggtitle("Interaction strength") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  int.sedexpmarg.lu_shdi %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  ncol = 2
+)
+```
+
+
+## Baseflow base interactions
+
+```{r qbbase_int}
+grid.arrange(
+  int.qbbase %>% plot() + ggtitle("Interaction strength") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  int.qbbase.field_frac_mn %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  ncol = 2
+)
+```
+
+## Baseflow margin interactions
+
+```{r qbmarg_int}
+grid.arrange(
+  int.qbmarg %>% plot() + ggtitle("Interaction strength") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  int.qbmarg.field_frac_cv %>% plot() + ggtitle("Pairwise interactions with strongest") + egg::theme_article() + theme(plot.title.position = "plot", axis.title.y = element_blank()),
+  ncol = 2
+)
+```

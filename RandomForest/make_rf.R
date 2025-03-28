@@ -1,6 +1,7 @@
 # make random forest from unique datasets
 
 library(ranger)
+options(ranger.num.threads = 8)
 
 wfs <- readRDS("data/allresults_20250308.rds")
 
@@ -54,5 +55,38 @@ qb_margin.rf <- ranger(qb.margin.form, data = dat, importance = "permutation", n
 qb_margin.p <- data.frame(importance_pvalues(qb_margin.rf, method = "altmann",
                                              formula = qb.margin.form, data = dat, num.permutations = 1000))
 
-# save the outputs
+# run random forest using different importance
+pollinators_base.imp.rf <- ranger(pol.base.form, data = dat, importance = "impurity", num.trees = 1000)
+pollinators_base.imp.p <- data.frame(importance_pvalues(pollinators_base.imp.rf, method = "altmann", 
+                                                    formula = pol.base.form, data = dat, num.permutations = 1000))
+pollinators_margin.imp.rf <- ranger(pol.margin.form, data = dat, importance = "impurity", num.trees = 1000)
+pollinators_margin.imp.p <- data.frame(importance_pvalues(pollinators_margin.imp.rf, method = "altmann", 
+                                                      formula = pol.margin.form, data = dat, num.permutations = 1000))
+
+n_export_base.imp.rf <- ranger(n_exp.base.form, data = dat, importance = "impurity", num.trees = 1000)
+n_export_base.imp.p <- data.frame(importance_pvalues(n_export_base.imp.rf, method = "altmann", 
+                                                 formula = n_exp.base.form, data = dat, num.permutations = 1000))
+n_export_margin.imp.rf <- ranger(n_exp.margin.form, data = dat, importance = "impurity", num.trees = 1000)
+n_export_margin.imp.p <- data.frame(importance_pvalues(n_export_margin.imp.rf, method = "altmann", 
+                                                   formula = n_exp.margin.form, data = dat, num.permutations = 1000))
+
+sed_export_base.imp.rf <- ranger(sed.base.form, data = dat, importance = "impurity", num.trees = 1000)
+sed_export_base.imp.p <- data.frame(importance_pvalues(sed_export_base.imp.rf, method = "altmann", 
+                                                   formula = sed.base.form, data = dat, num.permutations = 1000))
+sed_export_margin.imp.rf <- ranger(sed.margin.form, data = dat, importance = "impurity", num.trees = 1000)
+sed_export_margin.imp.p <- data.frame(importance_pvalues(sed_export_margin.imp.rf, method = "altmann", 
+                                                     formula = sed.margin.form, data = dat, num.permutations = 1000))
+
+qb_base.imp.rf <- ranger(qb.base.form, data = dat, importance = "impurity", num.trees = 1000)
+qb_base.imp.p <- data.frame(importance_pvalues(qb_base.imp.rf, method = "altmann", 
+                                           formula = qb.base.form, data = dat, num.permutations = 1000))
+qb_margin.imp.rf <- ranger(qb.margin.form, data = dat, importance = "impurity", num.trees = 1000)
+qb_margin.imp.p <- data.frame(importance_pvalues(qb_margin.imp.rf, method = "altmann",
+                                             formula = qb.margin.form, data = dat, num.permutations = 1000))
+
+
+# save the permutation outputs
 save(list = c("dat",ls(pattern = "^[npqs]")), file = "data/ES-RF2.RDA")
+
+# save just the impurity-based outputs
+save(list = ls(pattern = "imp"), file = "data/ES-RF2-impurity.RDA")
