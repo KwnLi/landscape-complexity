@@ -262,7 +262,7 @@ grid.arrange(
 
 Margin pollinator model Shapley dependence plot. Colors are the strongest interactor with that variable.
 
-```{r shap_pol_margshap}
+```{r shap_pol_margshap, fig.width=9}
 grid.arrange(
   sv_dependence(ex.polmarg.glb, v="ntr_pland")
 )
@@ -309,14 +309,14 @@ grid.arrange(
 
 ```
 
-```{r shap_sed_baseshap}
+```{r shap_sed_baseshap, fig.width=9}
 grid.arrange(
   sv_dependence(ex.sedbase.glb, v="ann_agr_ed")
 )
 
 ```
 
-```{r shap_sed_margshap}
+```{r shap_sed_margshap, fig.width=9}
 grid.arrange(
   sv_dependence(ex.sedmarg.glb, v="ann_agr_ed"),
   sv_dependence(ex.sedmarg.glb, v="field_frac_mn"),
@@ -335,14 +335,14 @@ grid.arrange(
 
 ```
 
-```{r shap_qb_baseshap}
+```{r shap_qb_baseshap, fig.width=9}
 grid.arrange(
   sv_dependence(ex.qbbase.glb, v="field_frac_mn")
 )
 
 ```
 
-```{r shap_qb_margshap}
+```{r shap_qb_margshap, fig.width=9}
 grid.arrange(
   sv_dependence(ex.qbmarg.glb, v="prn_ann_ratio"),
   sv_dependence(ex.qbmarg.glb, v="prn_agr_para_mn"),
