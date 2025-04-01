@@ -21,7 +21,7 @@ library(tidyverse)
 #             by = c("hu" = "huc12", "huc2", "name")) %>%
 #   left_join(hulandstats)
 
-wfs_meta <- readRDS("data/allresults_20250308.rds")
+wfs_meta <- readRDS("data/old/allresults_20250308.rds")
 
 ```
 

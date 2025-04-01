@@ -1,7 +1,7 @@
 # make importance values
 library(iml)
-load("data/ES-RF2.RDA")
-load("data/ES-RF2-preds.RDA")
+load("data/ES-RF3.RDA")
+load("data/ES-RF3-preds.RDA")
 
 # pollinators
 imp.polbase <- FeatureImp$new(pred.pollinators_base, loss = "mae")

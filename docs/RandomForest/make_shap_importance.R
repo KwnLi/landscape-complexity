@@ -2,11 +2,11 @@
 library(fastshap)
 library(shapviz)
 
-load("data/ES-RF2.RDA")
+load("data/ES-RF3.RDA")
 
 pfun <- function(object, newdata) predict(object, data = newdata)$predictions
 
-dat.x <- dat[,13:41]
+dat.x <- dat[,13:45]
 
 # pollinators
 ex.polbase <- explain(pollinators_base.rf, X=dat.x, pred_wrapper = pfun,
@@ -44,4 +44,4 @@ ex.qbmarg <- explain(qb_margin.rf, X=dat.x, pred_wrapper = pfun,
                       nsim = 100, adjust = TRUE, shap_only = FALSE)
 ex.qbmarg.glb <- shapviz(ex.qbmarg)
 
-save(list = ls(pattern = "^ex"), file = "data/ES-RF2-shapimportance.RDA")
+save(list = ls(pattern = "^ex"), file = "data/ES-RF3-shapimportance.RDA")

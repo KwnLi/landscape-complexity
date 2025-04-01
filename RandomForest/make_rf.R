@@ -3,11 +3,11 @@
 library(ranger)
 options(ranger.num.threads = 8)
 
-wfs <- readRDS("data/allresults_20250308.rds")
+wfs <- readRDS("data/allresults_20250401.rds")
 
 names(wfs)
 
-dat.predictors <-  wfs[, c(81:107,120,123)]
+dat.predictors <-  wfs[, c(81:111,125,126)]
 
 dat.response <- wfs[, c(2:5, 10:13, 20:23)]
 
@@ -86,7 +86,7 @@ qb_margin.imp.p <- data.frame(importance_pvalues(qb_margin.imp.rf, method = "alt
 
 
 # save the permutation outputs
-save(list = c("dat",ls(pattern = "^[npqs]")), file = "data/ES-RF2.RDA")
+save(list = c("dat",ls(pattern = "^[npqs]")), file = "data/ES-RF3.RDA")
 
 # save just the impurity-based outputs
-save(list = ls(pattern = "imp"), file = "data/ES-RF2-impurity.RDA")
+# save(list = ls(pattern = "imp"), file = "data/ES-RF2-impurity.RDA")

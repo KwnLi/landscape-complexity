@@ -1,0 +1,135 @@
+Value,CDL_name,landuse_group,landcover_ag,veg_type
+36,Alfalfa,agriculture,perennial,herbaceous
+58,Clover/Wildflowers,agriculture,perennial,herbaceous
+224,Vetch,agriculture,annual,herbaceous
+68,Apples,agriculture,perennial,woody
+77,Pears,agriculture,perennial,woody
+223,Apricots,agriculture,perennial,woody
+66,Cherries,agriculture,perennial,woody
+142,Evergreen Forest,natural,NA,woody
+143,Mixed Forest,natural,NA,woody
+1,Corn,agriculture,annual,herbaceous
+4,Sorghum,agriculture,annual,herbaceous
+12,Sweet Corn,agriculture,annual,herbaceous
+13,Pop or Orn Corn,agriculture,annual,herbaceous
+82,Developed,developed,NA,NA
+122,Developed/Low Intensity,developed,NA,NA
+123,Developed/Med Intensity,developed,NA,NA
+124,Developed/High Intensity,developed,NA,NA
+37,Other Hay/Non Alfalfa,agriculture,perennial,herbaceous
+59,Sod/Grass Seed,agriculture,perennial,herbaceous
+60,Switchgrass,agriculture,perennial,herbaceous
+6,Sunflower,agriculture,annual,herbaceous
+39,Buckwheat,agriculture,annual,herbaceous
+42,Dry Beans,agriculture,annual,herbaceous
+47,Misc Vegs & Fruits,agriculture,annual,herbaceous
+48,Watermelons,agriculture,annual,herbaceous
+50,Cucumbers,agriculture,annual,herbaceous
+51,Chick Peas,agriculture,annual,herbaceous
+52,Lentils,agriculture,annual,herbaceous
+53,Peas,agriculture,annual,herbaceous
+54,Tomatoes,agriculture,annual,herbaceous
+209,Cantaloupes,agriculture,annual,herbaceous
+213,Honeydew Melons,agriculture,annual,herbaceous
+216,Peppers,agriculture,annual,herbaceous
+222,Squash,agriculture,annual,herbaceous
+229,Pumpkins,agriculture,annual,herbaceous
+248,Eggplants,agriculture,annual,herbaceous
+249,Gourds,agriculture,annual,herbaceous
+250,Cranberries,agriculture,annual,herbaceous
+121,Developed/Open Space,developed,NA,NA
+63,Forest,natural,NA,woody
+141,Deciduous Forest,natural,NA,woody
+0,Background,none,NA,NA
+65,Barren,none,NA,NA
+81,Clouds/No Data,none,NA,NA
+83,Water,water,NA,NA
+88,Nonag/Undefined,none,NA,NA
+92,Aquaculture,water,NA,NA
+111,Open Water,water,NA,NA
+112,Perennial Ice/Snow,none,NA,NA
+131,Barren,none,NA,NA
+2,Cotton,agriculture,annual,herbaceous
+3,Rice,agriculture,annual,herbaceous
+10,Peanuts,agriculture,annual,herbaceous
+11,Tobacco,agriculture,annual,herbaceous
+14,Mint,agriculture,annual,herbaceous
+21,Barley,agriculture,annual,herbaceous
+23,Spring Wheat,agriculture,annual,herbaceous
+28,Oats,agriculture,annual,herbaceous
+29,Millet,agriculture,annual,herbaceous
+31,Canola,agriculture,annual,herbaceous
+32,Flaxseed,agriculture,annual,herbaceous
+33,Safflower,agriculture,annual,herbaceous
+34,Rape Seed,agriculture,annual,herbaceous
+35,Mustard,agriculture,annual,herbaceous
+38,Camelina,agriculture,annual,herbaceous
+41,Sugarbeets,agriculture,annual,herbaceous
+43,Potatoes,agriculture,annual,herbaceous
+44,Other Crops,agriculture,annual,herbaceous
+45,Sugarcane,agriculture,annual,herbaceous
+46,Sweet Potatoes,agriculture,annual,herbaceous
+49,Onions,agriculture,annual,herbaceous
+57,Herbs,agriculture,annual,herbaceous
+206,Carrots,agriculture,annual,herbaceous
+207,Asparagus,agriculture,perennial,herbaceous
+208,Garlic,agriculture,annual,herbaceous
+214,Broccoli,agriculture,annual,herbaceous
+219,Greens,agriculture,annual,herbaceous
+227,Lettuce,agriculture,annual,herbaceous
+230,Dbl Crop Lettuce/Durum Wht,agriculture,annual,herbaceous
+231,Dbl Crop Lettuce/Cantaloupe,agriculture,annual,herbaceous
+232,Dbl Crop Lettuce/Cotton,agriculture,annual,herbaceous
+233,Dbl Crop Lettuce/Barley,agriculture,annual,herbaceous
+239,Dbl Crop Soybeans/Cotton,agriculture,annual,herbaceous
+240,Dbl Crop Soybeans/Oats,agriculture,annual,herbaceous
+241,Dbl Crop Corn/Soybeans,agriculture,annual,herbaceous
+243,Cabbage,agriculture,annual,herbaceous
+244,Cauliflower,agriculture,annual,herbaceous
+245,Celery,agriculture,annual,herbaceous
+246,Radishes,agriculture,annual,herbaceous
+247,Turnips,agriculture,annual,herbaceous
+22,Durum Wheat,agriculture,annual,herbaceous
+24,Winter Wheat,agriculture,annual,herbaceous
+25,Other Small Grains,agriculture,annual,herbaceous
+26,Dbl Crop WinWht/Soybeans,agriculture,annual,herbaceous
+27,Rye,agriculture,annual,herbaceous
+30,Speltz,agriculture,annual,herbaceous
+205,Triticale,agriculture,annual,herbaceous
+225,Dbl Crop WinWht/Corn,agriculture,annual,herbaceous
+226,Dbl Crop Oats/Corn,agriculture,annual,herbaceous
+228,Dbl Crop Triticale/Corn,agriculture,annual,herbaceous
+234,Dbl Crop Durum Wht/Sorghum,agriculture,annual,herbaceous
+235,Dbl Crop Barley/Sorghum,agriculture,annual,herbaceous
+236,Dbl Crop WinWht/Sorghum,agriculture,annual,herbaceous
+237,Dbl Crop Barley/Corn,agriculture,annual,herbaceous
+238,Dbl Crop WinWht/Cotton,agriculture,annual,herbaceous
+254,Dbl Crop Barley/Soybeans,agriculture,annual,herbaceous
+61,Fallow/Idle Cropland,agriculture,perennial,herbaceous
+176,Grass/Pasture,agriculture,perennial,herbaceous
+67,Peaches,agriculture,perennial,woody
+55,Caneberries,agriculture,perennial,woody
+56,Hops,agriculture,perennial,herbaceous
+69,Grapes,agriculture,perennial,woody
+70,Christmas Trees,agriculture,perennial,woody
+71,Other Tree Crops,agriculture,perennial,woody
+72,Citrus,agriculture,perennial,woody
+74,Pecans,agriculture,perennial,woody
+75,Almonds,agriculture,perennial,woody
+76,Walnuts,agriculture,perennial,woody
+204,Pistachios,agriculture,perennial,woody
+210,Prunes,agriculture,perennial,woody
+211,Olives,agriculture,perennial,woody
+212,Oranges,agriculture,perennial,woody
+215,Avocados,agriculture,perennial,woody
+217,Pomegranates,agriculture,perennial,woody
+218,Nectarines,agriculture,perennial,woody
+242,Blueberries,agriculture,perennial,woody
+220,Plums,agriculture,perennial,woody
+64,Shrubland,natural,NA,woody
+152,Shrubland,natural,NA,woody
+5,Soybeans,agriculture,annual,herbaceous
+221,Strawberries,agriculture,annual,herbaceous
+190,Woody Wetlands,natural,NA,woody
+87,Wetlands,natural,NA,herbaceous
+195,Herbaceous Wetlands,natural,NA,herbaceous

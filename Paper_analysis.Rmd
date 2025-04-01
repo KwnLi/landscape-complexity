@@ -8,7 +8,9 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 ```{r load}
 library(tidyverse)
-load("data/ES-RF2.RDA")
+library(iml)
+library(ranger)
+load("data/ES-RF3.RDA")
 
 ```
 
@@ -134,11 +136,45 @@ imp.df <- bind_rows(
     "field_pland" ~ "area and edge metric",
     "field_frac_mn" ~ "shape metric",
     "field_frac_cv" ~ "shape metric",
-    "prn_ann_ratio" ~ "area and edge metric",
+    "prn_pagr" ~ "area and edge metric",
     .default = type
   ))
 
-ggplot(imp.df, aes(metric2, importance, fill = type, pattern = sig)) + 
+# ggplot(imp.df, aes(metric2, importance, fill = type, pattern = sig)) + 
+#   geom_bar_pattern(stat="identity",
+#                    color = "black", 
+#                    pattern_fill = "black",
+#                    pattern_angle = 45,
+#                    pattern_density = 0.1,
+#                    pattern_spacing = 0.025,
+#                    pattern_key_scale_factor = 0.6) + 
+#   tidytext::scale_x_reordered() +
+#   coord_flip() +
+#   ggh4x::facet_grid2(ES~model, scales = "free", independent = "all") +
+#   scale_pattern_manual(values = c("TRUE" = "none", "FALSE" = "stripe")) +
+#   egg::theme_article() +
+#   theme(legend.position = "top") + 
+#   guides(pattern = guide_legend(override.aes = list(fill = "white")),
+#          fill = guide_legend(override.aes = list(pattern = "none")))
+
+
+```
+
+```{r importance_shap}
+load("data/ES-RF3-preds.RDA")   # prediction objects from iml package
+load("data/ES-RF3-shapimportance.RDA")
+library(shapviz)
+library(gridExtra)
+
+```
+
+### Pollinators
+
+#### Permutation based importance
+
+```{r pol_permimport, fig.width=9}
+
+ggplot(imp.df %>% filter(ES=="Pollinators"), aes(metric2, importance, fill = type, pattern = sig)) + 
   geom_bar_pattern(stat="identity",
                    color = "black", 
                    pattern_fill = "black",
@@ -148,25 +184,16 @@ ggplot(imp.df, aes(metric2, importance, fill = type, pattern = sig)) +
                    pattern_key_scale_factor = 0.6) + 
   tidytext::scale_x_reordered() +
   coord_flip() +
-  ggh4x::facet_grid2(ES~model, scales = "free", independent = "all") +
+  facet_wrap(~model, scales = "free") +
   scale_pattern_manual(values = c("TRUE" = "none", "FALSE" = "stripe")) +
   egg::theme_article() +
   theme(legend.position = "top") + 
   guides(pattern = guide_legend(override.aes = list(fill = "white")),
          fill = guide_legend(override.aes = list(pattern = "none")))
 
-
 ```
 
-## Shapley importance
-```{r importance_shap}
-load("data/ES-RF2-shapimportance.RDA")
-library(shapviz)
-library(gridExtra)
-
-```
-
-### Pollinators
+#### Shapley importance
 
 ```{r shap_pol, fig.width=9}
 grid.arrange(
@@ -177,7 +204,9 @@ grid.arrange(
 
 ```
 
-**_Base pollinator model Shapley dependence plots_** The two major contributors. Colors are the strongest interactor with that variable.
+#### Base pollinator model Shapley dependence plots
+
+The two major contributors. Colors are the strongest interactor with that variable.
 
 ```{r shap_pol_baseshap, fig.width=9}
 grid.arrange(
@@ -188,16 +217,104 @@ grid.arrange(
 
 ```
 
-**_Margin pollinator model Shapley dependence plot_** Colors are the strongest interactor with that variable.
+**_Compare to PDP and ALE_**
+
+```{r pol_base_ale, fig.width=9}
+
+polbase.ntr_pland.pdp = FeatureEffect$new(pred.pollinators_base, 
+                                          feature = "ntr_pland",
+                                          method = "pdp")
+polbase.ann_agr_pland.pdp = FeatureEffect$new(pred.pollinators_base, 
+                                          feature = "ann_agr_pland",
+                                          method = "pdp")
+
+polbase.ntr_pland.ale = FeatureEffect$new(pred.pollinators_base, 
+                                          feature = "ntr_pland",
+                                          method = "ale")
+polbase.ann_agr_pland.ale = FeatureEffect$new(pred.pollinators_base, 
+                                          feature = "ann_agr_pland",
+                                          method = "ale")
+
+grid.arrange(
+  polbase.ntr_pland.pdp$plot() + ggtitle("ntr_pland PDP"),
+  polbase.ntr_pland.ale$plot() + ggtitle("ntr_pland ALE"), 
+  
+  polbase.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland PDP"),
+  polbase.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland ALE"),
+  ncol = 2
+)
+
+```
+
+
+#### Margin pollinator model Shapley dependence plot
+
+Colors are the strongest interactor with that variable.
 
 ```{r shap_pol_margshap, fig.width=9}
 grid.arrange(
-  sv_dependence(ex.polmarg.glb, v="ntr_pland") + egg::theme_article()
+  sv_dependence(ex.polmarg.glb, v="ntr_pland") + egg::theme_article(),
+  sv_dependence(ex.polmarg.glb, v="ann_agr_pland") + egg::theme_article()
+)
+
+```
+
+**_Compare to PDP and ALE_**
+
+```{r pol_marg_ale, fig.width=9}
+
+polmarg.ntr_pland.pdp = FeatureEffect$new(pred.pollinators_margin, 
+                                          feature = "ntr_pland",
+                                          method = "pdp")
+polmarg.ann_agr_pland.pdp = FeatureEffect$new(pred.pollinators_margin, 
+                                          feature = "ann_agr_pland",
+                                          method = "pdp")
+
+polmarg.ntr_pland.ale = FeatureEffect$new(pred.pollinators_margin, 
+                                          feature = "ntr_pland",
+                                          method = "ale")
+polmarg.ann_agr_pland.ale = FeatureEffect$new(pred.pollinators_margin, 
+                                          feature = "ann_agr_pland",
+                                          method = "ale")
+
+
+grid.arrange(
+  polmarg.ntr_pland.pdp$plot() + ggtitle("ntr_pland PDP"),
+  polmarg.ntr_pland.ale$plot() + ggtitle("ntr_pland ALE"),
+  
+  polmarg.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland PDP"),
+  polmarg.ann_agr_pland.ale$plot() + ggtitle("ann_agr_pland ALE"),
+  ncol = 2
 )
 
 ```
 
 ### N Export
+
+### Permutation based importance
+
+```{r nexp_permimport, fig.width=9}
+
+ggplot(imp.df %>% filter(ES=="N export"), aes(metric2, importance, fill = type, pattern = sig)) + 
+  geom_bar_pattern(stat="identity",
+                   color = "black", 
+                   pattern_fill = "black",
+                   pattern_angle = 45,
+                   pattern_density = 0.1,
+                   pattern_spacing = 0.025,
+                   pattern_key_scale_factor = 0.6) + 
+  tidytext::scale_x_reordered() +
+  coord_flip() +
+  facet_wrap(~model, scales = "free") +
+  scale_pattern_manual(values = c("TRUE" = "none", "FALSE" = "stripe")) +
+  egg::theme_article() +
+  theme(legend.position = "top") + 
+  guides(pattern = guide_legend(override.aes = list(fill = "white")),
+         fill = guide_legend(override.aes = list(pattern = "none")))
+
+```
+
+#### Shapley importance
 
 ```{r shap_nexp, fig.width=9}
 
@@ -209,9 +326,12 @@ grid.arrange(
 
 ```
 
-**_Base N export shapley dependence plots_** Three major -ish contributors.
+#### Base N export shapley dependence plots
+
+Three major -ish contributors.
 
 ```{r shap_nexp_baseshap, fig.width=9}
+
 grid.arrange(
   sv_dependence(ex.nexpbase.glb, v="ntr_pland") + egg::theme_article(),
   sv_dependence(ex.nexpbase.glb, v="ann_agr_pland") + egg::theme_article(), 
@@ -221,7 +341,48 @@ grid.arrange(
 
 ```
 
-**_Margin N export Shapley dependence plots_** Three major contributors.
+**_Compare to PDP and ALE_**
+
+```{r nexp_base_ale, fig.width=9}
+
+nexpbase.ntr_pland.pdp = FeatureEffect$new(pred.n_export_base, 
+                                          feature = "ntr_pland",
+                                          method = "pdp")
+nexpbase.ann_agr_pland.pdp = FeatureEffect$new(pred.n_export_base, 
+                                          feature = "ann_agr_pland",
+                                          method = "pdp")
+nexpbase.ntr_ed.pdp = FeatureEffect$new(pred.n_export_base, 
+                                          feature = "ntr_ed",
+                                          method = "pdp")
+
+nexpbase.ntr_pland.ale = FeatureEffect$new(pred.n_export_base, 
+                                          feature = "ntr_pland",
+                                          method = "ale")
+nexpbase.ann_agr_pland.ale = FeatureEffect$new(pred.n_export_base, 
+                                          feature = "ann_agr_pland",
+                                          method = "ale")
+nexpbase.ntr_ed.ale = FeatureEffect$new(pred.n_export_base, 
+                                          feature = "ntr_ed",
+                                          method = "ale")
+
+
+grid.arrange(
+  nexpbase.ntr_pland.pdp$plot() + ggtitle("ntr_pland PDP"),
+  nexpbase.ntr_pland.ale$plot() + ggtitle("ntr_pland ALE"),
+
+  nexpbase.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland PDP"),
+  nexpbase.ann_agr_pland.ale$plot() + ggtitle("ann_agr_pland ALE"),
+  
+  nexpbase.ntr_ed.pdp$plot() + ggtitle("ntr_ed PDP"),
+  nexpbase.ntr_ed.ale$plot() + ggtitle("ntr_ed ALE"),
+  ncol = 2
+)
+
+```
+
+#### Margin N export Shapley dependence plots
+
+Three major contributors.
 
 ```{r shap_nexp_margshap, fig.width=9}
 grid.arrange(
@@ -233,7 +394,71 @@ grid.arrange(
 
 ```
 
+**_Compare to PDP and ALE_**
+
+```{r nexp_marg_ale, fig.width=9}
+
+nexpmarg.ntr_pland.pdp = FeatureEffect$new(pred.n_export_margin, 
+                                          feature = "ntr_pland",
+                                          method = "pdp")
+nexpmarg.ann_agr_pland.pdp = FeatureEffect$new(pred.n_export_margin, 
+                                          feature = "ann_agr_pland",
+                                          method = "pdp")
+nexpmarg.ntr_ed.pdp = FeatureEffect$new(pred.n_export_margin, 
+                                          feature = "ntr_ed",
+                                          method = "pdp")
+
+nexpmarg.ntr_pland.ale = FeatureEffect$new(pred.n_export_margin, 
+                                          feature = "ntr_pland",
+                                          method = "ale")
+nexpmarg.ann_agr_pland.ale = FeatureEffect$new(pred.n_export_margin, 
+                                          feature = "ann_agr_pland",
+                                          method = "ale")
+nexpmarg.ntr_ed.ale = FeatureEffect$new(pred.n_export_margin, 
+                                          feature = "ntr_ed",
+                                          method = "ale")
+
+
+grid.arrange(
+  nexpmarg.ntr_pland.pdp$plot() + ggtitle("ntr_pland PDP"),
+  nexpmarg.ntr_pland.ale$plot() + ggtitle("ntr_pland ALE"),
+
+  nexpmarg.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland PDP"),
+  nexpmarg.ann_agr_pland.ale$plot() + ggtitle("ann_agr_pland ALE"),
+  
+  nexpmarg.ntr_ed.pdp$plot() + ggtitle("ntr_ed PDP"),
+  nexpmarg.ntr_ed.ale$plot() + ggtitle("ntr_ed ALE"),
+  ncol = 2
+)
+
+```
+
 ### Sediment Export
+
+### Permutation based importance
+
+```{r sed_permimport, fig.width=9}
+
+ggplot(imp.df %>% filter(ES=="Sed export"), aes(metric2, importance, fill = type, pattern = sig)) + 
+  geom_bar_pattern(stat="identity",
+                   color = "black", 
+                   pattern_fill = "black",
+                   pattern_angle = 45,
+                   pattern_density = 0.1,
+                   pattern_spacing = 0.025,
+                   pattern_key_scale_factor = 0.6) + 
+  tidytext::scale_x_reordered() +
+  coord_flip() +
+  facet_wrap(~model, scales = "free") +
+  scale_pattern_manual(values = c("TRUE" = "none", "FALSE" = "stripe")) +
+  egg::theme_article() +
+  theme(legend.position = "top") + 
+  guides(pattern = guide_legend(override.aes = list(fill = "white")),
+         fill = guide_legend(override.aes = list(pattern = "none")))
+
+```
+
+#### Shapley importance
 
 ```{r shap_sed, fig.width=9}
 grid.arrange(
@@ -244,7 +469,9 @@ grid.arrange(
 
 ```
 
-**_Base sediment export Shapley dependence plots_** One major contributor
+#### Base sediment export Shapley dependence plots
+
+One major contributor
 
 ```{r shap_sed_baseshap, fig.width=9}
 grid.arrange(
@@ -253,7 +480,32 @@ grid.arrange(
 
 ```
 
-**_Margin sediment runoff Shapley dependence plots_** One or two major contributors. `field_frac_mn` is the strongest interactor with `ann_agr_ed`, and vice versa, while `field_frac_mn` does not stand out as strongly in the permutation results.
+**_Compare to PDP and ALE_**
+
+```{r sedexp_base_ale, fig.width=9}
+
+sedbase.ann_agr_ed.pdp = FeatureEffect$new(pred.sed_export_base, 
+                                          feature = "ann_agr_ed",
+                                          method = "pdp")
+
+sedbase.ann_agr_ed.ale = FeatureEffect$new(pred.sed_export_base, 
+                                          feature = "ann_agr_ed",
+                                          method = "ale")
+
+grid.arrange(
+  sedbase.ann_agr_ed.pdp$plot() + ggtitle("ann_agr_ed PDP") +
+    egg::theme_article(),
+  sedbase.ann_agr_ed.ale$plot() + ggtitle("ann_agr_ed ALE") +
+    egg::theme_article(),
+
+  ncol = 2
+)
+
+```
+
+#### Margin sediment runoff Shapley dependence plots
+
+One or two major contributors. `field_frac_mn` is the strongest interactor with `ann_agr_ed`, and vice versa, while `field_frac_mn` does not stand out as strongly in the permutation results.
 
 ```{r shap_sed_margshap, fig.width=9}
 grid.arrange(
@@ -264,9 +516,70 @@ grid.arrange(
 
 ```
 
+
+**_Compare to PDP and ALE_**
+
+```{r sedexp_marg_ale, fig.width=9}
+
+sedmarg.ann_agr_ed.pdp = FeatureEffect$new(pred.sed_export_margin, 
+                                          feature = "ann_agr_ed",
+                                          method = "pdp")
+sedmarg.field_frac_mn.pdp = FeatureEffect$new(pred.sed_export_margin, 
+                                          feature = "field_frac_mn",
+                                          method = "pdp")
+
+
+sedmarg.ann_agr_ed.ale = FeatureEffect$new(pred.sed_export_margin, 
+                                          feature = "ann_agr_ed",
+                                          method = "ale")
+sedmarg.field_frac_mn.ale = FeatureEffect$new(pred.sed_export_margin, 
+                                          feature = "field_frac_mn",
+                                          method = "ale")
+
+grid.arrange(
+  sedmarg.ann_agr_ed.pdp$plot() + ggtitle("ann_agr_ed PDP") +
+    egg::theme_article(),
+  sedmarg.ann_agr_ed.ale$plot() + ggtitle("ann_agr_ed ALE") +
+    egg::theme_article(),
+  
+  sedmarg.field_frac_mn.pdp$plot() + ggtitle("field_frac_mn PDP") +
+    egg::theme_article(),
+  sedmarg.field_frac_mn.ale$plot() + ggtitle("field_frac_mn ALE") +
+    egg::theme_article(),
+
+  ncol = 2
+)
+
+```
+
 ### Water recharge
 
-```{r shap_wb, fig.width=9}
+### Permutation based importance
+
+```{r qb_permimport, fig.width=9}
+
+ggplot(imp.df %>% filter(ES=="Baseflow"), aes(metric2, importance, fill = type, pattern = sig)) + 
+  geom_bar_pattern(stat="identity",
+                   color = "black", 
+                   pattern_fill = "black",
+                   pattern_angle = 45,
+                   pattern_density = 0.1,
+                   pattern_spacing = 0.025,
+                   pattern_key_scale_factor = 0.6) + 
+  tidytext::scale_x_reordered() +
+  coord_flip() +
+  facet_wrap(~model, scales = "free") +
+  scale_pattern_manual(values = c("TRUE" = "none", "FALSE" = "stripe")) +
+  egg::theme_article() +
+  theme(legend.position = "top") + 
+  guides(pattern = guide_legend(override.aes = list(fill = "white")),
+         fill = guide_legend(override.aes = list(pattern = "none")))
+
+```
+
+#### Shapley importance
+
+```{r shap_qb, fig.width=9}
 grid.arrange(
   sv_importance(ex.qbbase.glb) + egg::theme_article(),
   sv_importance(ex.qbmarg.glb) + egg::theme_article(),
@@ -275,7 +588,9 @@ grid.arrange(
 
 ```
 
-**_Base water runoff Shapley depednence plot_** One major contributor.
+#### Base water runoff Shapley depednence plot
+
+One major contributor.
 
 ```{r shap_qb_baseshap, fig.width=9}
 grid.arrange(
@@ -284,13 +599,375 @@ grid.arrange(
 
 ```
 
-**_Margin water runoff Shapley dependence plots_** One or two major contributors. Differs a little from the permutation results from above. In the permutation results, `prn_agr_para_mn` does not have as high importance so that it isn't separated from other variables.
+
+**_Compare to PDP and ALE_**
+
+```{r qb_base_ale, fig.width=9}
+
+qbbase.field_frac_mn.pdp = FeatureEffect$new(pred.qb_base, 
+                                             feature = "field_frac_mn",
+                                             method = "pdp")
+
+sedbase.field_frac_mn.ale = FeatureEffect$new(pred.qb_base, 
+                                              feature = "field_frac_mn",
+                                              method = "ale")
+
+grid.arrange(
+  qbbase.field_frac_mn.pdp$plot() + ggtitle("field_frac_mn PDP") +
+    egg::theme_article(),
+  sedbase.field_frac_mn.ale$plot() + ggtitle("field_frac_mn ALE") +
+    egg::theme_article(),
+
+  ncol = 2
+)
+
+```
+
+#### Margin water runoff Shapley dependence plots
+
+One or two major contributors. Differs a little from the permutation results from above. In the permutation results, `prn_agr_para_mn` does not have as high importance so that it isn't separated from other variables.
 
 ```{r shap_qb_margshap, fig.width=9}
 grid.arrange(
-  sv_dependence(ex.qbmarg.glb, v="prn_ann_ratio") + egg::theme_article(),
+  sv_dependence(ex.qbmarg.glb, v="ann_agr_cohesion") + egg::theme_article(),
+  sv_dependence(ex.qbmarg.glb, v="prn_pagr") + egg::theme_article(),
   sv_dependence(ex.qbmarg.glb, v="prn_agr_para_mn") + egg::theme_article(),
   ncol=2
 )
 
+```
+
+**_Compare to PDP and ALE_**
+
+```{r qb_marg_ale, fig.width=9}
+
+qbmarg.ann_agr_cohesion.pdp = FeatureEffect$new(pred.qb_margin, 
+                                             feature = "ann_agr_cohesion",
+                                             method = "pdp")
+qbmarg.prn_pagr.pdp = FeatureEffect$new(pred.qb_margin, 
+                                             feature = "prn_pagr",
+                                             method = "pdp")
+qbmarg.prn_agr_para_mn.pdp = FeatureEffect$new(pred.qb_margin, 
+                                             feature = "prn_agr_para_mn",
+                                             method = "pdp")
+
+qbmarg.ann_agr_cohesion.ale = FeatureEffect$new(pred.qb_margin, 
+                                              feature = "ann_agr_cohesion",
+                                              method = "ale")
+qbmarg.prn_pagr.ale = FeatureEffect$new(pred.qb_margin, 
+                                              feature = "prn_pagr",
+                                              method = "ale")
+qbmarg.prn_agr_para_mn.ale = FeatureEffect$new(pred.qb_margin, 
+                                              feature = "prn_agr_para_mn",
+                                              method = "ale")
+
+grid.arrange(
+  qbmarg.ann_agr_cohesion.pdp$plot() + ggtitle("ann_agr_cohesion PDP") +
+    egg::theme_article(),
+  qbmarg.ann_agr_cohesion.ale$plot() + ggtitle("ann_agr_cohesion ALE") +
+    egg::theme_article(),
+  
+  qbmarg.prn_pagr.pdp$plot() + ggtitle("prn_pagr PDP") +
+    egg::theme_article(),
+  qbmarg.prn_pagr.ale$plot() + ggtitle("prn_pagr ALE") +
+    egg::theme_article(),
+  
+  qbmarg.prn_agr_para_mn.pdp$plot() + ggtitle("prn_agr_para_mn PDP") +
+    egg::theme_article(),
+  qbmarg.prn_agr_para_mn.ale$plot() + ggtitle("prn_agr_para_mn ALE") +
+    egg::theme_article(),
+
+  ncol = 2
+)
+
+```
+
+### SHAP force plots
+
+I am plotting the combined SHAP force values for each watershed together. The important features identified above are colored while the rest are left grey. To plot watersheds on a common axis and visualize tradeoffs, I used PCA to identify the two major axes. The first PC axis for both baseline and margin results show a tradeoff between N export (and improvement in N export) and pollinator abundance (pollinator improvement). The second PC shows sediment export and baseflow changing together while with margin improvement are in the same direction.
+
+```{r paircor}
+selectedvar <- c("ntr_pland", "ann_agr_pland", "ntr_ed", 
+                 "field_frac_mn", "prn_pagr", "prn_agr_para_mn",
+                 "ann_agr_ed", "ann_agr_cohesion"
+                 )
+
+# selectedvar.base <- c("ntr_pland", "ann_agr_pland",  "ntr_ed", 
+#                       "ann_agr_ed", "field_frac_mn")
+# 
+# selectedvar.margin <- c("ntr_pland", "ann_agr_pland",  "ntr_ed",
+#                         "ann_agr_ed", "field_frac_mn",
+#                         "prn_ann_ratio", "prn_agr_para_mn")
+
+
+# psych::pairs.panels(dat.selectedvar)
+
+```
+
+```{r force_fcns}
+source("R/utils-shap.r")
+focus.vars <- function(x.features){
+  dplyr::case_match(
+    x.features,
+    "ntr_pland" ~ "Natural land cover",
+    "ann_agr_pland" ~ "Annual ag. land cover",
+    "field_frac_mn" ~ "Field fractal dimension",
+    "prn_pagr" ~ "Agriculture % perennial",
+    "prn_agr_para_mn" ~ "Perennial ag. perimeter:area",
+    "ann_agr_ed" ~ "Annual ag. edge density",
+    "ann_agr_cohesion" ~ "Annual ag. cohesion",
+    .default = "Other features"
+  )
+}
+
+feature.colors <- c(
+  "Natural land cover" = "#33a02c",
+  "Annual ag. land cover" = "#fdbf6f",
+  "Field fractal dimension" = "#56B4E9",
+  "Agriculture % perennial" = "#CC79A7",
+  "Perennial ag. perimeter:area" = "#D55E00",
+  "Annual ag. edge density" = "#F0E442",
+  "Annual ag. cohesion" = "#0072B2",
+  "Other features" = "gray80"
+)
+
+```
+
+```{r make_pca_baseoutcomes_forces, include = FALSE}
+
+base_esoutcome <- dat %>% select(pollinators_base:sed_export_base) %>%
+  mutate(sed_export_base = sed_export_base,
+         n_export_base = n_export_base)
+
+base_pca <- prcomp(base_esoutcome,
+                   scale=TRUE, center=TRUE)
+
+ntr_class <- cut(dat$ntr_pland, breaks = c(0, 10, 20, 30 , 50, 100),
+                 labels = c("5-10%", "10-20%", "20-30%", "30-50%", "50-90%"))
+
+biplot_base_pca <- ggbiplot::ggbiplot(base_pca, groups = ntr_class) + 
+  expand_limits(x=c(-2.5,2.5)) +
+  scale_color_manual(name="Natural land cover",
+                     values = c("#d7191c", "#fdae61", "#ffffbf", "#abdda4", "#2b83ba")) +
+  egg::theme_article() + 
+  theme(legend.position = "inside", legend.position.inside = c(0.2,0.12))
+
+biplot_base_arrows <- biplot_base_pca$layers[[3]]$data
+biplot_base_arrows$varname <- c("Pollinators", "Baseflow", "N export", "Sediment export")
+
+# biplot_base_pca$layers[[1]]$aes_params$colour = "gray"
+biplot_base_pca$layers[[1]]$aes_params$size = 1
+biplot_base_pca$layers[[3]] <- geom_label(aes(x = xvar, y = yvar, label = varname,
+                                  angle = angle, hjust = hjust), 
+                              label.size = NA, size = 3,
+                              data = biplot_base_arrows, 
+                              fill = '#dddddd80')
+biplot_base_pca$layers <- cbind(biplot_base_pca$layers[[3]], biplot_base_pca$layers)
+
+psych::pairs.panels(dat%>% select(pollinators_base:sed_export_base))
+
+polbase_pc1 <- makeforcedata.orderby(ex.polbase$shapley_values,
+                                     predict(base_pca)[,"PC1"],
+                               rename.fn = focus.vars, other.var = "Other features")
+
+nexpbase_pc1 <- makeforcedata.orderby(ex.nexpbase$shapley_values,
+                                  predict(base_pca)[,"PC1"],
+                               rename.fn = focus.vars, other.var = "Other features")
+
+sedbase_pc2 <- makeforcedata.orderby(ex.sedbase$shapley_values,
+                                     predict(base_pca)[,"PC2"],
+                               rename.fn = focus.vars, other.var = "Other features")
+
+qbbase_pc2 <- makeforcedata.orderby(ex.qbbase$shapley_values,
+                                    predict(base_pca)[,"PC2"],
+                               rename.fn = focus.vars, other.var = "Other features")
+
+polbase_pc1_force <- ggplot(polbase_pc1, aes(rowid, value, fill = feature2)) +
+  geom_col(width = 1) + egg::theme_article() +
+  scale_fill_manual(values = feature.colors, guide = guide_legend(reverse=TRUE)) +
+  xlab("PC1") + ylab("SHAP values") + ggtitle("Baseline pollinator abundance") +
+  theme(axis.ticks.x = element_blank(), axis.text.x = element_blank(),
+        legend.position = "none")
+
+nexpbase_pc1_force <- ggplot(nexpbase_pc1, aes(rowid, value, fill = feature2)) +
+  geom_col(width = 1) + egg::theme_article() +
+  scale_fill_manual(values = feature.colors, guide = guide_legend(reverse=TRUE)) +
+  xlab("PC1") + ylab("SHAP values") + ggtitle("Baseline N export") +
+  theme(axis.ticks.x = element_blank(), axis.text.x = element_blank(),
+        legend.position = "none")
+
+sedbase_pc2_force <- ggplot(sedbase_pc2, aes(rowid, value, fill = feature2)) +
+  geom_col(width = 1) + egg::theme_article() +
+  scale_fill_manual(values = feature.colors, guide = guide_legend(reverse=TRUE)) +
+  xlab("PC2") + ylab("SHAP values") + ggtitle("Baseline sediment export") +
+  theme(axis.ticks.x = element_blank(), axis.text.x = element_blank(),
+        legend.position = "none")
+
+qbbase_pc2_force <- ggplot(qbbase_pc2, aes(rowid, value, fill = feature2)) +
+  geom_col(width = 1) + egg::theme_article() +
+  scale_fill_manual(values = feature.colors, guide = guide_legend(reverse=TRUE)) +
+  xlab("PC2") + ylab("SHAP values") + ggtitle("Baseline baseflow") +
+  theme(axis.ticks.x = element_blank(), axis.text.x = element_blank(),
+        legend.position = "none")
+
+base_forcestackPC1 <- cowplot::plot_grid(polbase_pc1_force, nexpbase_pc1_force, align='v',
+                                         labels = c("B","C"), ncol=1) %>% 
+  ggplotGrob()
+base_forcestackPC2 <- cowplot::plot_grid(sedbase_pc2_force, qbbase_pc2_force, align='v',
+                                         labels = c("D","E"), ncol=1) %>%
+  ggplotGrob()
+
+# make a legend
+
+baselegend_dummy <- ggplotGrob(ggplot(polbase_pc1, aes(rowid, value, fill = feature2)) +
+  geom_col(width = 1) + egg::theme_article() +
+  scale_fill_manual(values = feature.colors, 
+                    guide = guide_legend(reverse=TRUE)) +
+  theme(legend.position = "bottom", legend.title = element_blank()))$grobs
+
+base_legend <- baselegend_dummy[[which(sapply(baselegend_dummy, function(x)
+      x$name) == "guide-box")]]
+
+base_plots <- cowplot::plot_grid(base_forcestackPC1, base_forcestackPC2, ncol = 2)
+
+base_plots_legend <- grid.arrange(base_plots, base_legend, 
+                                  layout_matrix = 
+                                    rbind(
+                                      c(1,1,1,1,1,1),
+                                      c(1,1,1,1,1,1),
+                                      c(1,1,1,1,1,1),
+                                      c(1,1,1,1,1,1),
+                                      c(1,1,1,1,1,1),
+                                      c(1,1,1,1,1,1),
+                                      c(1,1,1,1,1,1),
+                                      c(1,1,1,1,1,1),
+                                      c(2,2,2,2,2,2)
+                                    ))
+
+base_plots_all <- cowplot::plot_grid(biplot_base_pca, base_plots_legend, 
+                                     labels = c("A",""), rel_widths = c(1,2.2))
+
+# ggsave("Figs/base_pcashap.png", base_plots_all, width = 13, height = 5.5, bg = "white", dpi = 300)
+```
+
+```{r plot_pca_baseoutcomes, fig.width = 12, fig.height = 5}
+base_plots_all
+```
+
+```{r make_pca_marginoutcomes, include=FALSE}
+
+marg_esoutcome <- dat %>% select(delta_pollinators_max.margin:delta_sed_max.margin)
+
+marg_pca <- prcomp(marg_esoutcome,
+                   scale=TRUE, center=TRUE)
+
+ntr_class <- cut(dat$ntr_pland, breaks = c(0, 10, 20, 30 , 50, 100),
+                 labels = c("5-10%", "10-20%", "20-30%", "30-50%", "50-90%"))
+
+biplot_marg_pca <- ggbiplot::ggbiplot(marg_pca, groups = ntr_class) + 
+  expand_limits(x=c(-3,3)) +
+  scale_color_manual(name="Natural land cover",
+                     values = c("#d7191c", "#fdae61", "#ffffbf", "#abdda4", "#2b83ba")) +
+  guides(color = guide_legend(label.position = "left")) +
+  egg::theme_article() + 
+  theme(legend.position = "inside", legend.position.inside = c(0.8,0.85), legend.title.align=1)
+
+biplot_marg_arrows <- biplot_marg_pca$layers[[3]]$data
+biplot_marg_arrows$varname <- c("\u0394 Pollinators", "\u0394 Baseflow", "N reduction", "Sediment reduction")
+
+biplot_marg_pca$layers[[1]]$aes_params$size = 1
+biplot_marg_pca$layers[[3]] <- geom_label(aes(x = xvar, y = yvar, label = varname,
+                                  angle = angle, hjust = hjust), 
+                              label.size = NA, size = 3,
+                              data = biplot_marg_arrows, 
+                              fill = '#dddddd80')
+biplot_marg_pca$layers <- cbind(biplot_marg_pca$layers[[3]], biplot_marg_pca$layers)
+
+polmarg_pc1 <- makeforcedata.orderby(ex.polmarg$shapley_values,
+                                     predict(marg_pca)[,"PC1"],
+                               rename.fn = focus.vars, other.var = "Other features")
+
+nexpmarg_pc1 <- makeforcedata.orderby(ex.nexpmarg$shapley_values,
+                                  predict(marg_pca)[,"PC1"],
+                               rename.fn = focus.vars, other.var = "Other features")
+
+sedmarg_pc2 <- makeforcedata.orderby(ex.sedmarg$shapley_values,
+                                     predict(marg_pca)[,"PC2"],
+                               rename.fn = focus.vars, other.var = "Other features")
+
+qbmarg_pc2 <- makeforcedata.orderby(ex.qbmarg$shapley_values,
+                                    predict(marg_pca)[,"PC2"],
+                               rename.fn = focus.vars, other.var = "Other features")
+
+polmarg_pc1_force <- ggplot(polmarg_pc1, aes(rowid, value, fill = feature2)) +
+  geom_col(width = 1) + egg::theme_article() +
+  scale_fill_manual(values = feature.colors, guide = guide_legend(reverse=TRUE)) +
+  xlab("PC1") + ylab("SHAP values") + ggtitle("Change in pollinator abundance") +
+  theme(axis.ticks.x = element_blank(), axis.text.x = element_blank(),
+        legend.position = "none")
+
+nexpmarg_pc1_force <- ggplot(nexpmarg_pc1, aes(rowid, value, fill = feature2)) +
+  geom_col(width = 1) + egg::theme_article() +
+  scale_fill_manual(values = feature.colors, guide = guide_legend(reverse=TRUE)) +
+  xlab("PC1") + ylab("SHAP values") + ggtitle("N export reduction") +
+  theme(axis.ticks.x = element_blank(), axis.text.x = element_blank(),
+        legend.position = "none")
+
+sedmarg_pc2_force <- ggplot(sedmarg_pc2, aes(rowid, value, fill = feature2)) +
+  geom_col(width = 1) + egg::theme_article() +
+  scale_fill_manual(values = feature.colors, guide = guide_legend(reverse=TRUE)) +
+  xlab("PC2") + ylab("SHAP values") + ggtitle("Sediment export reduction") +
+  theme(axis.ticks.x = element_blank(), axis.text.x = element_blank(),
+        legend.position = "none")
+
+qbmarg_pc2_force <- ggplot(qbmarg_pc2, aes(rowid, value, fill = feature2)) +
+  geom_col(width = 1) + egg::theme_article() +
+  scale_fill_manual(values = feature.colors, guide = guide_legend(reverse=TRUE)) +
+  xlab("PC2") + ylab("SHAP values") + ggtitle("Baseflow change") +
+  theme(axis.ticks.x = element_blank(), axis.text.x = element_blank(),
+        legend.position = "none")
+
+marg_forcestackPC1 <- cowplot::plot_grid(polmarg_pc1_force, nexpmarg_pc1_force, align='v',
+                                         labels = c("B","C"), ncol=1) %>% 
+  ggplotGrob()
+marg_forcestackPC2 <- cowplot::plot_grid(sedmarg_pc2_force, qbmarg_pc2_force, align='v',
+                                         labels = c("D","E"), ncol=1) %>%
+  ggplotGrob()
+
+# make a legend
+
+marglegend_dummy <- ggplotGrob(ggplot(polmarg_pc1, aes(rowid, value, fill = feature2)) +
+  geom_col(width = 1) + egg::theme_article() +
+  scale_fill_manual(values = feature.colors, 
+                    guide = guide_legend(reverse=TRUE)) +
+  theme(legend.position = "bottom", legend.title = element_blank()))$grobs
+
+marg_legend <- marglegend_dummy[[which(sapply(marglegend_dummy, function(x)
+      x$name) == "guide-box")]]
+
+marg_plots <- cowplot::plot_grid(marg_forcestackPC1, marg_forcestackPC2, ncol = 2)
+
+marg_plots_legend <- grid.arrange(marg_plots, marg_legend, 
+                                  layout_matrix = 
+                                    rbind(
+                                      c(1,1,1,1,1,1),
+                                      c(1,1,1,1,1,1),
+                                      c(1,1,1,1,1,1),
+                                      c(1,1,1,1,1,1),
+                                      c(1,1,1,1,1,1),
+                                      c(1,1,1,1,1,1),
+                                      c(1,1,1,1,1,1),
+                                      c(1,1,1,1,1,1),
+                                      c(2,2,2,2,2,2)
+                                    ))
+
+marg_plots_all <- cowplot::plot_grid(biplot_marg_pca, marg_plots_legend, 
+                                     labels = c("A",""), rel_widths = c(1,2.2))
+
+# ggsave("Figs/marg_pcashap.png", marg_plots_all, width = 13, height = 5.5, bg = "white", dpi = 300)
+
+```
+
+```{r plot_pca_margoutcomes, fig.width = 12, fig.height = 5}
+marg_plots_all
 ```
