@@ -196,7 +196,7 @@ ggplot(imp.df %>% filter(ES=="Pollinators"), aes(metric2, importance, fill = typ
 #### Shapley importance
 
 ```{r shap_pol, fig.width=9}
-grid.arrange(
+cowplot::plot_grid(
   sv_importance(ex.polbase.glb) + egg::theme_article(),
   sv_importance(ex.polmarg.glb) + egg::theme_article(),
   ncol = 2
@@ -235,13 +235,13 @@ polbase.ann_agr_pland.ale = FeatureEffect$new(pred.pollinators_base,
                                           feature = "ann_agr_pland",
                                           method = "ale")
 
-grid.arrange(
-  polbase.ntr_pland.pdp$plot() + ggtitle("ntr_pland PDP"),
-  polbase.ntr_pland.ale$plot() + ggtitle("ntr_pland ALE"), 
+cowplot::plot_grid(
+  polbase.ntr_pland.pdp$plot() + ggtitle("ntr_pland PDP") + egg::theme_article(),
+  polbase.ntr_pland.ale$plot() + ggtitle("ntr_pland ALE") + egg::theme_article(), 
   
-  polbase.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland PDP"),
-  polbase.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland ALE"),
-  ncol = 2
+  polbase.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland PDP") + egg::theme_article(),
+  polbase.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland ALE") + egg::theme_article(),
+  ncol = 2, align = "v"
 )
 
 ```
@@ -252,9 +252,10 @@ grid.arrange(
 Colors are the strongest interactor with that variable.
 
 ```{r shap_pol_margshap, fig.width=9}
-grid.arrange(
+cowplot::plot_grid(
   sv_dependence(ex.polmarg.glb, v="ntr_pland") + egg::theme_article(),
-  sv_dependence(ex.polmarg.glb, v="ann_agr_pland") + egg::theme_article()
+  sv_dependence(ex.polmarg.glb, v="ann_agr_pland") + egg::theme_article(),
+  ncol = 2, align = "v"
 )
 
 ```
@@ -278,13 +279,13 @@ polmarg.ann_agr_pland.ale = FeatureEffect$new(pred.pollinators_margin,
                                           method = "ale")
 
 
-grid.arrange(
-  polmarg.ntr_pland.pdp$plot() + ggtitle("ntr_pland PDP"),
-  polmarg.ntr_pland.ale$plot() + ggtitle("ntr_pland ALE"),
+cowplot::plot_grid(
+  polmarg.ntr_pland.pdp$plot() + ggtitle("ntr_pland PDP") + egg::theme_article(),
+  polmarg.ntr_pland.ale$plot() + ggtitle("ntr_pland ALE") + egg::theme_article(),
   
-  polmarg.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland PDP"),
-  polmarg.ann_agr_pland.ale$plot() + ggtitle("ann_agr_pland ALE"),
-  ncol = 2
+  polmarg.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland PDP") + egg::theme_article(),
+  polmarg.ann_agr_pland.ale$plot() + ggtitle("ann_agr_pland ALE") + egg::theme_article(),
+  ncol = 2, align = "v"
 )
 
 ```
@@ -318,7 +319,7 @@ ggplot(imp.df %>% filter(ES=="N export"), aes(metric2, importance, fill = type, 
 
 ```{r shap_nexp, fig.width=9}
 
-grid.arrange(
+cowplot::plot_grid(
   sv_importance(ex.nexpbase.glb) + egg::theme_article(), 
   sv_importance(ex.nexpmarg.glb) + egg::theme_article(),
   ncol = 2
@@ -332,11 +333,11 @@ Three major -ish contributors.
 
 ```{r shap_nexp_baseshap, fig.width=9}
 
-grid.arrange(
+cowplot::plot_grid(
   sv_dependence(ex.nexpbase.glb, v="ntr_pland") + egg::theme_article(),
   sv_dependence(ex.nexpbase.glb, v="ann_agr_pland") + egg::theme_article(), 
   sv_dependence(ex.nexpbase.glb, v="ntr_ed") + egg::theme_article(), 
-  ncol = 2
+  ncol = 2, align = "v"
 )
 
 ```
@@ -366,16 +367,16 @@ nexpbase.ntr_ed.ale = FeatureEffect$new(pred.n_export_base,
                                           method = "ale")
 
 
-grid.arrange(
-  nexpbase.ntr_pland.pdp$plot() + ggtitle("ntr_pland PDP"),
-  nexpbase.ntr_pland.ale$plot() + ggtitle("ntr_pland ALE"),
+cowplot::plot_grid(
+  nexpbase.ntr_pland.pdp$plot() + ggtitle("ntr_pland PDP") + egg::theme_article(),
+  nexpbase.ntr_pland.ale$plot() + ggtitle("ntr_pland ALE") + egg::theme_article(),
 
-  nexpbase.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland PDP"),
-  nexpbase.ann_agr_pland.ale$plot() + ggtitle("ann_agr_pland ALE"),
+  nexpbase.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland PDP") + egg::theme_article(),
+  nexpbase.ann_agr_pland.ale$plot() + ggtitle("ann_agr_pland ALE") + egg::theme_article(),
   
-  nexpbase.ntr_ed.pdp$plot() + ggtitle("ntr_ed PDP"),
-  nexpbase.ntr_ed.ale$plot() + ggtitle("ntr_ed ALE"),
-  ncol = 2
+  nexpbase.ntr_ed.pdp$plot() + ggtitle("ntr_ed PDP") + egg::theme_article(),
+  nexpbase.ntr_ed.ale$plot() + ggtitle("ntr_ed ALE") + egg::theme_article(),
+  ncol = 2, align = "v"
 )
 
 ```
@@ -385,11 +386,11 @@ grid.arrange(
 Three major contributors.
 
 ```{r shap_nexp_margshap, fig.width=9}
-grid.arrange(
+cowplot::plot_grid(
   sv_dependence(ex.nexpmarg.glb, v="ntr_pland") + egg::theme_article(),
   sv_dependence(ex.nexpmarg.glb, v="ann_agr_pland") + egg::theme_article(), 
   sv_dependence(ex.nexpmarg.glb, v="ntr_ed") + egg::theme_article(), 
-  ncol = 2
+  ncol = 2, align = "v"
 )
 
 ```
@@ -419,16 +420,16 @@ nexpmarg.ntr_ed.ale = FeatureEffect$new(pred.n_export_margin,
                                           method = "ale")
 
 
-grid.arrange(
-  nexpmarg.ntr_pland.pdp$plot() + ggtitle("ntr_pland PDP"),
-  nexpmarg.ntr_pland.ale$plot() + ggtitle("ntr_pland ALE"),
+cowplot::plot_grid(
+  nexpmarg.ntr_pland.pdp$plot() + ggtitle("ntr_pland PDP") + egg::theme_article(),
+  nexpmarg.ntr_pland.ale$plot() + ggtitle("ntr_pland ALE") + egg::theme_article(),
 
-  nexpmarg.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland PDP"),
-  nexpmarg.ann_agr_pland.ale$plot() + ggtitle("ann_agr_pland ALE"),
+  nexpmarg.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland PDP") + egg::theme_article(),
+  nexpmarg.ann_agr_pland.ale$plot() + ggtitle("ann_agr_pland ALE") + egg::theme_article(),
   
-  nexpmarg.ntr_ed.pdp$plot() + ggtitle("ntr_ed PDP"),
-  nexpmarg.ntr_ed.ale$plot() + ggtitle("ntr_ed ALE"),
-  ncol = 2
+  nexpmarg.ntr_ed.pdp$plot() + ggtitle("ntr_ed PDP") + egg::theme_article(),
+  nexpmarg.ntr_ed.ale$plot() + ggtitle("ntr_ed ALE") + egg::theme_article(),
+  ncol = 2, align = "v"
 )
 
 ```
@@ -461,7 +462,7 @@ ggplot(imp.df %>% filter(ES=="Sed export"), aes(metric2, importance, fill = type
 #### Shapley importance
 
 ```{r shap_sed, fig.width=9}
-grid.arrange(
+cowplot::plot_grid(
   sv_importance(ex.sedbase.glb) + egg::theme_article(),
   sv_importance(ex.sedmarg.glb) + egg::theme_article(),
   ncol = 2
@@ -474,9 +475,7 @@ grid.arrange(
 One major contributor
 
 ```{r shap_sed_baseshap, fig.width=9}
-grid.arrange(
-  sv_dependence(ex.sedbase.glb, v="ann_agr_ed") + egg::theme_article()
-)
+sv_dependence(ex.sedbase.glb, v="ann_agr_ed") + egg::theme_article()
 
 ```
 
@@ -492,13 +491,13 @@ sedbase.ann_agr_ed.ale = FeatureEffect$new(pred.sed_export_base,
                                           feature = "ann_agr_ed",
                                           method = "ale")
 
-grid.arrange(
+cowplot::plot_grid(
   sedbase.ann_agr_ed.pdp$plot() + ggtitle("ann_agr_ed PDP") +
     egg::theme_article(),
   sedbase.ann_agr_ed.ale$plot() + ggtitle("ann_agr_ed ALE") +
     egg::theme_article(),
 
-  ncol = 2
+  ncol = 2, align = "v"
 )
 
 ```
@@ -508,10 +507,10 @@ grid.arrange(
 One or two major contributors. `field_frac_mn` is the strongest interactor with `ann_agr_ed`, and vice versa, while `field_frac_mn` does not stand out as strongly in the permutation results.
 
 ```{r shap_sed_margshap, fig.width=9}
-grid.arrange(
+cowplot::plot_grid(
   sv_dependence(ex.sedmarg.glb, v="ann_agr_ed") + egg::theme_article(),
   sv_dependence(ex.sedmarg.glb, v="field_frac_mn") + egg::theme_article(),
-  ncol=2
+  ncol=2, align = "v"
 )
 
 ```
@@ -536,7 +535,7 @@ sedmarg.field_frac_mn.ale = FeatureEffect$new(pred.sed_export_margin,
                                           feature = "field_frac_mn",
                                           method = "ale")
 
-grid.arrange(
+cowplot::plot_grid(
   sedmarg.ann_agr_ed.pdp$plot() + ggtitle("ann_agr_ed PDP") +
     egg::theme_article(),
   sedmarg.ann_agr_ed.ale$plot() + ggtitle("ann_agr_ed ALE") +
@@ -547,7 +546,7 @@ grid.arrange(
   sedmarg.field_frac_mn.ale$plot() + ggtitle("field_frac_mn ALE") +
     egg::theme_article(),
 
-  ncol = 2
+  ncol = 2, align = "v"
 )
 
 ```
@@ -580,7 +579,7 @@ ggplot(imp.df %>% filter(ES=="Baseflow"), aes(metric2, importance, fill = type, 
 #### Shapley importance
 
 ```{r shap_qb, fig.width=9}
-grid.arrange(
+cowplot::plot_grid(
   sv_importance(ex.qbbase.glb) + egg::theme_article(),
   sv_importance(ex.qbmarg.glb) + egg::theme_article(),
   ncol = 2
@@ -593,8 +592,10 @@ grid.arrange(
 One major contributor.
 
 ```{r shap_qb_baseshap, fig.width=9}
-grid.arrange(
-  sv_dependence(ex.qbbase.glb, v="field_frac_mn") + egg::theme_article()
+cowplot::plot_grid(
+  sv_dependence(ex.qbbase.glb, v="ann_agr_cohesion") + egg::theme_article(),
+  sv_dependence(ex.qbbase.glb, v="field_frac_mn") + egg::theme_article(),
+  ncol = 2, align = "v"
 )
 
 ```
@@ -604,6 +605,14 @@ grid.arrange(
 
 ```{r qb_base_ale, fig.width=9}
 
+qbbase.ann_agr_cohesion.pdp = FeatureEffect$new(pred.qb_base, 
+                                             feature = "ann_agr_cohesion",
+                                             method = "pdp")
+
+sedbase.ann_agr_cohesion.ale = FeatureEffect$new(pred.qb_base, 
+                                              feature = "ann_agr_cohesion",
+                                              method = "ale")
+
 qbbase.field_frac_mn.pdp = FeatureEffect$new(pred.qb_base, 
                                              feature = "field_frac_mn",
                                              method = "pdp")
@@ -612,13 +621,18 @@ sedbase.field_frac_mn.ale = FeatureEffect$new(pred.qb_base,
                                               feature = "field_frac_mn",
                                               method = "ale")
 
-grid.arrange(
+cowplot::plot_grid(
+  qbbase.ann_agr_cohesion.pdp$plot() + ggtitle("ann_agr_cohesion PDP") +
+    egg::theme_article(),
+  sedbase.ann_agr_cohesion.ale$plot() + ggtitle("ann_agr_cohesion ALE") +
+    egg::theme_article(),
+  
   qbbase.field_frac_mn.pdp$plot() + ggtitle("field_frac_mn PDP") +
     egg::theme_article(),
   sedbase.field_frac_mn.ale$plot() + ggtitle("field_frac_mn ALE") +
     egg::theme_article(),
 
-  ncol = 2
+  ncol = 2, align = "v"
 )
 
 ```
@@ -628,11 +642,11 @@ grid.arrange(
 One or two major contributors. Differs a little from the permutation results from above. In the permutation results, `prn_agr_para_mn` does not have as high importance so that it isn't separated from other variables.
 
 ```{r shap_qb_margshap, fig.width=9}
-grid.arrange(
+cowplot::plot_grid(
   sv_dependence(ex.qbmarg.glb, v="ann_agr_cohesion") + egg::theme_article(),
   sv_dependence(ex.qbmarg.glb, v="prn_pagr") + egg::theme_article(),
   sv_dependence(ex.qbmarg.glb, v="prn_agr_para_mn") + egg::theme_article(),
-  ncol=2
+  ncol=2, align = "v"
 )
 
 ```
@@ -661,30 +675,28 @@ qbmarg.prn_agr_para_mn.ale = FeatureEffect$new(pred.qb_margin,
                                               feature = "prn_agr_para_mn",
                                               method = "ale")
 
-grid.arrange(
-  qbmarg.ann_agr_cohesion.pdp$plot() + ggtitle("ann_agr_cohesion PDP") +
+cowplot::plot_grid(
+  qbmarg.ann_agr_cohesion.pdp$plot() + ggtitle("ann_agr_cohesion PDP") + ylab("PDP") +
     egg::theme_article(),
-  qbmarg.ann_agr_cohesion.ale$plot() + ggtitle("ann_agr_cohesion ALE") +
-    egg::theme_article(),
-  
-  qbmarg.prn_pagr.pdp$plot() + ggtitle("prn_pagr PDP") +
-    egg::theme_article(),
-  qbmarg.prn_pagr.ale$plot() + ggtitle("prn_pagr ALE") +
+  qbmarg.ann_agr_cohesion.ale$plot() + ggtitle("ann_agr_cohesion ALE") + ylab("ALE") +
     egg::theme_article(),
   
-  qbmarg.prn_agr_para_mn.pdp$plot() + ggtitle("prn_agr_para_mn PDP") +
+  qbmarg.prn_pagr.pdp$plot() + ggtitle("prn_pagr PDP") + ylab("PDP") +
     egg::theme_article(),
-  qbmarg.prn_agr_para_mn.ale$plot() + ggtitle("prn_agr_para_mn ALE") +
+  qbmarg.prn_pagr.ale$plot() + ggtitle("prn_pagr ALE") + ylab("ALE") +
+    egg::theme_article(),
+  
+  qbmarg.prn_agr_para_mn.pdp$plot() + ggtitle("prn_agr_para_mn PDP") + ylab("PDP") +
+    egg::theme_article(),
+  qbmarg.prn_agr_para_mn.ale$plot() + ggtitle("prn_agr_para_mn ALE") + ylab("ALE") +
     egg::theme_article(),
 
-  ncol = 2
+  ncol = 2, align = "v"
 )
 
 ```
 
-### SHAP force plots
-
-I am plotting the combined SHAP force values for each watershed together. The important features identified above are colored while the rest are left grey. To plot watersheds on a common axis and visualize tradeoffs, I used PCA to identify the two major axes. The first PC axis for both baseline and margin results show a tradeoff between N export (and improvement in N export) and pollinator abundance (pollinator improvement). The second PC shows sediment export and baseflow changing together while with margin improvement are in the same direction.
+#### Correlation of important variables
 
 ```{r paircor}
 selectedvar <- c("ntr_pland", "ann_agr_pland", "ntr_ed", 
@@ -699,10 +711,15 @@ selectedvar <- c("ntr_pland", "ann_agr_pland", "ntr_ed",
 #                         "ann_agr_ed", "field_frac_mn",
 #                         "prn_ann_ratio", "prn_agr_para_mn")
 
-
-# psych::pairs.panels(dat.selectedvar)
+dat.selectedvar <- dat %>% select(selectedvar)
+psych::pairs.panels(dat.selectedvar)
 
 ```
+
+### SHAP force plots
+
+I am plotting the combined SHAP force values for each watershed together. The important features identified above are colored while the rest are left grey. To plot watersheds on a common axis and visualize tradeoffs, I used PCA to identify the two major axes. The first PC axis for both baseline and margin results show a tradeoff between N export (and improvement in N export) and pollinator abundance (pollinator improvement). The second PC shows sediment export and baseflow changing together while with margin improvement are in the same direction.
+
 
 ```{r force_fcns}
 source("R/utils-shap.r")
