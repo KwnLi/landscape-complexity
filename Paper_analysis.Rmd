@@ -317,12 +317,12 @@ ggplot(imp.df %>% filter(ES=="N export"), aes(metric2, importance, fill = type, 
 
 #### Shapley importance
 
-```{r shap_nexp, fig.width=9}
+```{r shap_nexp2, fig.width=9}
 
 cowplot::plot_grid(
   sv_importance(ex.nexpbase.glb) + egg::theme_article(), 
   sv_importance(ex.nexpmarg.glb) + egg::theme_article(),
-  ncol = 2
+  ncol = 2, align = "v"
 )
 
 ```
