@@ -645,7 +645,6 @@ One or two major contributors. Differs a little from the permutation results fro
 cowplot::plot_grid(
   sv_dependence(ex.qbmarg.glb, v="ann_agr_cohesion") + egg::theme_article(),
   sv_dependence(ex.qbmarg.glb, v="prn_pagr") + egg::theme_article(),
-  sv_dependence(ex.qbmarg.glb, v="prn_agr_para_mn") + egg::theme_article(),
   ncol=2, align = "v"
 )
 
@@ -661,18 +660,12 @@ qbmarg.ann_agr_cohesion.pdp = FeatureEffect$new(pred.qb_margin,
 qbmarg.prn_pagr.pdp = FeatureEffect$new(pred.qb_margin, 
                                              feature = "prn_pagr",
                                              method = "pdp")
-qbmarg.prn_agr_para_mn.pdp = FeatureEffect$new(pred.qb_margin, 
-                                             feature = "prn_agr_para_mn",
-                                             method = "pdp")
 
 qbmarg.ann_agr_cohesion.ale = FeatureEffect$new(pred.qb_margin, 
                                               feature = "ann_agr_cohesion",
                                               method = "ale")
 qbmarg.prn_pagr.ale = FeatureEffect$new(pred.qb_margin, 
                                               feature = "prn_pagr",
-                                              method = "ale")
-qbmarg.prn_agr_para_mn.ale = FeatureEffect$new(pred.qb_margin, 
-                                              feature = "prn_agr_para_mn",
                                               method = "ale")
 
 cowplot::plot_grid(
@@ -686,9 +679,6 @@ cowplot::plot_grid(
   qbmarg.prn_pagr.ale$plot() + ggtitle("prn_pagr ALE") + ylab("ALE") +
     egg::theme_article(),
   
-  qbmarg.prn_agr_para_mn.pdp$plot() + ggtitle("prn_agr_para_mn PDP") + ylab("PDP") +
-    egg::theme_article(),
-  qbmarg.prn_agr_para_mn.ale$plot() + ggtitle("prn_agr_para_mn ALE") + ylab("ALE") +
     egg::theme_article(),
 
   ncol = 2, align = "v"
@@ -700,7 +690,7 @@ cowplot::plot_grid(
 
 ```{r paircor}
 selectedvar <- c("ntr_pland", "ann_agr_pland", "ntr_ed", 
-                 "field_frac_mn", "prn_pagr", "prn_agr_para_mn",
+                 "field_frac_mn", "prn_pagr",
                  "ann_agr_ed", "ann_agr_cohesion"
                  )
 
@@ -730,7 +720,6 @@ focus.vars <- function(x.features){
     "ann_agr_pland" ~ "Annual ag. land cover",
     "field_frac_mn" ~ "Field fractal dimension",
     "prn_pagr" ~ "Agriculture % perennial",
-    "prn_agr_para_mn" ~ "Perennial ag. perimeter:area",
     "ann_agr_ed" ~ "Annual ag. edge density",
     "ann_agr_cohesion" ~ "Annual ag. cohesion",
     .default = "Other features"
@@ -742,7 +731,6 @@ feature.colors <- c(
   "Annual ag. land cover" = "#fdbf6f",
   "Field fractal dimension" = "#56B4E9",
   "Agriculture % perennial" = "#CC79A7",
-  "Perennial ag. perimeter:area" = "#D55E00",
   "Annual ag. edge density" = "#F0E442",
   "Annual ag. cohesion" = "#0072B2",
   "Other features" = "gray80"

@@ -54,7 +54,15 @@ maxdelta <- base_out %>% select(hu:sed_export,rawsdr_avoid_exp, field_cells) %>%
     field.ha = (field_cells*900)/10000,
     margin.ha = (margin_cells*900)/10000,
     margin_den = margin.ha/lu_ta) %>%
-  mutate(across(delta_pollinators:delta_sed, \(x) x/margin_den, .names = "{.col}_max.margin"))  # normalize by margin density results in change in es per margin area (ws area cancels)
+  # normalize by margin density results in change in es per margin area (ws area cancels)
+  mutate(across(delta_pollinators:delta_sed, \(x) x/margin_den, .names = "{.col}_max.margin")) %>% 
+  # calculate percent ES change from baseline per margin area
+  mutate(
+    pc_pol_incr.margin = 100*(delta_pollinators/pollinators_base)/margin.ha,
+    pc_nexp_red.margin = 100*(delta_n_export/n_export_base)/margin.ha,
+    pc_qb_incr.margin = 100*(delta_qb/qb_base)/margin.ha,
+    pc_sed_red.margin = 100*(delta_sed/sed_export_base)/margin.ha,
+  )
 
 
 # one field vs baseline
@@ -96,7 +104,12 @@ allresults <- maxdelta %>%
   left_join(ofdelta.md) %>%
   left_join(hu_meta %>% rename(hu=huc12)) %>%
   left_join(lsm) %>%
-  left_join(lsm2 %>% select(hu, aglu_contag, ann_agr_cohesion, ntr_cohesion, prn_agr_cohesion)) %>%
+  left_join(lsm2 %>% 
+              select(hu, aglu_contag, ann_agr_cohesion, ntr_cohesion, prn_agr_cohesion,
+                     aglu_ed, ann_agr_area_mn, ntr_area_mn, prn_agr_area_mn)) %>%
+  # remove some metrics that are redundant/confusing/irrelevant
+  select(-ann_agr_para_mn, -ntr_para_mn, -prn_agr_para_mn, -field_para_mn,
+         -field_para_mn, -field_para_cv, -field_frac_cv, -field_area_cv) %>%
   left_join(hulandstats) %>%
   mutate(prn_ann_ratio = log(prn_agr_pland/ann_agr_pland),
          prn_pagr = 100*(prn_agr_pland/(ann_agr_pland+prn_agr_pland)),
@@ -105,6 +118,6 @@ allresults <- maxdelta %>%
                       labels = c("simple","moderate","natural")))
 
 saveRDS(
-  allresults, "data/allresults_20250401.rds"
+  allresults, "data/allresults_20250403.rds"
 )
 write.csv(data.frame(colname = names(allresults)), "allresults_colnames.csv", row.names = FALSE)

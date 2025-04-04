@@ -1,0 +1,488 @@
+---
+title: "Percent change"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r load}
+library(tidyverse)
+library(iml)
+library(ranger)
+load("data/ES-RF3pc.RDA")
+
+```
+
+## Ecosystem service improvements depend on the baseline condition
+
+```{r data_setup}
+
+
+dat.long <- dat %>% 
+  pivot_longer(cols = c(1:8,13:16), names_to = "ES_response", values_to = "ES_value") %>%
+  pivot_longer(cols = c("ntr_pland", "ann_agr_pland"), names_to = "Landuse",
+               values_to = "Landuse_value") %>%
+  select(ES_response, ES_value, Landuse, Landuse_value) %>%
+  mutate(ES = gsub("delta_|_base|_(incr|red).margin|pc_","", ES_response)) %>%
+  mutate(ES = case_match(ES,
+                         "sed" ~ "sed_export",
+                         "pol" ~ "pollinators",
+                         "nexp" ~ "n_export",
+                         .default = ES)) %>%
+  mutate(response_type =
+           gsub("sed|export|n_|pollinators|qb|_|pol|nexp|red.|incr.","",ES_response)) %>%
+  mutate(response_type = case_match(
+    response_type,
+    "base" ~ "Baseline ES [/ha]",
+    "delta" ~ "\u0394 ES [/ha]",
+    "pcmargin" ~ "% \u0394 ES per ha margin"
+  )) %>%
+  mutate(response_type = factor(response_type, 
+                                levels = c("Baseline ES [/ha]",
+                                           "\u0394 ES [/ha]",
+                                           "% \u0394 ES per ha margin")))
+
+```
+
+Ecosystem service improvements depend on the baseline condition, except for pollination.
+
+This pattern holds even if we factor out margin area. 
+
+The trend is different if we look at % change in ecosystem services from baseline, per margin area
+
+```{r percentchangedemo}
+
+dat_wider <- dat.long %>% select(-ES_response) %>% 
+  pivot_wider(names_from = response_type, values_from = ES_value)
+
+base.v.margin <- ggplot(dat_wider, aes(`Baseline ES [/ha]`, `Δ ES [/ha]`)) + geom_point() + 
+  xlab("Baseline ES per ha") + ylab("Increase in ES per ha margin (ES units)") +
+  geom_smooth(method = "gam") + facet_wrap(~ES, scales = "free") + 
+  ggtitle("ES baseline vs \nES improvement per margin") + egg::theme_article()
+
+base.v.margin.base <- ggplot(dat_wider, aes(`Baseline ES [/ha]`, `% Δ ES per ha margin`)) + 
+  geom_point() + geom_smooth(method = "gam") + facet_wrap(~ES, scales = "free") +
+  ggtitle("ES Baseline vs \n% ES improvement per margin") + 
+  xlab("Baseline ES per ha") +
+  ylab("% improvement from baseline per ha margin") +
+  egg::theme_article()
+
+cowplot::plot_grid(base.v.margin, base.v.margin.base)
+
+```
+
+## Patterns with annual agriculture
+
+Looking at ES % change from baseline shows some stronger patterns than before for sediment and water recharge.
+
+```{r compplots, fig.width=9, fig.height=6}
+
+# fit some gams
+dat.gam <- dat.long %>% filter(Landuse == "ntr_pland") %>% 
+  group_by(response_type, ES) %>%
+  nest() %>%
+  # Fit GAM
+  mutate(Mod = map(data, ~mgcv::gam(ES_value ~ s(Landuse_value), data = .x))) %>%
+  # Get R2
+  mutate(R2 = map_dbl(Mod, ~round(summary(.x)$r.sq, 2)))  
+
+ggplot(dat.long %>% filter(Landuse == "ann_agr_pland"),
+       aes(Landuse_value, ES_value)) + 
+  geom_point() + geom_smooth(method="gam") +
+  ggh4x::facet_grid2(response_type ~ ES,  scales = "free", independent = "y", 
+                     switch = "y") + 
+  egg::theme_article() + 
+  # Add label
+  geom_label(data = dat.gam, 
+             aes(x = Inf, y = Inf, 
+                 label = paste("R2 = ", R2, sep = " ")),
+             hjust = 1, vjust = 1) +
+  xlab("% Annual agriculture") +
+  ylab("ES value") + theme(strip.placement = "outside")
+``` 
+
+## Random forest models for % improvement
+
+Units for % improvement per margin ha are in tenths of a percent, so MSE looks smaller.
+
+### Model performance
+*Pollinators:*
+
+     r2 = `r round(pollinators_pc.rf$r.squared, 3)`
+     OOB MSE = `r format(round(pollinators_pc.rf$prediction.error, 5),scientific=F)`
+
+*Nitrogen export:*
+
+     r2 = `r round(n_export_pc.rf$r.squared, 3)`
+     OOB MSE = `r format(round(n_export_pc.rf$prediction.error, 5),scientific=F)`
+
+*Sediment export:*
+
+     r2 = `r round(sed_pc.rf$r.squared, 3)`
+     OOB MSE = `r format(round(sed_pc.rf$prediction.error, 5),scientific=F)`
+
+*Baseflow:*
+
+     r2 = `r round(qb_pc.rf$r.squared, 3)`
+     OOB MSE = `r format(round(qb_pc.rf$prediction.error, 5),scientific=F)`
+
+### Variable importance
+
+```{r importance, fig.height=16, fig.width=9}
+library(ggpattern)
+
+metric.descr <- read.csv("data/lsm_description.csv")
+
+imp.df <- bind_rows(
+  pollinators_pc.p %>% rownames_to_column("metric") %>% 
+    mutate(ES = "Pollinators", model = "base"),
+  n_export_pc.p %>% rownames_to_column("metric") %>% 
+    mutate(ES = "N export", model = "base"),
+  sed_pc.p %>% rownames_to_column("metric") %>% 
+    mutate(ES = "Sed export", model = "base"),
+  qb_pc.p %>% rownames_to_column("metric") %>% 
+    mutate(ES = "Baseflow", model = "base")
+) %>%
+  mutate(sig = ifelse(pvalue <0.05, TRUE, FALSE)) %>%
+  mutate(metric2 = tidytext::reorder_within(metric, importance,
+                                           within = list(ES, model))) %>%
+  left_join(metric.descr %>% select(lsm, type), by = c("metric"="lsm")) %>%
+  mutate(type = case_match(
+    metric,
+    "field_pland" ~ "area and edge metric",
+    "field_frac_mn" ~ "shape metric",
+    "field_frac_cv" ~ "shape metric",
+    "prn_pagr" ~ "area and edge metric",
+    .default = type
+  ))
+
+# ggplot(imp.df, aes(metric2, importance, fill = type, pattern = sig)) + 
+#   geom_bar_pattern(stat="identity",
+#                    color = "black", 
+#                    pattern_fill = "black",
+#                    pattern_angle = 45,
+#                    pattern_density = 0.1,
+#                    pattern_spacing = 0.025,
+#                    pattern_key_scale_factor = 0.6) + 
+#   tidytext::scale_x_reordered() +
+#   coord_flip() +
+#   ggh4x::facet_grid2(ES~model, scales = "free", independent = "all") +
+#   scale_pattern_manual(values = c("TRUE" = "none", "FALSE" = "stripe")) +
+#   egg::theme_article() +
+#   theme(legend.position = "top") + 
+#   guides(pattern = guide_legend(override.aes = list(fill = "white")),
+#          fill = guide_legend(override.aes = list(pattern = "none")))
+
+
+```
+
+```{r importance_shap}
+load("data/ES-RF3pc-preds.RDA")   # prediction objects from iml package
+load("data/ES-RF3pc-shapimportance.RDA")
+library(shapviz)
+library(gridExtra)
+
+```
+
+### Pollinators
+
+#### Permutation based importance
+
+```{r pol_permimport, fig.width=9}
+
+ggplot(imp.df %>% filter(ES=="Pollinators"), aes(metric2, importance, fill = type, pattern = sig)) + 
+  geom_bar_pattern(stat="identity",
+                   color = "black", 
+                   pattern_fill = "black",
+                   pattern_angle = 45,
+                   pattern_density = 0.1,
+                   pattern_spacing = 0.025,
+                   pattern_key_scale_factor = 0.6) + 
+  tidytext::scale_x_reordered() +
+  coord_flip() +
+  scale_pattern_manual(values = c("TRUE" = "none", "FALSE" = "stripe")) +
+  egg::theme_article() +
+  theme(legend.position = "top") + 
+  guides(pattern = guide_legend(override.aes = list(fill = "white")),
+         fill = guide_legend(override.aes = list(pattern = "none")))
+
+```
+
+#### Shapley importance
+
+```{r shap_pol, fig.width=9}
+  sv_importance(ex.polpc.glb) + egg::theme_article()
+
+
+```
+
+#### Base pollinator model Shapley dependence plots
+
+The two major contributors. Colors are the strongest interactor with that variable.
+
+```{r shap_pol_baseshap, fig.width=9}
+grid.arrange(
+  sv_dependence(ex.polpc.glb, v="ntr_pland") + egg::theme_article(),
+  sv_dependence(ex.polpc.glb, v="ann_agr_pland") + egg::theme_article(), 
+  ncol = 2
+)
+
+```
+
+**_Compare to PDP and ALE_**
+
+```{r pol_base_ale, fig.width=9}
+
+polbase.ntr_pland.pdp = FeatureEffect$new(pred.pollinators_pc, 
+                                          feature = "ntr_pland",
+                                          method = "pdp")
+polbase.ann_agr_pland.pdp = FeatureEffect$new(pred.pollinators_pc, 
+                                          feature = "ann_agr_pland",
+                                          method = "pdp")
+
+polbase.ntr_pland.ale = FeatureEffect$new(pred.pollinators_pc, 
+                                          feature = "ntr_pland",
+                                          method = "ale")
+polbase.ann_agr_pland.ale = FeatureEffect$new(pred.pollinators_pc, 
+                                          feature = "ann_agr_pland",
+                                          method = "ale")
+
+cowplot::plot_grid(
+  polbase.ntr_pland.pdp$plot() + ggtitle("ntr_pland PDP") + egg::theme_article(),
+  polbase.ntr_pland.ale$plot() + ggtitle("ntr_pland ALE") + egg::theme_article(), 
+  
+  polbase.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland PDP") + egg::theme_article(),
+  polbase.ann_agr_pland.pdp$plot() + ggtitle("ann_agr_pland ALE") + egg::theme_article(),
+  ncol = 2, align = "v"
+)
+
+```
+
+
+
+### N Export
+
+### Permutation based importance
+
+```{r nexp_permimport, fig.width=9}
+
+ggplot(imp.df %>% filter(ES=="N export"), aes(metric2, importance, fill = type, pattern = sig)) + 
+  geom_bar_pattern(stat="identity",
+                   color = "black", 
+                   pattern_fill = "black",
+                   pattern_angle = 45,
+                   pattern_density = 0.1,
+                   pattern_spacing = 0.025,
+                   pattern_key_scale_factor = 0.6) + 
+  tidytext::scale_x_reordered() +
+  coord_flip() +
+  scale_pattern_manual(values = c("TRUE" = "none", "FALSE" = "stripe")) +
+  egg::theme_article() +
+  theme(legend.position = "top") + 
+  guides(pattern = guide_legend(override.aes = list(fill = "white")),
+         fill = guide_legend(override.aes = list(pattern = "none")))
+
+```
+
+#### Shapley importance
+
+```{r shap_nexp2, fig.width=9}
+
+  sv_importance(ex.nexppc.glb) + egg::theme_article()
+
+```
+
+#### Base N export shapley dependence plots
+
+Two major -ish contributors.
+
+```{r shap_nexp_pcshap, fig.width=9}
+
+cowplot::plot_grid(
+  sv_dependence(ex.nexppc.glb, v="ntr_pland") + egg::theme_article(),
+  sv_dependence(ex.nexppc.glb, v="ntr_cohesion") + egg::theme_article(), 
+  ncol = 2, align = "v"
+)
+
+```
+
+**_Compare to PDP and ALE_**
+
+```{r nexp_pc_ale, fig.width=9}
+
+nexppc.ntr_pland.pdp = FeatureEffect$new(pred.nexp_pc, 
+                                          feature = "ntr_pland",
+                                          method = "pdp")
+nexppc.ntr_cohesion.pdp = FeatureEffect$new(pred.nexp_pc, 
+                                          feature = "ntr_cohesion",
+                                          method = "pdp")
+
+nexppc.ntr_pland.ale = FeatureEffect$new(pred.nexp_pc, 
+                                          feature = "ntr_pland",
+                                          method = "ale")
+nexppc.ntr_cohesion.ale = FeatureEffect$new(pred.nexp_pc, 
+                                          feature = "ntr_cohesion",
+                                          method = "ale")
+
+
+cowplot::plot_grid(
+  nexppc.ntr_pland.pdp$plot() + ggtitle("ntr_pland PDP") + egg::theme_article(),
+  nexppc.ntr_pland.ale$plot() + ggtitle("ntr_pland ALE") + egg::theme_article(),
+
+  nexppc.ntr_cohesion.pdp$plot() + ggtitle("ntr_cohesion PDP") + egg::theme_article(),
+  nexppc.ntr_cohesion.ale$plot() + ggtitle("ntr_cohesion ALE") + egg::theme_article(),
+
+  ncol = 2, align = "v"
+)
+
+```
+
+
+### Sediment Export
+
+### Permutation based importance
+
+```{r sed_permimport, fig.width=9}
+
+ggplot(imp.df %>% filter(ES=="Sed export"), aes(metric2, importance, fill = type, pattern = sig)) + 
+  geom_bar_pattern(stat="identity",
+                   color = "black", 
+                   pattern_fill = "black",
+                   pattern_angle = 45,
+                   pattern_density = 0.1,
+                   pattern_spacing = 0.025,
+                   pattern_key_scale_factor = 0.6) + 
+  tidytext::scale_x_reordered() +
+  coord_flip() +
+  scale_pattern_manual(values = c("TRUE" = "none", "FALSE" = "stripe")) +
+  egg::theme_article() +
+  theme(legend.position = "top") + 
+  guides(pattern = guide_legend(override.aes = list(fill = "white")),
+         fill = guide_legend(override.aes = list(pattern = "none")))
+
+```
+
+#### Shapley importance
+
+```{r shap_sed, fig.width=9}
+
+sv_importance(ex.sedpc.glb) + egg::theme_article()
+
+```
+
+#### Percent improvement in sediment export Shapley dependence plots
+
+One major contributor
+
+```{r shap_sed_baseshap, fig.width=9}
+sv_dependence(ex.sedpc.glb, v="ntr_pland") + egg::theme_article()
+
+```
+
+**_Compare to PDP and ALE_**
+
+```{r sedexp_pc_ale, fig.width=9}
+
+sedpc.ntr_pland.pdp = FeatureEffect$new(pred.sed_pc, 
+                                          feature = "ntr_pland",
+                                          method = "pdp")
+
+sedpc.ntr_pland.ale = FeatureEffect$new(pred.sed_pc, 
+                                          feature = "ntr_pland",
+                                          method = "ale")
+
+cowplot::plot_grid(
+  sedpc.ntr_pland.pdp$plot() + ggtitle("ann_agr_ed PDP") +
+    egg::theme_article(),
+  sedpc.ntr_pland.ale$plot() + ggtitle("ann_agr_ed ALE") +
+    egg::theme_article(),
+
+  ncol = 2, align = "v"
+)
+
+```
+
+### Water recharge
+
+### Permutation based importance
+
+```{r qb_permimport, fig.width=9}
+
+ggplot(imp.df %>% filter(ES=="Baseflow"), aes(metric2, importance, fill = type, pattern = sig)) + 
+  geom_bar_pattern(stat="identity",
+                   color = "black", 
+                   pattern_fill = "black",
+                   pattern_angle = 45,
+                   pattern_density = 0.1,
+                   pattern_spacing = 0.025,
+                   pattern_key_scale_factor = 0.6) + 
+  tidytext::scale_x_reordered() +
+  coord_flip() +
+  scale_pattern_manual(values = c("TRUE" = "none", "FALSE" = "stripe")) +
+  egg::theme_article() +
+  theme(legend.position = "top") + 
+  guides(pattern = guide_legend(override.aes = list(fill = "white")),
+         fill = guide_legend(override.aes = list(pattern = "none")))
+
+```
+
+#### Shapley importance
+
+```{r shap_qb, fig.width=9}
+
+sv_importance(ex.qbpc.glb) + egg::theme_article()
+
+```
+
+#### Base water runoff Shapley depednence plot
+
+One major contributor.
+
+```{r shap_qb_baseshap, fig.width=9}
+cowplot::plot_grid(
+  sv_dependence(ex.qbpc.glb, v="ntr_ed") + egg::theme_article(),
+  sv_dependence(ex.qbpc.glb, v="prn_agr_pd") + egg::theme_article(),
+  ncol = 2, align = "v"
+)
+
+```
+
+
+**_Compare to PDP and ALE_**
+
+```{r qb_pc_ale, fig.width=9}
+
+qbpc.ntr_ed.pdp = FeatureEffect$new(pred.qb_pc, 
+                                             feature = "ntr_ed",
+                                             method = "pdp")
+
+qbpc.ntr_ed.ale = FeatureEffect$new(pred.qb_pc, 
+                                              feature = "ntr_ed",
+                                              method = "ale")
+
+qbpc.prn_agr_pd.pdp = FeatureEffect$new(pred.qb_pc, 
+                                             feature = "prn_agr_pd",
+                                             method = "pdp")
+
+qbpc.prn_agr_pd.ale = FeatureEffect$new(pred.qb_pc, 
+                                              feature = "prn_agr_pd",
+                                              method = "ale")
+
+cowplot::plot_grid(
+  qbpc.ntr_ed.pdp$plot() + ggtitle("ntr_ed PDP") +
+    egg::theme_article(),
+  qbpc.ntr_ed.ale$plot() + ggtitle("ntr_ed ALE") +
+    egg::theme_article(),
+  
+  qbpc.prn_agr_pd.pdp$plot() + ggtitle("prn_agr_pd PDP") +
+    egg::theme_article(),
+  qbpc.prn_agr_pd.ale$plot() + ggtitle("prn_agr_pd ALE") +
+    egg::theme_article(),
+
+  ncol = 2, align = "v"
+)
+
+```
+
+

@@ -3,9 +3,7 @@ output_dir: docs
 navbar:
   title: "Landscape Complexity Results"
   left:
-    - text: "3/11/2025"
-      href: examine_sim_results.html
-    - text: "3/11/2025 Random Forest"
-      href: randomforest_kl.html
-    - text: "4/2/2025"
+    - text: "Baseline ES + ES per margin (4/2/2025)"
       href: Paper_analysis.html
+    - text: "% change ES per margin (4/4/2025)"
+      href: Paper_analysis_percent.html
