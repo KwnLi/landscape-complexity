@@ -3,8 +3,7 @@
 library(ranger)
 options(ranger.num.threads = 8)
 
-# wfs <- readRDS("data/allresults_20250401.rds")
-wfs <- readRDS("data/allresults_20250403.rds")
+wfs <- readRDS("data/allresults_20250407.rds")
 
 names(wfs)
 
@@ -76,9 +75,34 @@ qb_pc.rf <- ranger(qb.pc.form, data = dat, importance = "permutation", num.trees
 qb_pc.p <- data.frame(importance_pvalues(qb_pc.rf, method = "altmann", 
                                                formula = qb.pc.form, data = dat, num.permutations = 1000))
 
-sed_pc.rf <- ranger(sed.pc.form, data = dat, importance = "permutation", num.trees = 1000)
-sed_pc.p <- data.frame(importance_pvalues(sed_pc.rf, method = "altmann", 
+sed_export_pc.rf <- ranger(sed.pc.form, data = dat, importance = "permutation", num.trees = 1000)
+sed_export_pc.p <- data.frame(importance_pvalues(sed_export_pc.rf, method = "altmann", 
                                          formula = sed.pc.form, data = dat, num.permutations = 1000))
+
+# Delta models
+# formulae
+pol.dl.form <- reformulate(names(dat.predictors), response = "delta_pollinators")
+n_exp.dl.form <- reformulate(names(dat.predictors), response = "delta_n_export")
+qb.dl.form <- reformulate(names(dat.predictors), response = "delta_qb")
+sed.dl.form <- reformulate(names(dat.predictors), response = "delta_sed")
+
+# rf models
+pollinators_delta.rf <- ranger(pol.dl.form, data = dat, importance = "permutation", num.trees = 1000)
+pollinators_delta.p <- data.frame(importance_pvalues(pollinators_delta.rf, method = "altmann", 
+                                                  formula = pol.dl.form, data = dat, num.permutations = 1000))
+
+n_export_delta.rf <- ranger(n_exp.dl.form, data = dat, importance = "permutation", num.trees = 1000)
+n_export_delta.p <- data.frame(importance_pvalues(n_export_delta.rf, method = "altmann", 
+                                               formula = n_exp.dl.form, data = dat, num.permutations = 1000))
+
+qb_delta.rf <- ranger(qb.dl.form, data = dat, importance = "permutation", num.trees = 1000)
+qb_delta.p <- data.frame(importance_pvalues(qb_delta.rf, method = "altmann", 
+                                         formula = qb.dl.form, data = dat, num.permutations = 1000))
+
+sed_export_delta.rf <- ranger(sed.dl.form, data = dat, importance = "permutation", num.trees = 1000)
+sed_export_delta.p <- data.frame(importance_pvalues(sed_export_delta.rf, method = "altmann", 
+                                                 formula = sed.dl.form, data = dat, num.permutations = 1000))
+save(list = ls(pattern = "dl|delta"), file = "data/ES-RF-delta.RDA")
 
 # # run random forest using different importance
 # pollinators_base.imp.rf <- ranger(pol.base.form, data = dat, importance = "impurity", num.trees = 1000)
@@ -111,10 +135,10 @@ sed_pc.p <- data.frame(importance_pvalues(sed_pc.rf, method = "altmann",
 
 
 # save the permutation outputs
-save(list = c("dat",ls(pattern = "^[npqs]")), file = "data/ES-RF3.RDA")
+save(list = c("dat",ls(pattern = "^[npqs]")), file = "data/ES-RF-all.RDA")
 
 # save just the impurity-based outputs
 # save(list = ls(pattern = "imp"), file = "data/ES-RF2-impurity.RDA")
 
 # save the percentage outputs
-save(list = c("dat",ls(pattern = "pc")), file = "data/ES-RF3pc.RDA")
+# save(list = c("dat",ls(pattern = "pc")), file = "data/ES-RF3pc.RDA")
