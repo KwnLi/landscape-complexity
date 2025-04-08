@@ -2,8 +2,8 @@
 library(fastshap)
 library(shapviz)
 
-load("data/ES-RF3.RDA")
-load("data/ES-RF3pc.RDA")
+load("data/ES-RF-all.RDA")
+load("data/ES-RF-delta.RDA")
 
 pfun <- function(object, newdata) predict(object, data = newdata)$predictions
 
@@ -45,7 +45,7 @@ ex.qbmarg <- explain(qb_margin.rf, X=dat.x, pred_wrapper = pfun,
                       nsim = 1000, adjust = TRUE, shap_only = FALSE)
 ex.qbmarg.glb <- shapviz(ex.qbmarg)
 
-save(list = ls(pattern = "^ex"), file = "data/ES-RF3-shapimportance.RDA")
+# save(list = ls(pattern = "^ex"), file = "data/ES-RF3-shapimportance.RDA")
 
 # percent models
 ex.polpc <- explain(pollinators_pc.rf, X=dat.x, pred_wrapper = pfun,
@@ -56,7 +56,7 @@ ex.nexppc <- explain(n_export_pc.rf, X=dat.x, pred_wrapper = pfun,
                     nsim = 1000, adjust = TRUE, shap_only = FALSE)
 ex.nexppc.glb <- shapviz(ex.nexppc)
 
-ex.sedpc <- explain(sed_pc.rf, X=dat.x, pred_wrapper = pfun,
+ex.sedpc <- explain(sed_export_pc.rf, X=dat.x, pred_wrapper = pfun,
                      nsim = 1000, adjust = TRUE, shap_only = FALSE)
 ex.sedpc.glb <- shapviz(ex.sedpc)
 
@@ -64,4 +64,24 @@ ex.qbpc <- explain(qb_pc.rf, X=dat.x, pred_wrapper = pfun,
                     nsim = 1000, adjust = TRUE, shap_only = FALSE)
 ex.qbpc.glb <- shapviz(ex.qbpc)
 
-save(list = ls(pattern = "pc"), file = "data/ES-RF3pc-shapimportance.RDA")
+# delta models
+ex.poldelta <- explain(pollinators_delta.rf, X=dat.x, pred_wrapper = pfun,
+                    nsim = 1000, adjust = TRUE, shap_only = FALSE)
+ex.poldelta.glb <- shapviz(ex.poldelta)
+
+ex.nexpdelta <- explain(n_export_delta.rf, X=dat.x, pred_wrapper = pfun,
+                     nsim = 1000, adjust = TRUE, shap_only = FALSE)
+ex.nexpdelta.glb <- shapviz(ex.nexpdelta)
+
+ex.seddelta <- explain(sed_export_delta.rf, X=dat.x, pred_wrapper = pfun,
+                    nsim = 1000, adjust = TRUE, shap_only = FALSE)
+ex.seddelta.glb <- shapviz(ex.seddelta)
+
+ex.qbdelta <- explain(qb_delta.rf, X=dat.x, pred_wrapper = pfun,
+                   nsim = 1000, adjust = TRUE, shap_only = FALSE)
+ex.qbdelta.glb <- shapviz(ex.qbdelta)
+
+# save(list = ls(pattern = "delta"), file = "data/ES-RF-delta-shapimportance.RDA")
+
+# save(list = ls(pattern = "^ex"), file = "data/ES-RF-all-shapimportance.RDA")
+

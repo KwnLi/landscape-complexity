@@ -5,5 +5,7 @@ navbar:
   left:
     - text: "Baseline ES + ES per margin (4/2/2025)"
       href: Paper_analysis.html
-    - text: "% change ES per margin (4/4/2025)"
+    - text: "% change ES(4/7/2025)"
       href: Paper_analysis_percent.html
+    - text: "More analysis (4/8/2025)"
+      href: more_analysis.html

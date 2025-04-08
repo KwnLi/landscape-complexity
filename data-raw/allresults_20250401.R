@@ -56,12 +56,12 @@ maxdelta <- base_out %>% select(hu:sed_export,rawsdr_avoid_exp, field_cells) %>%
     margin_den = margin.ha/lu_ta) %>%
   # normalize by margin density results in change in es per margin area (ws area cancels)
   mutate(across(delta_pollinators:delta_sed, \(x) x/margin_den, .names = "{.col}_max.margin")) %>% 
-  # calculate percent ES change from baseline per margin area
+  # calculate percent ES change from baseline
   mutate(
-    pc_pol_incr.margin = 100*(delta_pollinators/pollinators_base)/margin.ha,
-    pc_nexp_red.margin = 100*(delta_n_export/n_export_base)/margin.ha,
-    pc_qb_incr.margin = 100*(delta_qb/qb_base)/margin.ha,
-    pc_sed_red.margin = 100*(delta_sed/sed_export_base)/margin.ha,
+    pc_pol_incr.margin = 100*(delta_pollinators/pollinators_base),
+    pc_nexp_red.margin = 100*(delta_n_export/n_export_base),
+    pc_qb_incr.margin = 100*(delta_qb/qb_base),
+    pc_sed_red.margin = 100*(delta_sed/sed_export_base),
   )
 
 
@@ -118,6 +118,6 @@ allresults <- maxdelta %>%
                       labels = c("simple","moderate","natural")))
 
 saveRDS(
-  allresults, "data/allresults_20250403.rds"
+  allresults, "data/allresults_20250407.rds"
 )
 write.csv(data.frame(colname = names(allresults)), "allresults_colnames.csv", row.names = FALSE)

@@ -1,0 +1,277 @@
+---
+title: "Percent change"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r load}
+library(tidyverse)
+library(iml)
+library(ranger)
+load("data/ES-RF-all.RDA")
+load("data/ES-RF-delta.RDA")
+```
+
+## Ecosystem service improvements depend on the baseline condition
+
+```{r data_setup}
+
+
+dat.long <- dat %>% 
+  pivot_longer(cols = c(1:16), names_to = "ES_response", values_to = "ES_value") %>%
+  pivot_longer(cols = c("ntr_pland", "ann_agr_pland"), names_to = "Landuse",
+               values_to = "Landuse_value") %>%
+  select(ES_response, ES_value, Landuse, Landuse_value) %>%
+  mutate(ES = gsub("delta_|_base|_(incr|red).margin|pc_|_max.margin","", ES_response)) %>%
+  mutate(ES = case_match(ES,
+                         "sed" ~ "sed_export",
+                         "pol" ~ "pollinators",
+                         "nexp" ~ "n_export",
+                         .default = ES)) %>%
+  mutate(response_type =
+           gsub("sed|export|n_|pollinators|qb|_|pol|nexp|red.|incr.|max","",ES_response)) %>%
+  mutate(response_type = case_match(
+    response_type,
+    "base" ~ "Baseline ES [/ha]",
+    "delta" ~ "\u0394 ES [/ha]",
+    "pcmargin" ~ "% \u0394 ES",
+    "delta.margin" ~ "\u0394 ES per ha margin"
+  )) %>%
+  mutate(response_type = factor(response_type, 
+                                levels = c("Baseline ES [/ha]",
+                                           "\u0394 ES [/ha]",
+                                           "% \u0394 ES",
+                                           "\u0394 ES per ha margin")))
+
+```
+
+Ecosystem service improvements depend on the baseline condition, except for pollination.
+
+This pattern holds even if we factor out margin area. 
+
+The trend is different if we look at % change in ecosystem services from baseline, per margin area
+
+```{r percentchangedemo, message=FALSE, fig.width = 8, fig.height=9}
+
+dat_wider <- dat.long %>% select(-ES_response) %>% 
+  pivot_wider(names_from = response_type, values_from = ES_value)
+
+lu.v.base <- ggplot(dat_wider %>% filter(Landuse=="ntr_pland"), 
+                       aes(Landuse_value,`Baseline ES [/ha]`)) +
+  geom_point(aes(color = ES), size=0.5) + 
+  xlab("% Natural land use") +
+  geom_smooth(method = "gam") + facet_wrap(~ES, scales = "free", ncol = 4) + 
+  ggtitle("% natural area vs baseline ES") + egg::theme_article()
+
+lu.v.delta <- ggplot(dat_wider %>% filter(Landuse=="ntr_pland"),
+                     aes(Landuse_value, `Δ ES [/ha]`)) + 
+  geom_point(aes(color = ES), size=0.5) + 
+  xlab("% Natural land use") +
+  geom_smooth(method = "gam") + facet_wrap(~ES, scales = "free", ncol = 4) + 
+  ggtitle("% natural area vs. change in ES") + egg::theme_article()
+
+base.v.perc <- ggplot(dat_wider, aes(`Baseline ES [/ha]`, `% Δ ES`)) + 
+  geom_point(aes(color = ES), size=0.5) + geom_smooth(method = "gam") + 
+  facet_wrap(~ES, scales = "free", ncol = 4) +
+  ggtitle("ES Baseline vs ES % improvement") + 
+  egg::theme_article()
+
+base.v.permargin <- ggplot(dat_wider, aes(`Baseline ES [/ha]`, `Δ ES per ha margin`)) + 
+    geom_point(aes(color = ES), size=0.5) + geom_smooth(method = "gam") +
+  facet_wrap(~ES, scales = "free", ncol = 4) +
+    ggtitle("ES Baseline vs ES improvement per margin") + 
+    egg::theme_article()
+
+cowplot::plot_grid(lu.v.base, lu.v.delta, base.v.perc, base.v.permargin, ncol = 1)
+
+```
+
+## Patterns with annual agriculture
+
+Looking at ES % change from baseline shows some stronger patterns than before for sediment and water recharge.
+
+```{r compplots, fig.width = 8, fig.height=6, message =FALSE}
+
+# fit some gams
+dat.gam <- dat.long %>% filter(Landuse == "ntr_pland") %>% 
+  group_by(response_type, ES) %>%
+  nest() %>%
+  # Fit GAM
+  mutate(Mod = map(data, ~mgcv::gam(ES_value ~ s(Landuse_value), data = .x))) %>%
+  # Get R2
+  mutate(R2 = map_dbl(Mod, ~round(summary(.x)$r.sq, 2)))  
+
+ggplot(dat.long %>% filter(Landuse == "ann_agr_pland"),
+       aes(Landuse_value, ES_value)) + 
+  geom_point(aes(color = ES), size = 0.5) + geom_smooth(method="gam") +
+  ggh4x::facet_grid2(response_type ~ ES,  scales = "free", independent = "y", 
+                     switch = "y") + 
+  egg::theme_article() + 
+  # Add label
+  geom_label(data = dat.gam, 
+             aes(x = Inf, y = Inf, 
+                 label = paste("R2 = ", R2, sep = " ")),
+             hjust = 1, vjust = 1) +
+  xlab("% Annual agriculture") +
+  ylab("ES value") + theme(strip.placement = "outside")
+``` 
+
+### Random forest model performance
+*Pollinators:*
+
+Baseline model
+
+     r2 = `r round(pollinators_base.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(pollinators_base.rf$prediction.error, 5),scientific=F)`
+     
+Delta model
+
+     r2 = `r round(pollinators_delta.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(pollinators_delta.rf$prediction.error, 5),scientific=F)`
+
+Percent change model
+
+     r2 = `r round(pollinators_pc.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(pollinators_pc.rf$prediction.error, 5),scientific=F)`
+     
+Per margin model
+
+     r2 = `r round(pollinators_margin.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(pollinators_margin.rf$prediction.error, 5),scientific=F)`
+
+*Nitrogen export:*
+
+Baseline model
+
+     r2 = `r round(n_export_base.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(n_export_base.rf$prediction.error, 5),scientific=F)`
+
+Delta model
+
+     r2 = `r round(n_export_delta.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(n_export_delta.rf$prediction.error, 5),scientific=F)`
+
+Percent change model
+
+     r2 = `r round(n_export_pc.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(n_export_pc.rf$prediction.error, 5),scientific=F)`
+     
+Per margin model
+
+     r2 = `r round(n_export_margin.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(n_export_margin.rf$prediction.error, 5),scientific=F)`
+
+*Sediment export:*
+
+Baseline model
+
+     r2 = `r round(sed_export_base.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(sed_export_base.rf$prediction.error, 5),scientific=F)`
+
+Delta model
+
+     r2 = `r round(sed_export_delta.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(sed_export_delta.rf$prediction.error, 5),scientific=F)`
+
+Percent change model
+
+     r2 = `r round(sed_export_pc.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(sed_export_pc.rf$prediction.error, 5),scientific=F)`
+     
+Per margin model
+
+     r2 = `r round(sed_export_margin.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(sed_export_margin.rf$prediction.error, 5),scientific=F)`
+
+*Baseflow:*
+
+Baseline model
+
+     r2 = `r round(qb_base.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(qb_base.rf$prediction.error, 5),scientific=F)`
+
+Delta model
+
+     r2 = `r round(qb_delta.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(qb_delta.rf$prediction.error, 5),scientific=F)`
+
+Percent change model
+
+     r2 = `r round(qb_pc.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(qb_pc.rf$prediction.error, 5),scientific=F)`
+     
+Per margin model
+
+     r2 = `r round(qb_margin.rf$r.squared, 3)`
+     
+     OOB MSE = `r format(round(qb_margin.rf$prediction.error, 5),scientific=F)`
+     
+### Variable importance
+
+```{r importance, fig.height=16, fig.width=12}
+library(ggpattern)
+
+metric.descr <- read.csv("data/lsm_description.csv")
+
+# collect data
+all.impdat <- list(
+  list(pollinators_base.p, n_export_base.p, sed_export_base.p, qb_base.p),
+  list(pollinators_delta.p, n_export_delta.p, sed_export_delta.p, qb_delta.p),
+  list(pollinators_pc.p, n_export_pc.p, sed_export_pc.p, qb_pc.p),
+  list(pollinators_margin.p, n_export_margin.p, sed_export_margin.p, qb_margin.p)
+) %>% lapply(\(x) setNames(x, c("Pollinators", "N export", "Sed export", "Baseflow"))) %>%
+  lapply(\(x) lapply(x,\(y)rownames_to_column(y, "metric"))) %>%  # wow this is ridiculous
+  lapply(\(x)bind_rows(x,.id="ES")) %>%
+  setNames(nm = c("baseline", "delta", "percent_change", "per_margin")) %>%
+  bind_rows(.id="model")
+
+imp.df <- all.impdat %>%
+  mutate(sig = ifelse(pvalue <0.05, TRUE, FALSE)) %>%
+  mutate(metric2 = tidytext::reorder_within(metric, importance,
+                                           within = list(ES, model))) %>%
+  left_join(metric.descr %>% select(lsm, type), by = c("metric"="lsm")) %>%
+  mutate(type = case_match(
+    metric,
+    "field_pland" ~ "area and edge metric",
+    "field_frac_mn" ~ "shape metric",
+    "field_frac_cv" ~ "shape metric",
+    "prn_pagr" ~ "area and edge metric",
+    .default = type
+  ))
+
+ggplot(imp.df, aes(metric2, importance, fill = type, pattern = sig)) +
+  geom_bar_pattern(stat="identity",
+                   color = "black",
+                   pattern_fill = "black",
+                   pattern_angle = 45,
+                   pattern_density = 0.1,
+                   pattern_spacing = 0.025,
+                   pattern_key_scale_factor = 0.6) +
+  tidytext::scale_x_reordered() +
+  coord_flip() +
+  ggh4x::facet_grid2(ES~model, scales = "free", independent = "all") +
+  scale_pattern_manual(values = c("TRUE" = "none", "FALSE" = "stripe")) +
+  egg::theme_article() +
+  theme(legend.position = "top") +
+  guides(pattern = guide_legend(override.aes = list(fill = "white")),
+         fill = guide_legend(override.aes = list(pattern = "none")))
+
+
+```

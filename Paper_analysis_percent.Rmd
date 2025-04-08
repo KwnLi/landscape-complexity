@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(tidyverse)
 library(iml)
 library(ranger)
-load("data/ES-RF3pc.RDA")
+load("data/ES-RF-all.RDA")
 
 ```
 
@@ -20,28 +20,30 @@ load("data/ES-RF3pc.RDA")
 
 
 dat.long <- dat %>% 
-  pivot_longer(cols = c(1:8,13:16), names_to = "ES_response", values_to = "ES_value") %>%
+  pivot_longer(cols = c(1:16), names_to = "ES_response", values_to = "ES_value") %>%
   pivot_longer(cols = c("ntr_pland", "ann_agr_pland"), names_to = "Landuse",
                values_to = "Landuse_value") %>%
   select(ES_response, ES_value, Landuse, Landuse_value) %>%
-  mutate(ES = gsub("delta_|_base|_(incr|red).margin|pc_","", ES_response)) %>%
+  mutate(ES = gsub("delta_|_base|_(incr|red).margin|pc_|_max.margin","", ES_response)) %>%
   mutate(ES = case_match(ES,
                          "sed" ~ "sed_export",
                          "pol" ~ "pollinators",
                          "nexp" ~ "n_export",
                          .default = ES)) %>%
   mutate(response_type =
-           gsub("sed|export|n_|pollinators|qb|_|pol|nexp|red.|incr.","",ES_response)) %>%
+           gsub("sed|export|n_|pollinators|qb|_|pol|nexp|red.|incr.|max","",ES_response)) %>%
   mutate(response_type = case_match(
     response_type,
     "base" ~ "Baseline ES [/ha]",
     "delta" ~ "\u0394 ES [/ha]",
-    "pcmargin" ~ "% \u0394 ES per ha margin"
+    "pcmargin" ~ "% \u0394 ES",
+    "delta.margin" ~ "\u0394 ES per ha margin"
   )) %>%
   mutate(response_type = factor(response_type, 
                                 levels = c("Baseline ES [/ha]",
                                            "\u0394 ES [/ha]",
-                                           "% \u0394 ES per ha margin")))
+                                           "% \u0394 ES",
+                                           "\u0394 ES per ha margin")))
 
 ```
 
@@ -56,19 +58,25 @@ The trend is different if we look at % change in ecosystem services from baselin
 dat_wider <- dat.long %>% select(-ES_response) %>% 
   pivot_wider(names_from = response_type, values_from = ES_value)
 
-base.v.margin <- ggplot(dat_wider, aes(`Baseline ES [/ha]`, `Δ ES [/ha]`)) + geom_point() + 
-  xlab("Baseline ES per ha") + ylab("Increase in ES per ha margin (ES units)") +
+base.v.delta <- ggplot(dat_wider, aes(`Baseline ES [/ha]`, `Δ ES [/ha]`)) + geom_point() + 
+  xlab("Baseline ES per ha") + ylab("Increase in ES per ha") +
   geom_smooth(method = "gam") + facet_wrap(~ES, scales = "free") + 
-  ggtitle("ES baseline vs \nES improvement per margin") + egg::theme_article()
+  ggtitle("ES baseline vs \nES change in ES") + egg::theme_article()
 
-base.v.margin.base <- ggplot(dat_wider, aes(`Baseline ES [/ha]`, `% Δ ES per ha margin`)) + 
+base.v.perc <- ggplot(dat_wider, aes(`Baseline ES [/ha]`, `% Δ ES`)) + 
   geom_point() + geom_smooth(method = "gam") + facet_wrap(~ES, scales = "free") +
-  ggtitle("ES Baseline vs \n% ES improvement per margin") + 
+  ggtitle("ES Baseline vs \n% ES improvement") + 
   xlab("Baseline ES per ha") +
-  ylab("% improvement from baseline per ha margin") +
+  ylab("% improvement from baseline") +
   egg::theme_article()
 
-cowplot::plot_grid(base.v.margin, base.v.margin.base)
+base.v.permargin <- ggplot(dat_wider, aes(`Baseline ES [/ha]`, `Δ ES per ha margin`)) + 
+    geom_point() + geom_smooth(method = "gam") + facet_wrap(~ES, scales = "free") +
+    ggtitle("ES Baseline vs \n ES improvement per margin") + 
+    xlab("Baseline ES per ha") +
+    egg::theme_article()
+
+# cowplot::plot_grid(base.v.margin, base.v.margin.base, base.v.permargin)
 
 ```
 
@@ -119,8 +127,8 @@ Units for % improvement per margin ha are in tenths of a percent, so MSE looks s
 
 *Sediment export:*
 
-     r2 = `r round(sed_pc.rf$r.squared, 3)`
-     OOB MSE = `r format(round(sed_pc.rf$prediction.error, 5),scientific=F)`
+     r2 = `r round(sed_export_pc.rf$r.squared, 3)`
+     OOB MSE = `r format(round(sed_export_pc.rf$prediction.error, 5),scientific=F)`
 
 *Baseflow:*
 
