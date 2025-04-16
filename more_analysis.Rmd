@@ -14,6 +14,26 @@ load("data/ES-RF-all.RDA")
 load("data/ES-RF-delta.RDA")
 ```
 
+```{r metric_cor}
+
+cor.met <- corrplot::corrplot(cor(dat[,17:42]),
+                   order = "hclust", hclust.method = "complete",addrect = 2,
+                   # type = "upper", 
+                   tl.col = 'black', tl.srt = 55, tl.cex = 0.8, tl.pos = "lt",
+                   number.cex = 0.5, number.digits=1)
+
+# cor.met$arg$type <- "full"
+
+# corrplot::corrRect.hclust(cor.met, k = 2, method = "complete")
+
+cor.met <- corrplot::corrplot.mixed(cor(dat[,17:42]),
+                   order = "hclust", hclust.method = "complete",addrect = 2,
+                   # type = "upper", 
+                   tl.col = 'black', tl.srt = 55, tl.cex = 0.8, tl.pos = "lt",
+                   number.cex = 0.6, number.digits=2, number.col="black")
+
+```
+
 ## Ecosystem service improvements depend on the baseline condition
 
 ```{r data_setup}
@@ -32,18 +52,19 @@ dat.long <- dat %>%
                          .default = ES)) %>%
   mutate(response_type =
            gsub("sed|export|n_|pollinators|qb|_|pol|nexp|red.|incr.|max","",ES_response)) %>%
-  mutate(response_type = case_match(
-    response_type,
-    "base" ~ "Baseline ES [/ha]",
-    "delta" ~ "\u0394 ES [/ha]",
-    "pcmargin" ~ "% \u0394 ES",
-    "delta.margin" ~ "\u0394 ES per ha margin"
-  )) %>%
+  # mutate(response_type = case_match(
+  #   response_type,
+  #   "base" ~ "Baseline ES [/ha]",
+  #   "delta" ~ "\u0394 ES [/ha]",
+  #   "pcmargin" ~ "% \u0394 ES",
+  #   "delta.margin" ~ "\u0394 ES per ha margin"
+  # )) %>%
   mutate(response_type = factor(response_type, 
-                                levels = c("Baseline ES [/ha]",
-                                           "\u0394 ES [/ha]",
-                                           "% \u0394 ES",
-                                           "\u0394 ES per ha margin")))
+                                levels = c("base",
+                                           "delta",
+                                           "pcmargin",
+                                           "delta.margin")),
+         ES = factor(ES, levels = c("pollinators","qb", "sed_export", "n_export")))
 
 ```
 
@@ -55,45 +76,40 @@ The trend is different if we look at % change in ecosystem services from baselin
 
 ```{r percentchangedemo, message=FALSE, fig.width = 8, fig.height=9}
 
-dat_wider <- dat.long %>% select(-ES_response) %>% 
-  pivot_wider(names_from = response_type, values_from = ES_value)
+# dat_wider <- dat.long %>% select(-ES_response) %>% 
+#   pivot_wider(names_from = response_type, values_from = ES_value)
 
-lu.v.base <- ggplot(dat_wider %>% filter(Landuse=="ntr_pland"), 
-                       aes(Landuse_value,`Baseline ES [/ha]`)) +
-  geom_point(aes(color = ES), size=0.5) + 
-  xlab("% Natural land use") +
-  geom_smooth(method = "gam") + facet_wrap(~ES, scales = "free", ncol = 4) + 
-  ggtitle("% natural area vs baseline ES") + egg::theme_article()
+# lu.v.base <- ggplot(dat_wider %>% filter(Landuse=="ntr_pland"), 
+#                        aes(Landuse_value,`Baseline ES [/ha]`)) +
+#   geom_point(aes(color = ES), size=0.5) + 
+#   xlab("% Natural land use") +
+#   geom_smooth(method = "gam") + facet_wrap(~ES, scales = "free", ncol = 4) + 
+#   ggtitle("% natural area vs baseline ES") + egg::theme_article()
 
-lu.v.delta <- ggplot(dat_wider %>% filter(Landuse=="ntr_pland"),
-                     aes(Landuse_value, `Δ ES [/ha]`)) + 
-  geom_point(aes(color = ES), size=0.5) + 
-  xlab("% Natural land use") +
-  geom_smooth(method = "gam") + facet_wrap(~ES, scales = "free", ncol = 4) + 
-  ggtitle("% natural area vs. change in ES") + egg::theme_article()
+# lu.v.delta <- ggplot(dat_wider %>% filter(Landuse=="ntr_pland"),
+#                      aes(Landuse_value, `Δ ES [/ha]`)) + 
+#   geom_point(aes(color = ES), size=0.5) + 
+#   xlab("% Natural land use") +
+#   geom_smooth(method = "gam") + facet_wrap(~ES, scales = "free", ncol = 4) + 
+#   ggtitle("% natural area vs. change in ES") + egg::theme_article()
 
-base.v.perc <- ggplot(dat_wider, aes(`Baseline ES [/ha]`, `% Δ ES`)) + 
-  geom_point(aes(color = ES), size=0.5) + geom_smooth(method = "gam") + 
-  facet_wrap(~ES, scales = "free", ncol = 4) +
-  ggtitle("ES Baseline vs ES % improvement") + 
-  egg::theme_article()
+# base.v.perc <- ggplot(dat_wider, aes(`Baseline ES [/ha]`, `% Δ ES`)) + 
+#   geom_point(aes(color = ES), size=0.5) + geom_smooth(method = "gam") + 
+#   facet_wrap(~ES, scales = "free", ncol = 4) +
+#   ggtitle("ES Baseline vs ES % improvement") + 
+#   egg::theme_article()
 
-base.v.permargin <- ggplot(dat_wider, aes(`Baseline ES [/ha]`, `Δ ES per ha margin`)) + 
-    geom_point(aes(color = ES), size=0.5) + geom_smooth(method = "gam") +
-  facet_wrap(~ES, scales = "free", ncol = 4) +
-    ggtitle("ES Baseline vs ES improvement per margin") + 
-    egg::theme_article()
+# base.v.permargin <- ggplot(dat_wider, aes(`Baseline ES [/ha]`, `Δ ES per ha margin`)) + 
+#     geom_point(aes(color = ES), size=0.5) + geom_smooth(method = "gam") +
+#   facet_wrap(~ES, scales = "free", ncol = 4) +
+#     ggtitle("ES Baseline vs ES improvement per margin") + 
+#     egg::theme_article()
 
-cowplot::plot_grid(lu.v.base, lu.v.delta, base.v.perc, base.v.permargin, ncol = 1)
+# cowplot::plot_grid(lu.v.base, lu.v.delta, base.v.perc, base.v.permargin, ncol = 1)
 
 ```
 
-## Patterns with annual agriculture
-
-Looking at ES % change from baseline shows some stronger patterns than before for sediment and water recharge.
-
-```{r compplots, fig.width = 8, fig.height=6, message =FALSE}
-
+```{r gams}
 # fit some gams
 dat.gam <- dat.long %>% filter(Landuse == "ntr_pland") %>% 
   group_by(response_type, ES) %>%
@@ -103,18 +119,111 @@ dat.gam <- dat.long %>% filter(Landuse == "ntr_pland") %>%
   # Get R2
   mutate(R2 = map_dbl(Mod, ~round(summary(.x)$r.sq, 2)))  
 
-ggplot(dat.long %>% filter(Landuse == "ann_agr_pland"),
+```
+
+```{r natural}
+
+ES_labels <- c(
+  pollinators = "Pollinators \n[abundance/ha]",
+  qb = "Water recharge \n[mm baseflow/ha]",
+  sed_export = "Sediment export \n[metric tons/ha/year]",
+  n_export = "Nutrient export \n[kg N/ha/year]"
+)
+response_type_labels <- c(
+    base = "Baseline ES",
+    delta = "\u0394 ES",
+    pcmargin = "% \u0394 ES",
+    delta.margin = "\u0394 ES per ha margin"
+)
+
+# paired plots of baseline and delta
+ES_ntr <- ggplot(dat.long %>% 
+         filter(Landuse == "ntr_pland" & response_type %in% c("base", "delta", "delta.margin")),
        aes(Landuse_value, ES_value)) + 
-  geom_point(aes(color = ES), size = 0.5) + geom_smooth(method="gam") +
+  geom_point(aes(color = ES), size = 0.5) + 
+  geom_smooth(method="gam") +
+  ggh4x::facet_grid2(response_type ~ ES,  scales = "free", independent = "y", 
+                     switch = "y", 
+                     labeller = labeller(ES = ES_labels,
+                                         response_type = response_type_labels)) + 
+  egg::theme_article() + 
+  # Add label
+  geom_label(data = dat.gam %>% 
+         filter(response_type %in% c("base", "delta", "delta.margin")),
+             aes(x = Inf, y = Inf,
+                 label = paste("R2 = ", R2, sep = " ")),
+             hjust = 1, vjust = 1) +
+  xlab("Natural % landscape") + ylab("Ecosystem service (ES) response") +
+  theme(strip.placement = "outside") +
+  theme(legend.position = "none")
+
+ggsave("Figs/ES_ntr.png", ES_ntr, bg="white", width = 7, height = 5, dpi=300)
+
+```
+
+```{r against_base}
+
+dat.long.base <- dat.long %>% select(-ES_response) %>%
+  pivot_wider(names_from = response_type, values_from = ES_value) %>%
+  filter(Landuse == "ntr_pland") %>% select(-Landuse, -Landuse_value) %>%
+  pivot_longer(delta:pcmargin, names_to = "change_type", values_to = "change_value") %>%
+  mutate(change_type = factor(change_type,
+                              levels = c("base", "delta", "pcmargin", "delta.margin")))
+
+# fit some gams against baseline
+dat.base.gam <- dat.long.base %>% 
+  group_by(change_type, ES) %>%
+  nest() %>%
+  # Fit GAM
+  mutate(Mod = map(data, ~mgcv::gam(change_value ~ s(base), data = .x))) %>%
+  # Get R2
+  mutate(R2 = map_dbl(Mod, ~round(summary(.x)$r.sq, 2)))  
+
+# paired plots of baseline and delta
+ES_base <- ggplot(dat.long.base %>% 
+         filter(change_type %in% c("delta", "delta.margin")),
+       aes(base, change_value)) + 
+  geom_point(aes(color = ES), size = 0.5) + 
+  geom_smooth(method="gam") +
+  ggh4x::facet_grid2(change_type ~ ES,  scales = "free", independent = "y", 
+                     switch = "both", 
+                     labeller = labeller(ES = ES_labels,
+                                         change_type = response_type_labels)) + 
+  egg::theme_article() + 
+  # Add label
+  geom_label(data = dat.base.gam %>% 
+         filter(change_type %in% c("delta", "delta.margin")),
+             aes(x = Inf, y = Inf,
+                 label = paste("R2 = ", R2, sep = " ")),
+             hjust = 1, vjust = 1) +
+  xlab("Baseline ecosystem service") + ylab("Ecosystem service change") +
+  theme(strip.placement = "outside") +
+  theme(legend.position = "none")
+
+ggsave("Figs/ES_base.png", ES_base, bg="white", width = 7, height = 3.5, dpi=300)
+
+
+```
+
+## Patterns with annual agriculture
+
+Looking at ES % change from baseline shows some stronger patterns than before for sediment and water recharge.
+
+```{r compplots, fig.width = 8, fig.height=6, message =FALSE}
+
+ggplot(dat.long %>% filter(Landuse == "ntr_pland"),
+       aes(Landuse_value, ES_value)) + 
+  geom_point(aes(color = ES), size = 0.5) + 
+  geom_smooth(method="gam") +
   ggh4x::facet_grid2(response_type ~ ES,  scales = "free", independent = "y", 
                      switch = "y") + 
   egg::theme_article() + 
   # Add label
-  geom_label(data = dat.gam, 
-             aes(x = Inf, y = Inf, 
+  geom_label(data = dat.gam,
+             aes(x = Inf, y = Inf,
                  label = paste("R2 = ", R2, sep = " ")),
              hjust = 1, vjust = 1) +
-  xlab("% Annual agriculture") +
+  xlab("Natural % landscape") +
   ylab("ES value") + theme(strip.placement = "outside")
 ``` 
 
@@ -225,7 +334,7 @@ Per margin model
      
 ### Variable importance
 
-```{r importance, fig.height=16, fig.width=12}
+```{r importance, fig.height=16, fig.width=12, include=FALSE}
 library(ggpattern)
 
 metric.descr <- read.csv("data/lsm_description.csv")
@@ -273,5 +382,194 @@ ggplot(imp.df, aes(metric2, importance, fill = type, pattern = sig)) +
   guides(pattern = guide_legend(override.aes = list(fill = "white")),
          fill = guide_legend(override.aes = list(pattern = "none")))
 
+
+```
+
+```{r importance_shap}
+load("data/ES-RF-all-shapimportance.RDA")   # prediction objects from iml package
+load("data/ES-RF-delta-shapimportance.RDA")
+library(shapviz)
+library(gridExtra)
+
+```
+
+#### Pollinators
+
+```{r pollinator_shaps, fig.width=12, fig.height=3}
+
+svb.pol.base <- sv_importance(ex.polbase.glb, kind = "bee", max_display = 5) +
+  egg::theme_article() + theme(legend.position = "none")
+svb.pol.delta <- sv_importance(ex.poldelta.glb, kind = "bee", max_display = 5) + 
+  egg::theme_article() + theme(legend.position = "none")
+svb.pol.margin <- sv_importance(ex.polmarg.glb, kind = "bee", max_display = 5) +
+  egg::theme_article() + theme(legend.position = "none")
+
+cowplot::plot_grid(
+  svb.pol.base, svb.pol.delta,svb.pol.margin,
+  nrow = 1,
+  labels = c("(a)", "(b)", "(c)")
+)
+
+```
+
+#### Nutrient export
+
+```{r n_export_shaps, fig.width=12, fig.height=3}
+
+svb.nexp.base <- sv_importance(ex.nexpbase.glb, kind = "bee", max_display = 5) +
+  egg::theme_article() + theme(legend.position = "none")
+svb.nexp.delta <- sv_importance(ex.nexpdelta.glb, kind = "bee", max_display = 5) + 
+  egg::theme_article() + theme(legend.position = "none")
+svb.nexp.margin <- sv_importance(ex.nexpmarg.glb, kind = "bee", max_display = 5) +
+  egg::theme_article() + theme(legend.position = "none")
+
+cowplot::plot_grid(
+  svb.nexp.base, svb.nexp.delta,svb.nexp.margin,
+  nrow = 1,
+  labels = c("(a)", "(b)", "(c)")
+)
+
+```
+
+#### Sediment export
+
+```{r sed_exp_shaps, fig.width=12, fig.height=3}
+
+svb.sed.base <- sv_importance(ex.sedbase.glb, kind = "bee", max_display = 5) +
+  egg::theme_article() + theme(legend.position = "none")
+svb.sed.delta <- sv_importance(ex.seddelta.glb, kind = "bee", max_display = 5) + 
+  egg::theme_article() + theme(legend.position = "none")
+svb.sed.margin <- sv_importance(ex.sedmarg.glb, kind = "bee", max_display = 5) +
+  egg::theme_article() + theme(legend.position = "none")
+
+cowplot::plot_grid(
+  svb.sed.base, svb.sed.delta,svb.sed.margin,
+  nrow = 1,
+  labels = c("(a)", "(b)", "(c)")
+)
+
+```
+
+#### Baseflow
+
+```{r qb_shaps, fig.width=12, fig.height=3}
+
+svb.qb.base <- sv_importance(ex.qbbase.glb, kind = "bee", max_display = 5) +
+  egg::theme_article() + theme(legend.position = "none")
+svb.qb.delta <- sv_importance(ex.qbdelta.glb, kind = "bee", max_display = 5) + 
+  egg::theme_article() + theme(legend.position = "none")
+svb.qb.margin <- sv_importance(ex.qbmarg.glb, kind = "bee", max_display = 5) +
+  egg::theme_article() + theme(legend.position = "none")
+
+cowplot::plot_grid(
+  svb.qb.base, svb.qb.delta,svb.qb.margin,
+  nrow = 1,
+  labels = c("(a)", "(b)", "(c)")
+)
+
+```
+
+### Across ecosystem services
+
+```{r shap_fun}
+
+# function to process the shap data
+
+sv_fun <- function(shapviz_list, metric){
+  svd.df <- lapply(shapviz_list, \(x) shapviz::sv_dependence(x, v=metric)$data) %>%
+    setNames(names(shapviz_list)) %>% bind_rows(.id = "ES")
+}
+
+# base data
+base.glb <- list(pollinators = ex.polbase.glb, qb = ex.qbbase.glb, 
+                 sed_export = ex.sedbase.glb, n_export = ex.nexpbase.glb)
+
+# delta data
+delta.glb <- list(pollinators = ex.poldelta.glb, qb = ex.qbdelta.glb, 
+                 sed_export = ex.seddelta.glb, n_export = ex.nexpdelta.glb)
+
+# delta data
+margin.glb <- list(pollinators = ex.polmarg.glb, qb = ex.qbmarg.glb, 
+                 sed_export = ex.sedmarg.glb, n_export = ex.nexpmarg.glb)
+
+```
+
+#### Baseline: Across percent natural landscape
+
+```{r across_ntr, fig.height=3, fig.width=9}
+
+shapval_ntr.base <- sv_fun(base.glb, "ntr_pland")
+shapval_ntr.delta <- sv_fun(delta.glb, "ntr_pland")
+shapval_ntr.marg <- sv_fun(margin.glb, "ntr_pland")
+
+shapval_ntr.all <- list(base = shapval_ntr.base, delta = shapval_ntr.delta, margin = shapval_ntr.marg) %>%
+  bind_rows(.id = "response")
+
+ggplot(shapval_ntr.all, aes(ntr_pland, shap, color = ES)) + geom_point(size=0.5) + 
+  geom_smooth(method = "gam", se = FALSE) + egg::theme_article() +
+  facet_wrap(~response, scales = "free") + theme(legend.position = "bottom")
+
+```
+
+#### Baseline: Across annual agriculture edge density
+
+Important for sediment export (and pollinator delta)
+
+```{r across_annagr_ed, fig.height=3, fig.width=9}
+
+shapval_anned.base <- sv_fun(base.glb, "ann_agr_ed")
+shapval_anned.delta <- sv_fun(delta.glb, "ann_agr_ed")
+shapval_anned.marg <- sv_fun(margin.glb, "ann_agr_ed")
+
+shapval_anned.all <- list(base = shapval_anned.base, 
+                          delta = shapval_anned.delta, 
+                          margin = shapval_anned.marg) %>%
+  bind_rows(.id = "response")
+
+ggplot(shapval_anned.all, aes(ann_agr_ed, shap, color = ES)) + geom_point(size=0.5) + 
+  geom_smooth(method = "gam", se = FALSE) + egg::theme_article() +
+  facet_wrap(~response, scales = "free") + theme(legend.position = "bottom")
+
+```
+
+#### Baseline: Across annual agriculture cohesion
+
+Important for baseflow
+
+```{r across_annagr_cohesion, fig.height=3, fig.width=9}
+
+shapval_anncoh.base <- sv_fun(base.glb, "ann_agr_cohesion")
+shapval_anncoh.delta <- sv_fun(delta.glb, "ann_agr_cohesion")
+shapval_anncoh.marg <- sv_fun(margin.glb, "ann_agr_cohesion")
+
+shapval_anncoh.all <- list(base = shapval_anncoh.base, 
+                          delta = shapval_anncoh.delta, 
+                          margin = shapval_anncoh.marg) %>%
+  bind_rows(.id = "response")
+
+ggplot(shapval_anncoh.all, aes(ann_agr_cohesion, shap, color = ES)) + geom_point(size=0.5) + 
+  geom_smooth(method = "gam", se = FALSE) + egg::theme_article() +
+  facet_wrap(~response, scales = "free") + theme(legend.position = "bottom")
+
+```
+
+#### Baseline: Across natural land cover edge density
+
+Important for nutrient export
+
+```{r across_ntr_ed, fig.height=3, fig.width=9}
+
+shapval_ntred.base <- sv_fun(base.glb, "ntr_ed")
+shapval_ntred.delta <- sv_fun(delta.glb, "ntr_ed")
+shapval_ntred.marg <- sv_fun(margin.glb, "ntr_ed")
+
+shapval_ntred.all <- list(base = shapval_ntred.base, 
+                          delta = shapval_ntred.delta, 
+                          margin = shapval_ntred.marg) %>%
+  bind_rows(.id = "response")
+
+ggplot(shapval_ntred.all, aes(ntr_ed, shap, color = ES)) + geom_point(size=0.5) + 
+  geom_smooth(method = "gam", se = FALSE) + egg::theme_article() +
+  facet_wrap(~response, scales = "free") + theme(legend.position = "bottom")
 
 ```
