@@ -16,7 +16,44 @@ load("data/ES-RF-delta.RDA")
 
 ```{r metric_cor}
 
-cor.met <- corrplot::corrplot(cor(dat[,17:42]),
+renamefun <- function(x){
+  x %>% dplyr::rename(
+  annual_perc_land = "ann_agr_pland",
+  field_perc_land = "field_pland",
+  nature_perc_land = "ntr_pland",
+  perenn_perc_land = "prn_agr_pland",
+  landuse_interjuxt = "aglu_iji",
+  landuse_contagion = "aglu_contag",
+  annual_cohesion = "ann_agr_cohesion",
+  nature_cohesion = "ntr_cohesion",
+  perenn_cohesion = "prn_agr_cohesion",
+  landuse_edge_dens = "aglu_ed",
+  landuse_frac_dim = "aglu_frac_mn",
+  annual_patch_area = "ann_agr_area_mn",
+  annual_edge_dens = "ann_agr_ed",
+  annual_frac_dim = "ann_agr_frac_mn",
+  annual_patch_dens = "ann_agr_pd",
+  nature_patch_area = "ntr_area_mn",
+  nature_edge_dens = "ntr_ed",
+  nature_frac_dim = "ntr_frac_mn",
+  nature_patch_dens = "ntr_pd",
+  perenn_perc_agri = "prn_pagr",
+  perenn_patch_area = "prn_agr_area_mn",
+  perenn_edge_dens = "prn_agr_ed",
+  perenn_frac_dim = "prn_agr_frac_mn",
+  perenn_patch_dens = "prn_agr_pd",
+  field_patch_area = "field_area_mn",
+  field_edge_dens = "field_ed",
+  field_frac_dim = "field_frac_mn",
+  field_patch_dens = "field_pd",
+  landuse_shan_div = "lu_shdi",
+  crop_shan_div = "crop_shdi"
+)
+}
+
+dat.rename <- renamefun(dat)
+
+cor.met <- corrplot::corrplot(cor(dat.rename[,17:42]),
                    order = "hclust", hclust.method = "complete",addrect = 2,
                    # type = "upper", 
                    tl.col = 'black', tl.srt = 55, tl.cex = 0.8, tl.pos = "lt",
@@ -26,11 +63,15 @@ cor.met <- corrplot::corrplot(cor(dat[,17:42]),
 
 # corrplot::corrRect.hclust(cor.met, k = 2, method = "complete")
 
-cor.met <- corrplot::corrplot.mixed(cor(dat[,17:42]),
+cor.met2 <- {corrplot::corrplot.mixed(cor(dat.rename[,17:42]),
                    order = "hclust", hclust.method = "complete",addrect = 2,
                    # type = "upper", 
                    tl.col = 'black', tl.srt = 55, tl.cex = 0.8, tl.pos = "lt",
-                   number.cex = 0.6, number.digits=2, number.col="black")
+                   number.cex = 0.6, number.digits=2, number.col="black");
+  recordPlot()
+  }
+
+# ggsave("Figs/SupFig_corplot.png", replayPlot(cor.met2), height = 10, width = 10, units = "in", bg = "white", dpi = 300)
 
 ```
 
@@ -119,6 +160,9 @@ k.check.fun <- function(b, k.sample = 5000, k.rep = 200) {
 mae.fun <- function(gmod){
   mean(abs(residuals(gmod)))
 }
+mse.fun <- function(gmod){
+  mean((residuals(gmod))^2)
+}
 
 # fit some gams
 dat.gam <- dat.long %>% filter(Landuse == "ntr_pland") %>% 
@@ -128,7 +172,8 @@ dat.gam <- dat.long %>% filter(Landuse == "ntr_pland") %>%
   mutate(Mod = map(data, ~mgcv::gam(ES_value ~ s(Landuse_value), data = .x))) %>%
   # Get R2
   mutate(R2 = map_dbl(Mod, ~round(summary(.x)$r.sq, 2)),
-         mae = map_dbl(Mod, ~round(mae.fun(.x), 3))
+         mae = map_dbl(Mod, ~round(mae.fun(.x), 3)),
+         mse = map_dbl(Mod, ~round(mse.fun(.x), 3))
          ) %>%
   mutate(
     kp =  map_dbl(Mod, ~round(k.check.fun(.x)[1], 3)),
@@ -137,14 +182,14 @@ dat.gam <- dat.long %>% filter(Landuse == "ntr_pland") %>%
     pvalue =  map_dbl(Mod, ~round(k.check.fun(.x)[4], 3))
   )
 
-write.csv(dat.gam %>% select(ES, response_type, R2, mae, kp, edf, kindex, pvalue), "gam_ntr.csv", row.names = FALSE)
+# write.csv(dat.gam %>% select(ES, response_type, R2, mae, mse, kp, edf, kindex, pvalue), "gam_ntr2.csv", row.names = FALSE)
 
 ```
 
 ```{r natural}
 
 ES_labels <- c(
-  pollinators = "Pollinators \n[abundance/ha]",
+  pollinators = "Wild bee abundance \n[abundance/ha]",
   qb = "Groundwater recharge \n[mm baseflow/ha]",
   sed_export = "Sediment runoff \n[metric tons/ha/year]",
   n_export = "Nutrient runoff \n[kg N/ha/year]"
@@ -153,7 +198,7 @@ response_type_labels <- c(
     base = "Baseline ES",
     delta = "\u0394 ES (landscape)",
     pcmargin = "% \u0394 ES",
-    delta.margin = "\u0394 ES (per ha margin)"
+    delta.margin = "\u0394 ES (margin)"
 )
 
 # paired plots of baseline and delta
@@ -168,18 +213,19 @@ ES_ntr <- ggplot(dat.long %>%
                                          response_type = response_type_labels)) + 
   egg::theme_article() + 
   # Add label
-  geom_label(data = dat.gam %>% 
-         filter(response_type %in% c("base", "delta", "delta.margin")),
-             aes(x = Inf, y = Inf,
-                 label = paste("R2 = ", R2, sep = " ")),
-             hjust = 1, vjust = 1) +
+  # geom_label(data = dat.gam %>% 
+  #        filter(response_type %in% c("base", "delta", "delta.margin")),
+  #            aes(x = Inf, y = Inf,
+  #                label = paste("R2 = ", R2, sep = " ")),
+  #            hjust = 1, vjust = 1) +
   xlab("% Natural area") + ylab("Ecosystem service (ES) response") +
   theme(strip.placement = "outside") +
   theme(legend.position = "none")
 
-ES_ntr
+ES_ntr_tag <- ES_ntr %>% egg::tag_facet() + 
+  theme(strip.text = element_text(size = 8, margin = margin(r=1,b=6,l=6)))
 
-# ggsave("Figs/ES_ntr.png", ES_ntr, bg="white", width = 7, height = 5, dpi=300)
+# ggsave("Figs/ES_ntr.png", ES_ntr_tag, bg="white", width = 8, height = 5, dpi=300)
 
 ```
 
@@ -236,9 +282,12 @@ ES_base <- ggplot(dat.long.base %>%
   theme(strip.placement = "outside") +
   theme(legend.position = "none")
 
-ES_base
+ES_base_tag <- ES_base %>% egg::tag_facet() + 
+  theme(strip.text = element_text(size = 8, margin = margin(r=1,b=6,l=6)))
 
-# ggsave("Figs/ES_base.png", ES_base, bg="white", width = 7, height = 3.5, dpi=300)
+ES_base_tag
+
+# ggsave("Figs/ES_base.png", ES_base_tag, bg="white", width = 7, height = 3.5, dpi=300)
 
 # write.csv(dat.base.gam %>% select(ES, change_type, R2, mae, kp, edf, kindex, pvalue), "gam_base.csv", row.names = FALSE)
 
@@ -432,40 +481,164 @@ library(gridExtra)
 
 ```
 
+```{r rename_factors_fun}
+
+rename_fac_fun <- function(x){
+  x$data <- x$data %>% 
+    dplyr::mutate(
+      Var2 = forcats::fct_recode(
+        Var2,
+        annual_perc_land = "ann_agr_pland",
+        field_perc_land = "field_pland",
+        nature_perc_land = "ntr_pland",
+        perenn_perc_land = "prn_agr_pland",
+        landuse_interjuxt = "aglu_iji",
+        landuse_contagion = "aglu_contag",
+        annual_cohesion = "ann_agr_cohesion",
+        nature_cohesion = "ntr_cohesion",
+        perenn_cohesion = "prn_agr_cohesion",
+        landuse_edge_dens = "aglu_ed",
+        landuse_frac_dim = "aglu_frac_mn",
+        annual_patch_area = "ann_agr_area_mn",
+        annual_edge_den = "ann_agr_ed",
+        annual_frac_dim = "ann_agr_frac_mn",
+        annual_patch_dens = "ann_agr_pd",
+        nature_patch_area = "ntr_area_mn",
+        nature_edge_dens = "ntr_ed",
+        nature_frac_dim = "ntr_frac_mn",
+        nature_patch_dens = "ntr_pd",
+        perenn_perc_agri = "prn_pagr",
+        perenn_patch_area = "prn_agr_area_mn",
+        perenn_edge_dens = "prn_agr_ed",
+        perenn_frac_dim = "prn_agr_frac_mn",
+        perenn_patch_dens = "prn_agr_pd",
+        field_patch_area = "field_area_mn",
+        field_edge_dens = "field_ed",
+        field_frac_dim = "field_frac_mn",
+        field_patch_dens = "field_pd",
+        landuse_shan_div = "lu_shdi",
+        crop_shan_div = "crop_shdi"
+        )
+      ) %>% 
+    dplyr::mutate(
+      feature = forcats::fct_recode(
+        feature,
+        annual_perc_land = "ann_agr_pland",
+        field_perc_land = "field_pland",
+        nature_perc_land = "ntr_pland",
+        perenn_perc_land = "prn_agr_pland",
+        landuse_interjuxt = "aglu_iji",
+        landuse_contagion = "aglu_contag",
+        annual_cohesion = "ann_agr_cohesion",
+        nature_cohesion = "ntr_cohesion",
+        perenn_cohesion = "prn_agr_cohesion",
+        landuse_edge_dens = "aglu_ed",
+        landuse_frac_dim = "aglu_frac_mn",
+        annual_patch_area = "ann_agr_area_mn",
+        annual_edge_den = "ann_agr_ed",
+        annual_frac_dim = "ann_agr_frac_mn",
+        annual_patch_dens = "ann_agr_pd",
+        nature_patch_area = "ntr_area_mn",
+        nature_edge_dens = "ntr_ed",
+        nature_frac_dim = "ntr_frac_mn",
+        nature_patch_dens = "ntr_pd",
+        perenn_perc_agri = "prn_pagr",
+        perenn_patch_area = "prn_agr_area_mn",
+        perenn_edge_dens = "prn_agr_ed",
+        perenn_frac_dim = "prn_agr_frac_mn",
+        perenn_patch_dens = "prn_agr_pd",
+        field_patch_area = "field_area_mn",
+        field_edge_dens = "field_ed",
+        field_frac_dim = "field_frac_mn",
+        field_patch_dens = "field_pd",
+        landuse_shan_div = "lu_shdi",
+        crop_shan_div = "crop_shdi"
+        )
+      )
+    x$layers[[3]]$data <- x$layers[[3]]$data %>% 
+    dplyr::mutate(
+      feature = forcats::fct_recode(
+        feature,
+        annual_perc_land = "ann_agr_pland",
+        field_perc_land = "field_pland",
+        nature_perc_land = "ntr_pland",
+        perenn_perc_land = "prn_agr_pland",
+        landuse_interjuxt = "aglu_iji",
+        landuse_contagion = "aglu_contag",
+        annual_cohesion = "ann_agr_cohesion",
+        nature_cohesion = "ntr_cohesion",
+        perenn_cohesion = "prn_agr_cohesion",
+        landuse_edge_dens = "aglu_ed",
+        landuse_frac_dim = "aglu_frac_mn",
+        annual_patch_area = "ann_agr_area_mn",
+        annual_edge_den = "ann_agr_ed",
+        annual_frac_dim = "ann_agr_frac_mn",
+        annual_patch_dens = "ann_agr_pd",
+        nature_patch_area = "ntr_area_mn",
+        nature_edge_dens = "ntr_ed",
+        nature_frac_dim = "ntr_frac_mn",
+        nature_patch_dens = "ntr_pd",
+        perenn_perc_agri = "prn_pagr",
+        perenn_patch_area = "prn_agr_area_mn",
+        perenn_edge_dens = "prn_agr_ed",
+        perenn_frac_dim = "prn_agr_frac_mn",
+        perenn_patch_dens = "prn_agr_pd",
+        field_patch_area = "field_area_mn",
+        field_edge_dens = "field_ed",
+        field_frac_dim = "field_frac_mn",
+        field_patch_dens = "field_pd",
+        landuse_shan_div = "lu_shdi",
+        crop_shan_div = "crop_shdi"
+        )
+      )
+  x
+}
+
+
+```
+
 #### Pollinators
 
 ```{r pollinator_shaps, fig.width=12, fig.height=7}
+
+ex.polbase.glb.rename <- ex.polbase.glb
+ex.poldelta.glb.rename <- ex.poldelta.glb
+ex.polmarg.glb.rename <- ex.polmarg.glb
 
 svb.pol.base <- sv_importance(ex.polbase.glb, kind = "bee", max_display = 30,
                               viridis_args = list(option = "viridis"), size = 0.5,
                               show_numbers = TRUE, number_size = 2.7, format_fun = \(x) format(round(x,3),nsmall=3,)) +
   egg::theme_article() + theme(legend.position = "none") + 
-  xlab("Contribution to baseline pollinators")
+  xlab("Contribution to baseline wild bee abundance")
 svb.pol.delta <- sv_importance(ex.poldelta.glb, kind = "bee", max_display = 30,
                               viridis_args = list(option = "viridis"), size = 0.5,
                               show_numbers = TRUE, number_size = 2.7, format_fun = \(x) format(round(x,3),nsmall=3,)) + 
   egg::theme_article() + theme(legend.position = "none") + 
-  xlab("Contribution to \u0394 pollinators (landscape)")
+  xlab("Contribution to \u0394 wild bee abundance (landscape)")
 svb.pol.margin <- sv_importance(ex.polmarg.glb, kind = "bee", max_display = 30,
                               viridis_args = list(option = "viridis"), size = 0.5,
                               show_numbers = TRUE, number_size = 2.7, format_fun = \(x) format(round(x,3),nsmall=3,)) +
   egg::theme_article() + theme(legend.position = "none") + 
-  xlab("Contribution to \u0394 pollinators (per margin)")
+  xlab("Contribution to \u0394 wild bee abundance (per margin)")
 
 legend <- cowplot::get_legend(sv_importance(ex.polmarg.glb, kind = "bee", max_display = 5,
                               viridis_args = list(option = "viridis", name = "Metric value")) +
                                 egg::theme_article() 
                               + theme(legend.box.margin = margin(0, 0, 0, 12)))
 
+svb.pol.base.rename <- rename_fac_fun(svb.pol.base + theme(plot.margin = unit(c(1,0,0,0), "lines")))
+svb.pol.delta.rename <- rename_fac_fun(svb.pol.delta + theme(plot.margin = unit(c(1,0,0,0), "lines")))
+svb.pol.margin.rename <- rename_fac_fun(svb.pol.margin + theme(plot.margin = unit(c(1,0,0,0), "lines")))
+
 imp.pol <- cowplot::plot_grid(
-  svb.pol.base, svb.pol.delta,svb.pol.margin, legend,
+  svb.pol.base.rename, svb.pol.delta.rename, svb.pol.margin.rename, legend,
   nrow = 1, rel_widths = c(1,1,1,0.22),
   labels = c("(a)", "(b)", "(c)")
 )
 
 imp.pol
 
-# ggsave("Figs/imp_pol.png", imp.pol, width = 12, height = 7, dpi = 300, bg = "white")
+# ggsave("Figs/imp_pol.png", imp.pol, width = 12, height = 8, dpi = 300, bg = "white")
 ```
 
 #### Nutrient export
@@ -488,14 +661,18 @@ svb.nexp.margin <- sv_importance(ex.nexpmarg.glb, kind = "bee", max_display = 30
   egg::theme_article() + theme(legend.position = "none") + 
   xlab("Contribution to \u0394 nutrient runoff (per margin)")
 
+svb.nexp.base.rename <- rename_fac_fun(svb.nexp.base + theme(plot.margin = unit(c(1,0,0,0), "lines")))
+svb.nexp.delta.rename <- rename_fac_fun(svb.nexp.delta + theme(plot.margin = unit(c(1,0,0,0), "lines")))
+svb.nexp.margin.rename <- rename_fac_fun(svb.nexp.margin + theme(plot.margin = unit(c(1,0,0,0), "lines")))
+
 imp.nexp <- cowplot::plot_grid(
-  svb.nexp.base, svb.nexp.delta,svb.nexp.margin, legend,
+  svb.nexp.base.rename, svb.nexp.delta.rename, svb.nexp.margin.rename, legend,
   nrow = 1, rel_widths = c(1,1,1,0.22),
   labels = c("(a)", "(b)", "(c)")
 )
 
 imp.nexp
-# ggsave("Figs/imp_nexp.png", imp.nexp, width = 12, height = 7, dpi = 300, bg = "white")
+# ggsave("Figs/imp_nexp.png", imp.nexp, width = 12, height = 8, dpi = 300, bg = "white")
 ```
 
 #### Sediment export
@@ -518,14 +695,18 @@ svb.sed.margin <- sv_importance(ex.sedmarg.glb, kind = "bee", max_display = 30,
   egg::theme_article() + theme(legend.position = "none") + 
   xlab("Contribution to \u0394 sediment runoff (per margin)")
 
+svb.sed.base.rename <- rename_fac_fun(svb.sed.base + theme(plot.margin = unit(c(1,0,0,0), "lines")))
+svb.sed.delta.rename <- rename_fac_fun(svb.sed.delta + theme(plot.margin = unit(c(1,0,0,0), "lines")))
+svb.sed.margin.rename <- rename_fac_fun(svb.sed.margin + theme(plot.margin = unit(c(1,0,0,0), "lines")))
+
 imp.sed <- cowplot::plot_grid(
-  svb.sed.base, svb.sed.delta,svb.sed.margin, legend,
+  svb.sed.base.rename, svb.sed.delta.rename, svb.sed.margin.rename, legend,
   nrow = 1, rel_widths = c(1,1,1,0.22),
   labels = c("(a)", "(b)", "(c)")
 )
 
 imp.sed
-# ggsave("Figs/imp_sed.png", imp.sed, width = 12, height = 7, dpi = 300, bg = "white")
+# ggsave("Figs/imp_sed.png", imp.sed, width = 12, height = 8, dpi = 300, bg = "white")
 
 ```
 
@@ -549,14 +730,18 @@ svb.qb.margin <- sv_importance(ex.qbmarg.glb, kind = "bee", max_display = 30,
   egg::theme_article() + theme(legend.position = "none") + 
   xlab("Contribution to \u0394 groundwater recharge (per margin)")
 
+svb.qb.base.rename <- rename_fac_fun(svb.qb.base + theme(plot.margin = unit(c(1,0,0,0), "lines")))
+svb.qb.delta.rename <- rename_fac_fun(svb.qb.delta + theme(plot.margin = unit(c(1,0,0,0), "lines")))
+svb.qb.margin.rename <- rename_fac_fun(svb.qb.margin + theme(plot.margin = unit(c(1,0,0,0), "lines")))
+
 imp.qb <- cowplot::plot_grid(
-  svb.qb.base, svb.qb.delta,svb.qb.margin, legend,
+  svb.qb.base.rename, svb.qb.delta.rename,svb.qb.margin.rename, legend,
   nrow = 1, rel_widths = c(1,1,1,0.22),
   labels = c("(a)", "(b)", "(c)")
 )
 
 imp.qb
-# ggsave("Figs/imp_qb.png", imp.qb, width = 12, height = 7, dpi = 300, bg = "white")
+# ggsave("Figs/imp_qb.png", imp.qb, width = 12, height = 8, dpi = 300, bg = "white")
 
 ```
 
@@ -584,7 +769,7 @@ sv_fun <- function(shapviz_list, metric, scale = TRUE){
 
 # ES labeler 2
 ES_labels2 <- c(
-  pollinators = "Pollinators",
+  pollinators = "Wild bee abundance",
   qb = "Groundwater recharge",
   sed_export = "Sediment runoff",
   n_export = "Nutrient runoff"
@@ -649,20 +834,56 @@ shapval_ann.all <- list(base = shapval_ann.base,
   bind_rows(.id = "response") %>%
   mutate(ES = factor(ES, levels = c("pollinators","qb", "sed_export", "n_export")))
 
-shapd.annp <- ggplot(shapval_ann.all, aes(ann_agr_pland, shap.scale, color = ES)) + 
-  geom_hline(yintercept = 0, color = "gray30") +
+annagr.importantvar <- shapval_ann.all %>%
+  dplyr::filter(
+    response == "delta" & ES == "n_export"
+  )
+
+annagr.notimportantvar <- shapval_ann.all %>%
+  dplyr::filter(
+    !(response == "delta" & ES == "n_export")
+  )
+
+annagr_legend <- ggplot(shapval_ann.all, 
+                        aes(ann_agr_pland, shap.scale, color = ES)) + 
   geom_point(size=0.5) + 
-  geom_smooth(method = "gam", se = FALSE) + 
+  stat_smooth(geom = "line", method = "gam", se = FALSE) + 
   scale_color_viridis_d(option = "turbo", labels = ES_labels2, alpha = 0.5) + 
   egg::theme_article() +
   facet_wrap(~response, # scales = "free", 
              labeller = as_labeller(response_type_labels)) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
-  xlab("Annual agriculture % landscape") + ylab("Scaled contribution\nto ES prediction")
+  xlab("Annual agriculture % landscape") + 
+  ylab("Scaled contribution\nto ES prediction") +
+  guides(colour = guide_legend(label.vjust = 2))
 
-shapd.annp
+annagr_legend <- annagr_legend %>% cowplot::get_legend()
 
-# ggsave("Figs/shapd_ann_agr_pland.png", shapd.annp, width = 8, height = 3, dpi = 300, bg = "white")
+shapd.annp <- ggplot(annagr.notimportantvar, aes(ann_agr_pland, shap.scale, color = ES)) + 
+  geom_hline(yintercept = 0, color = "gray30") +
+  geom_point(size=0.5, alpha = 0.1) + 
+  stat_smooth(geom = "line", method = "gam", se = FALSE, alpha = 0.2) + 
+  geom_point(data = annagr.importantvar, size=0.5, alpha = 0.6) +
+  stat_smooth(data = annagr.importantvar, geom = "line", method = "gam", se = FALSE, alpha = 0.6) +
+  scale_color_viridis_d(option = "turbo", labels = ES_labels2, alpha = 0.5) + 
+  egg::theme_article() +
+  facet_wrap(~response, # scales = "free", 
+             labeller = as_labeller(response_type_labels)) +
+  theme(legend.position = "none") +
+  xlab("Annual agriculture % landscape") + 
+  ylab("Scaled contribution\nto ES prediction")
+
+
+shapd.annp.tag <- shapd.annp %>% egg::tag_facet() + 
+  theme(strip.text = element_text(size = 8, margin = margin(r=1,b=6,l=6)))
+
+shapd.annp.tag.legend <- cowplot::plot_grid(
+  shapd.annp.tag, annagr_legend, ncol = 1, nrow = 2,
+  rel_heights = c(10,1)
+)
+shapd.annp.tag.legend
+
+# ggsave("Figs/SupFig_S6annagrpland.png", shapd.annp.tag.legend, width = 8, height = 3, dpi = 300, bg = "white")
 
 ```
 
@@ -806,12 +1027,36 @@ shapd.combine <- list(
 ) %>% bind_rows(.id = "feature") %>%
   mutate(feature = factor(feature, levels = c("ntr_pland","ann_agr_ed","ann_agr_cohesion","ntr_ed")))
 
+importantvar <- shapd.combine %>%
+  dplyr::filter(
+    (ES == "pollinators" & response == "base" & feature == "ntr_pland") |
+    (ES == "pollinators" & response == "delta" & feature == "ann_agr_ed") |
+    (ES == "pollinators" & response == "delta.margin" & feature == "ntr_pland") |
+    (ES == "qb" & feature == "ann_agr_cohesion") |
+    (ES == "sed_export" & feature == "ann_agr_ed") |
+    (ES == "n_export" & response == "base" & feature == "ntr_pland") |
+    (ES == "n_export" & response == "delta.margin" & feature == "ntr_ed")
+  )
 
-shapd.facet <- ggplot(shapd.combine, aes(feature.val, shap.scale, color = ES)) +
+notimportantvar <- shapd.combine %>%
+  dplyr::filter(
+    !((ES == "pollinators" & response == "base" & feature == "ntr_pland") |
+       (ES == "pollinators" & response == "delta" & feature == "ann_agr_ed") |
+       (ES == "pollinators" & response == "delta.margin" & feature == "ntr_pland") |
+       (ES == "qb" & feature == "ann_agr_cohesion") |
+       (ES == "sed_export" & feature == "ann_agr_ed") |
+       (ES == "n_export" & response == "base" & feature == "ntr_pland") |
+       (ES == "n_export" & response == "delta.margin" & feature == "ntr_ed"))
+  )
+
+
+shapd.facet <- ggplot(notimportantvar, aes(feature.val, shap.scale, color = ES)) +
   geom_hline(yintercept = 0, color = "gray30") +
-  geom_point(size=0.5) + 
-  geom_smooth(method = "gam", se = FALSE) + 
-  scale_color_viridis_d(option = "turbo", labels = ES_labels2, alpha = 0.5) + 
+  geom_point(size=0.5, alpha = 0.1) + 
+  stat_smooth(geom = "line", method = "gam", se = FALSE, alpha = 0.2) + 
+  geom_point(data = importantvar, size=0.5, alpha = 0.6) +
+  stat_smooth(data = importantvar, geom = "line", method = "gam", se = FALSE, alpha = 0.6) +
+  scale_color_viridis_d(option = "turbo", labels = ES_labels2) + 
   egg::theme_article() +
   ggh4x::facet_grid2(response~feature, scales = "free", #independent = "y",
                      switch = "both",
@@ -820,9 +1065,19 @@ shapd.facet <- ggplot(shapd.combine, aes(feature.val, shap.scale, color = ES)) +
   #            labeller = as_labeller(response_type_labels)) +
   theme(legend.position = "bottom", legend.title = element_blank()) +
   xlab("Predictor value") + ylab("Scaled contribution to ES prediction") +
-  theme(strip.placement = "outside")
+  theme(strip.placement = "outside") +
+  guides(colour = guide_legend(label.vjust = 2))
 
-ggsave("Figs/shapd_combine_facets.png", shapd.facet, bg="white",height=6,width=8,units="in",dpi=300)
+shapd.facet.tag <- shapd.facet %>% egg::tag_facet() + 
+  theme(strip.text = element_text(size = 8, margin = margin(r=1,b=6,l=6)))
+shapd.facet.tag
+
+ggsave("Figs/shapd_combine_facets.png", shapd.facet.tag, bg="white",height=5.5,width=8,units="in",dpi=300)
+
+```
+
+
+```{r extra}
 
 # fit some gams
 dat.rf.gam <- shapd.combine %>% 
@@ -858,7 +1113,7 @@ corplot_ntrpland_annagred <- ggplot(dat, aes(ntr_pland,ann_agr_ed)) +
 ggplot(dat, aes(ann_agr_ed, delta_pollinators)) + geom_point()
 ggplot(dat, aes(ntr_pland,delta_pollinators)) + geom_point()
 
-ggsave("Figs/SupFig_ntrpland_annagred.png", corplot_ntrpland_annagred, height = 3, width = 4, units = "in", bg = "white", dpi = 300)
+# ggsave("Figs/SupFig_ntrpland_annagred.png", corplot_ntrpland_annagred, height = 3, width = 4, units = "in", bg = "white", dpi = 300)
 
 
 

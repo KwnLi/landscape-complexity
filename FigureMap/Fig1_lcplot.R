@@ -45,4 +45,4 @@ ggplot(hu_aglu, aes(huc12, percent.coverage, fill = landuse_group)) +
     legend.position = "none"
     )
 
-ggsave("FigureMap/FigureMap_lcplot.png", height = 3.5, width = 16, units = "in", bg = "white")
+# ggsave("FigureMap/FigureMap_lcplot.png", height = 3.5, width = 16, units = "in", bg = "white")
